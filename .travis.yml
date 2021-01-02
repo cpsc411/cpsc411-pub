@@ -4,9 +4,6 @@ env:
   global:
     - RACKET_DIR=~/racket
   matrix:
-    - RACKET_VERSION="7.3"
-    - RACKET_VERSION="7.4"
-    - RACKET_VERSION="7.5"
     - RACKET_VERSION="7.6"
     - RACKET_VERSION="7.7"
     - RACKET_VERSION="7.8"
