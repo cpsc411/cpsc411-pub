@@ -1,8 +1,8 @@
 #lang info
 (define collection 'multi)
-(define deps '(("base" #:version "7.5")))
+(define deps '(("base" #:version "7.3")))
 (define build-deps
-  '(("base" #:version "7.5")
+  '(("base" #:version "7.3")
     "scribble-lib"
     "racket-doc"
     "sandbox-lib"

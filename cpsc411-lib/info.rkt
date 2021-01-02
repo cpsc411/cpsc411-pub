@@ -2,7 +2,7 @@
 (define collection 'multi)
 (define deps
   '("rackunit-lib"
-    ("base" #:version "7.5")))
+    ("base" #:version "7.3")))
 (define build-deps
   '("at-exp-lib"
     "rackunit-lib"))
