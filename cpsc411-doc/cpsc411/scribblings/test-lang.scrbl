@@ -6,7 +6,6 @@
    rackunit/text-ui
    cpsc411/test-suite/utils
    cpsc411/graph-lib
-   cpsc411/reference/a1-solution
    (except-in cpsc411/compiler-lib compile)
    (except-in racket/base read read-syntax)
    cpsc411/test-suite/public/a1
