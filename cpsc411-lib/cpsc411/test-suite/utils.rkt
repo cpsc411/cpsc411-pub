@@ -30,9 +30,9 @@
 (define-check (check-equal?/mask f1 f2 e1 e2)
   (with-check-info (['raw-actual e1]
                     ['raw-expected e2]
-                    ['mask-actual f1]
+                    ['decode-actual f1]
                     ['mask-expected f2]
-                    ['actual-masked (f1 e1)]
+                    ['actual-decoded (f1 e1)]
                     ['expected-masked (f2 e2)])
     (check-equal? (f1 e1) (f2 e2))))
 
