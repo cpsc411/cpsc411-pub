@@ -26,13 +26,12 @@ jobs:
         architecture: 'x64'
         distribution: 'minimal'
         version: ${{ matrix.racket }}
-    - name: Observer
-      run: |
-        ls /usr/share/racket/collects/syntax
-        ls /usr/share/racket/collects/syntax/compiled
     - name: Do minimal Racket setup
       run: |
         raco pkg install --batch --auto compiler-lib
+    - name: Workaround race condition in raco pkg install
+      run: |
+        raco pkg install --batch --auto at-exp-lib
     - name: Checkout
       uses: actions/checkout@main
       with:
