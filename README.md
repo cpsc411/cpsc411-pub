@@ -1,5 +1,9 @@
 cpsc411-pub
 =======
+<p align="left">
+  <a href="https://github.com/cpsc411/cpsc411-pub/actions?query=workflow%3A%22CI%22"><img alt="GitHub Actions status" src="https://github.com/cpsc411/cpsc411-pub/workflows/CI/badge.svg"></a>
+</p>
+
 This collection defines the public support code for the UBC's Computer Science
 411 (CPSC 411), "Introduction to Compiler Construction".
 This code is meant distributed to students as they work through the assignments
