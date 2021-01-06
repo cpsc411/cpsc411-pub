@@ -26,8 +26,9 @@ jobs:
         architecture: 'x64'
         distribution: 'minimal'
         version: ${{ matrix.racket }}
-    - name: Install deps
+    - name: Do minimal Racket setup
       run: |
+        sudo raco setup
         raco pkg install --batch --auto compiler-lib
     - name: Checkout
       uses: actions/checkout@main
