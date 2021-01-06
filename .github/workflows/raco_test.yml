@@ -24,7 +24,7 @@ jobs:
       uses: Bogdanp/setup-racket@v0.12
       with:
         architecture: 'x64'
-        distribution: 'full' #'minimal'
+        distribution: 'minimal'
         version: ${{ matrix.racket }}
     - name: Checkout
       uses: actions/checkout@main
