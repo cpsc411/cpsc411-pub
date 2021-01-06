@@ -24,20 +24,28 @@ jobs:
       uses: Bogdanp/setup-racket@v0.12
       with:
         architecture: 'x64'
-        distribution: 'full' #'minimal'
+        distribution: 'minimal'
         version: ${{ matrix.racket }}
+    - name: Do minimal Racket setup
+      run: |
+        raco pkg install --batch --auto compiler-lib
+    - name: Workaround race condition in raco pkg install
+      run: |
+        raco pkg install --batch --auto at-exp-lib
     - name: Checkout
       uses: actions/checkout@main
+      with:
+        path: cpsc411-pub
     - name: Build lib
       run: |
-        raco pkg install --batch --auto ./cpsc411-lib
+        raco pkg install --batch --auto ./cpsc411-pub/cpsc411-lib
     - name: Test lib
       run: |
         raco test -p cpsc411-lib
         raco setup --only --pkgs cpsc411-lib
     - name: Build doc
       run: |
-        raco pkg install --batch --auto ./cpsc411-doc
+        raco pkg install --batch --auto ./cpsc411-pub/cpsc411-doc
     - name: Test doc
       run: |
         raco test -p cpsc411-doc
