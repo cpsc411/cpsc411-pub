@@ -26,7 +26,9 @@ jobs:
         architecture: 'x64'
         distribution: 'minimal'
         version: ${{ matrix.racket }}
-        packages: 'compiler-lib'
+    - name: Install deps
+      run: |
+        raco pkg install --batch --auto compiler-lib
     - name: Checkout
       uses: actions/checkout@main
     - name: Build lib
