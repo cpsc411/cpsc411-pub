@@ -26,6 +26,7 @@ jobs:
         architecture: 'x64'
         distribution: 'minimal'
         version: ${{ matrix.racket }}
+        packages: 'compiler-lib'
     - name: Checkout
       uses: actions/checkout@main
     - name: Build lib
