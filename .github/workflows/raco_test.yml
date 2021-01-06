@@ -19,7 +19,7 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
-        sudo apt-get install nasm>=2.13
+        sudo apt-get install nasm
     - name: Install Racket
       uses: Bogdanp/setup-racket@v0.12
       with:
