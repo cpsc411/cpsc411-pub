@@ -123,71 +123,82 @@
                 (set! rax (+ rax ,(- (expt 2 31)))))])
       (test-validator "may multiply by value >= -2^31" check-paren-x64 x)))))
 
-(define (a1-interp-paren-x64-test-suite interp-paren-x64)
+(define (a1-check-paren-x64-initialization-test-suite check-paren-x64)
+  (test-suite
+   "test that uninitialized rhs is rejected"
+
+   (let ([x `(begin (set! rax rdi))])
+     (test-validator-exn "in plain set!" check-paren-x64 x))
+
+   (let ([x `(begin (set! rax (+ rax 10)))])
+     (test-validator-exn "in add" check-paren-x64 x))
+
+   (let ([x `(begin (set! rax (* rax 10)))])
+     (test-validator-exn "in mul" check-paren-x64 x))
+
+   (let ([x '(begin (set! rax (+ rax 10)))])
+     (test-validator-exn "in add with immediate" check-paren-x64 x))
+
+   (let ([x '(begin (set! rax (* rax 10)))])
+     (test-validator-exn "in mul with immediate" check-paren-x64 x))
+
+   (let ([x '(begin
+               (set! rdi 1)
+               (set! rax (+ rax rdi)))])
+     (test-validator-exn "in add with reg on lhs" check-paren-x64 x))
+
+   (let ([x '(begin
+               (set! rax 1)
+               (set! rax (+ rax rdi)))])
+     (test-validator-exn "in add with reg on rhs" check-paren-x64 x))
+
+   (let ([x '(begin
+               (set! rdi 1)
+               (set! rax (* rax rdi)))])
+     (test-validator-exn "in mul with reg on rhs" check-paren-x64 x))
+
+   (let ([x '(begin
+               (set! rax 1)
+               (set! rax (* rax rdi)))])
+     (test-validator-exn "in mul with reg on lhs" check-paren-x64 x))))
+
+(define (a1-paren-x64-test-suite passes interp-paren-x64)
+  (define pass-list (current-pass-list))
 
   (test-suite
-   "interp-paren-x64 tests"
+   "paren-x64 tests"
+   #:before
+   (thunk
+    (current-pass-list passes))
+   #:after
+   (thunk
+    (current-pass-list pass-list))
 
    (let ([x `(begin
-               (set! r9 $0)
-               (set! r12 $0)
-               (set! r9 (* r9 r12)) ; 0
-               (set! r9 (* r9 $0)) ; 0
-               (set! r9 (+ r9 $1)) ; 1
-               (set! rcx r9) ; 1
-               (set! rcx (* rcx $1)) ; 1
-               (set! rax $7)
-               (set! rax (+ rax rcx)) ; 8
-               (set! rax (+ rax rax)) ; 16
-               (set! r14 $2)
-               (set! r14 (+ r14 rax)) ; 18
-               (set! rax (* rax r14)))]) ; 18 * 16
-     (check-equal?/upto (interp-paren-x64 x) 288))
-
-   (let ([x `(begin
-               (set! rax $(- (expt 2 63) 1))
-               (set! rax (+ rax $1)))])
+               (set! rax ,(max-int 64))
+               (set! rax (+ rax 1)))])
      (test-case "integer overflow when adding"
-       (check-equal?/upto (interp-paren-x64 x) (min-int 64))))
+                (check-confluent?/upto (interp-paren-x64 x) (execute x) (min-int 64))))
 
    (let ([x `(begin
-               (set! rax $(- (expt 2 63)))
-               (set! rax (+ rax $-1)))])
+               (set! rax ,(min-int 64))
+               (set! rax (+ rax -1)))])
      (test-case "integer underflow when adding"
-       (check-equal?/upto (interp-paren-x64 x) (max-int 64))))
+                (check-confluent?/upto (interp-paren-x64 x) (execute x) (max-int 64))))
 
    (let ([x `(begin
-               (set! rax $(expt 2 32))
-               (set! rcx $(expt 2 32))
+               (set! rax ,(expt 2 32))
+               (set! rcx ,(expt 2 32))
                (set! rax (* rax rcx)))])
      (test-case "integer overflow when multiplying"
-       (check-equal?/upto (interp-paren-x64 x) 0)))
+                (check-confluent?/upto (interp-paren-x64 x) (execute x) 0)))
 
    (let ([x `(begin
-               (set! rax $(expt 2 32))
-               (set! rcx $(- (expt 2 32)))
+               (set! rax ,(expt 2 32))
+               (set! rcx ,(- (expt 2 32)))
                (set! rax (* rax rcx)))])
      (test-case "integer underflow when multiplying"
-       (check-equal?/upto (interp-paren-x64 x) 0)))))
-
-(define (a1-end-to-end-test-suite passes interp-paren-x64)
-  (match-define
-    (list
-     check-paren-x64
-     generate-x64
-     wrap-x64-run-time
-     wrap-x64-boilerplate)
-    passes)
-
-  (define x (box #f))
-
-  (test-suite
-   "end-to-end tests"
-   #:before (lambda ()
-              (set-box! x (current-pass-list))
-              (current-pass-list passes))
-   #:after (lambda ()
-             (current-pass-list (unbox x)))
+                (check-confluent?/upto (interp-paren-x64 x) (execute x) 0)))
 
    (let ([x `(begin
                (set! r9 $0)
@@ -204,69 +215,20 @@
                (set! r14 (+ r14 rax)) ; 18
                (set! rax (* rax r14)))]) ; 18 * 16
      (test-begin
-       (check-equal?/upto (execute x) (* 18 16))))
+      (check-confluent?/upto (interp-paren-x64 x) (execute x) (* 18 16))))
 
    (let ([x `(begin
-               (set! rax $(- (expt 2 63) 1))
-               (set! rax (+ rax $1)))])
-     (test-case "integer overflow when adding"
-       (check-equal?/upto (execute x) (min-int 64))))
-
-   (let ([x `(begin
-               (set! rax $(- (expt 2 63)))
-               (set! rax (+ rax $-1)))])
-     (test-case "integer underflow when adding"
-       (check-equal?/upto (execute x) (max-int 64))))
-
-   (let ([x `(begin
-               (set! rax $(expt 2 32))
-               (set! rcx $(expt 2 32))
-               (set! rax (* rax rcx)))])
-     (test-case "integer overflow when multiplying"
-       (check-equal?/upto (execute x) 0)))
-
-   (let ([x `(begin
-               (set! rax $(expt 2 32))
-               (set! rcx $(- (expt 2 32)))
-               (set! rax (* rax rcx)))])
-     (test-case "integer underflow when multiplying"
-       (check-equal?/upto (execute x) 0)))))
-
-(define (a1-correctness-test-suite  passes interp-paren-x64)
-  (match-define
-    (list
-     check-paren-x64
-     generate-x64
-     wrap-x64-run-time
-     wrap-x64-boilerplate)
-    passes)
-
-  (define x (box #f))
-
-  (test-suite
-   "compiler vs interpreter"
-   #:before (lambda ()
-              (set-box! x (current-pass-list))
-              (current-pass-list passes))
-   #:after (lambda ()
-             (current-pass-list (unbox x)))
-
-   (let ([x `(begin
-               (set! r9 $0)
-               (set! r12 $0)
-               (set! r9 (* r9 r12)) ; 0
-               (set! r9 (* r9 $0)) ; 0
-               (set! r9 (+ r9 $1)) ; 1
-               (set! rcx r9) ; 1
-               (set! rcx (* rcx $1)) ; 1
-               (set! rax $7)
-               (set! rax (+ rax rcx)) ; 8
-               (set! rax (+ rax rax)) ; 16
-               (set! r14 $2)
-               (set! r14 (+ r14 rax))
-               (set! rax (* rax r14)))])
+               (set! r11 $0)
+               (set! rbp $2)
+               (set! rcx $0)
+               (set! rsi r11)
+               (set! rsi (+ rsi rbp))
+               (set! rsi (+ rsi $0))
+               (set! rdi rsi)
+               (set! rdi (+ rdi rcx))
+               (set! rax rdi))])
      (test-begin
-       (check-equal?/upto (interp-paren-x64 x) (execute x))))))
+      (check-confluent?/upto (interp-paren-x64 x) (execute x) 2)))))
 
 (define (a1-public-test-suite passes interp-paren-x64)
   (match-define
@@ -292,51 +254,11 @@
    (thunk
     (current-run/read run/read)
     (current-expected-masker masker))
+
    (test-suite
     "check-paren-x64 tests"
 
     (a1-check-paren-x64-syntax-test-suite check-paren-x64)
+    (a1-check-paren-x64-initialization-test-suite check-paren-x64))
 
-    (test-suite
-     "test that uninitialized rhs is rejected"
-
-     (let ([x `(begin (set! rax rdi))])
-       (test-validator-exn "in plain set!" check-paren-x64 x))
-
-     (let ([x `(begin (set! rax (+ rax $10)))])
-       (test-validator-exn "in add" check-paren-x64 x))
-
-     (let ([x `(begin (set! rax (* rax $10)))])
-       (test-validator-exn "in mul" check-paren-x64 x))
-
-     (let ([x '(begin (set! rax (+ rax 10)))])
-       (test-validator-exn "in add with immediate" check-paren-x64 x))
-
-     (let ([x '(begin (set! rax (* rax 10)))])
-       (test-validator-exn "in mul with immediate" check-paren-x64 x))
-
-     (let ([x '(begin
-                 (set! rdi 1)
-                 (set! rax (+ rax rdi)))])
-       (test-validator-exn "in add with reg on lhs" check-paren-x64 x))
-
-     (let ([x '(begin
-                 (set! rax 1)
-                 (set! rax (+ rax rdi)))])
-       (test-validator-exn "in add with reg on rhs" check-paren-x64 x))
-
-     (let ([x '(begin
-                 (set! rdi 1)
-                 (set! rax (* rax rdi)))])
-       (test-validator-exn "in mul with reg on rhs" check-paren-x64 x))
-
-     (let ([x '(begin
-                 (set! rax 1)
-                 (set! rax (* rax rdi)))])
-       (test-validator-exn "in mul with reg on rhs" check-paren-x64 x))))
-
-   (a1-interp-paren-x64-test-suite interp-paren-x64)
-
-   (a1-end-to-end-test-suite passes interp-paren-x64)
-
-   (a1-correctness-test-suite passes interp-paren-x64)))
+   (a1-paren-x64-test-suite passes interp-paren-x64)))

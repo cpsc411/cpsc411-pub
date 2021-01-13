@@ -3,7 +3,8 @@
 (require
  (for-syntax racket/base)
  racket/function
- rackunit)
+ rackunit
+ racket/match)
 
 (provide
  (all-defined-out))
@@ -37,6 +38,31 @@
 
 (define-check (check-equal?/upto e1 e2)
   (check-equal?/mask (current-actual-decoder) (current-expected-masker) e1 e2))
+
+(define-check (check-confluent?/mask decode mask compiled interpreted expected)
+  (with-check-info (['raw-compiled compiled]
+                    ['raw-interpreted interpreted]
+                    ['raw-expected expected]
+                    ['decode-actual decode]
+                    ['mask-expected mask]
+                    ['compiled-decoded (decode compiled)]
+                    ['interpreted-decoded (decode interpreted)]
+                    ['expected-masked (mask expected)])
+    (match (list (equal? (decode compiled) (mask expected))
+                 (equal? (decode interpreted) (mask expected))
+                 (equal? (decode compiled) (decode interpreted)))
+      ; compiled correct?, interpreted correct?, consistent?
+      ['(#f #f #f) (fail-check "neither compiled nor interpreted are equal to expected, and they aren't equal to each other")]
+      ['(#f #f #t) (fail-check "neither compiled nor interpreted are equal to expected, but they are equal to each other")]
+      ['(#f #t #f) (fail-check "compiled isn't equal to expected, but interpreted is")]
+      ['(#f #t #t) (fail-check "impossible - compiled isn't equal to expected, but is equal to interpreted, which is equal to expected")]
+      ['(#t #f #f) (fail-check "interpreted isn't equal to expected, but compiled is")]
+      ['(#t #f #t) (fail-check "impossible - interpreted isn't equal to expected, but is equal to compiled, which is equal to expected")]
+      ['(#t #t #f) (fail-check "impossible - compiled and interpreted are equal to expected, but not to each other")]
+      ['(#t #t #t) (void)])))
+
+(define-check (check-confluent?/upto compiled interpreted expected)
+  (check-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
 
 (define exit-code-mask (lambda (x) (modulo x 256)))
 
