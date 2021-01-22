@@ -178,27 +178,27 @@
                (set! rax ,(max-int 64))
                (set! rax (+ rax 1)))])
      (test-case "integer overflow when adding"
-                (check-confluent?/upto (interp-paren-x64 x) (execute x) (min-int 64))))
+                (check-confluent?/upto (execute x) (interp-paren-x64 x) (min-int 64))))
 
    (let ([x `(begin
                (set! rax ,(min-int 64))
                (set! rax (+ rax -1)))])
      (test-case "integer underflow when adding"
-                (check-confluent?/upto (interp-paren-x64 x) (execute x) (max-int 64))))
+                (check-confluent?/upto (execute x) (interp-paren-x64 x) (max-int 64))))
 
    (let ([x `(begin
                (set! rax ,(expt 2 32))
                (set! rcx ,(expt 2 32))
                (set! rax (* rax rcx)))])
      (test-case "integer overflow when multiplying"
-                (check-confluent?/upto (interp-paren-x64 x) (execute x) 0)))
+                (check-confluent?/upto (execute x) (interp-paren-x64 x) 0)))
 
    (let ([x `(begin
                (set! rax ,(expt 2 32))
                (set! rcx ,(- (expt 2 32)))
                (set! rax (* rax rcx)))])
      (test-case "integer underflow when multiplying"
-                (check-confluent?/upto (interp-paren-x64 x) (execute x) 0)))
+                (check-confluent?/upto (execute x) (interp-paren-x64 x) 0)))
 
    (let ([x `(begin
                (set! r9 $0)
@@ -215,7 +215,7 @@
                (set! r14 (+ r14 rax)) ; 18
                (set! rax (* rax r14)))]) ; 18 * 16
      (test-begin
-      (check-confluent?/upto (interp-paren-x64 x) (execute x) (* 18 16))))
+      (check-confluent?/upto (execute x) (interp-paren-x64 x) (* 18 16))))
 
    (let ([x `(begin
                (set! r11 $0)
@@ -228,7 +228,7 @@
                (set! rdi (+ rdi rcx))
                (set! rax rdi))])
      (test-begin
-      (check-confluent?/upto (interp-paren-x64 x) (execute x) 2)))))
+      (check-confluent?/upto (execute x) (interp-paren-x64 x) 2)))))
 
 (define (a1-public-test-suite passes interp-paren-x64)
   (match-define
