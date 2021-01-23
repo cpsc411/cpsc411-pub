@@ -1171,12 +1171,30 @@
                    (+ y z)))])
      (check-confluent?/upto (execute x) (interp-values-lang x) 7))))
 
-(define (a2-public-test-suite passes
-                              assign-homes
+(define (a2-public-test-suite pass-ls
+                              uncover-locals
+                              assign-fvars
+                              replace-locations
                               check-paren-x64
                               interp-values-lang
                               interp-paren-x64)
   (match-define
+    (list
+     check-values-lang
+     uniquify
+     sequentialize-let
+     canonicalize-bind
+     select-instructions
+     assign-homes
+     flatten-begins
+     patch-instructions
+     implement-fvars
+     generate-x64
+     wrap-x64-run-time
+     wrap-x64-boilerplate)
+    pass-ls)
+
+  (define passes
     (list
      check-values-lang
      uniquify
@@ -1191,8 +1209,7 @@
      implement-fvars
      generate-x64
      wrap-x64-run-time
-     wrap-x64-boilerplate)
-    passes)
+     wrap-x64-boilerplate))
 
   (define decoder (current-actual-decoder))
   (define masker (current-expected-masker))
@@ -1236,5 +1253,5 @@
    (a2-canonicalize-bind-test-suite passes canonicalize-bind)
    (a2-sequentialize-let-test-suite passes sequentialize-let)
    (a2-uniquify-test-suite passes uniquify)
-   (a2-check-values-lang-test-suite passes check-values-lang)
-   (a2-values-lang-test-suite passes interp-values-lang)))
+   (a2-check-values-lang-test-suite pass-ls check-values-lang)
+   (a2-values-lang-test-suite pass-ls interp-values-lang)))
