@@ -3,8 +3,9 @@
 (require
  (for-syntax racket/base)
  racket/function
- rackunit
- racket/match)
+ racket/match
+ racket/list
+ rackunit)
 
 (provide
  (all-defined-out))
@@ -70,3 +71,6 @@
   (for ([i ls])
     (check-not-exn
      (thunk (dynamic-require mod i fail)))))
+
+(define (unique? lst)
+  (not (check-duplicates lst)))
