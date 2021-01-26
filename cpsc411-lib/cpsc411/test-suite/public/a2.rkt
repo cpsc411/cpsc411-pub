@@ -556,7 +556,9 @@
                (halt 5))])
      (check-match (assign-fvars x)
                   `(module
-                       ((assignment ()))
+                       ,(list-no-order
+                         `(locals ())
+                         `(assignment ()))
                        (halt 5)))
      (check-from assign-fvars passes x 5))
 
@@ -566,7 +568,9 @@
                       (halt x.1)))])
      (check-match (assign-fvars x)
                   `(module
-                       ((assignment ((x.1 ,f1))))
+                       ,(list-no-order
+                        `(locals (x.1))
+                        `(assignment ((x.1 ,f1))))
                      (begin (set! x.1 5)
                             (halt x.1)))
                   (and (unique? (list f1))
@@ -583,7 +587,9 @@
                       (halt z.1)))])
      (check-match (assign-fvars x)
                   `(module
-                       ((assignment ((x.1 ,f1) (y.1 ,f2) (z.1 ,f3))))
+                       ,(list-no-order
+                         `(locals (x.1 y.1 z.1))
+                         `(assignment ((x.1 ,f1) (y.1 ,f2) (z.1 ,f3))))
                      (begin (set! x.1 1)
                             (set! y.1 x.1)
                             (set! y.1 (+ y.1 1))
@@ -600,7 +606,9 @@
                       (halt undefined.2)))])
      (check-match (assign-fvars x)
                   `(module
-                       ((assignment ((x.1 ,f1) (undefined.1 ,f2) (undefined.2 ,f3))))
+                       ,(list-no-order
+                         `(locals (x.1 undefined.1 undefined.2))
+                         `(assignment ((x.1 ,f1) (undefined.1 ,f2) (undefined.2 ,f3))))
                      (begin (set! x.1 undefined.1)
                             (halt undefined.2)))
                   (and (unique? (list f1 f2 f3))
@@ -617,7 +625,9 @@
                  (halt w.1)))])
      (check-match (assign-fvars x)
                   `(module
-                       ((assignment ((w.1 ,f1) (y.1 ,f2) (x.1 ,f3))))
+                       ,(list-no-order
+                         `(locals (w.1 y.1 x.1))
+                         `(assignment ((w.1 ,f1) (y.1 ,f2) (x.1 ,f3))))
                      (begin
                        (set! x.1 0)
                        (set! w.1 0)
@@ -634,13 +644,15 @@
    "a2 replace-locations tests"
 
    (let ([x `(module
-                 ((assignment ()))
+                 ((locals ())
+                  (assignment ()))
                (halt 5))])
      (check-match (replace-locations x)
                   `(halt 5)))
 
    (let ([x `(module
-                 ((assignment ((x.1 fv0))))
+                 ((locals (x.1))
+                  (assignment ((x.1 fv0))))
                (begin (set! x.1 5)
                       (halt x.1)))])
      (check-match (replace-locations x)
@@ -648,7 +660,8 @@
                           (halt fv0))))
 
    (let ([x `(module
-                 ((assignment ((x.1 fv0) (y.1 fv1) (z.1 fv2))))
+                 ((locals (x.1 y.1 z.1))
+                  (assignment ((x.1 fv0) (y.1 fv1) (z.1 fv2))))
                (begin (set! x.1 1)
                       (set! y.1 x.1)
                       (set! y.1 (+ y.1 1))
@@ -664,7 +677,8 @@
                           (halt fv2))))
 
    (let ([x `(module
-                 ((assignment ((x.1 fv0) (undefined.1 fv1) (undefined.2 fv2))))
+                 ((locals (x.1 undefined.1 undefined.2))
+                  (assignment ((x.1 fv0) (undefined.1 fv1) (undefined.2 fv2))))
                (begin (set! x.1 undefined.1)
                       (halt undefined.2)))])
      (check-match (replace-locations x)
@@ -672,7 +686,8 @@
                           (halt fv2))))
 
    (let ([x `(module
-                 ((assignment ((w.1 fv0) (y.1 fv1) (x.1 fv2))))
+                 ((locals (w.1 y.1 x.1))
+                  (assignment ((w.1 fv0) (y.1 fv1) (x.1 fv2))))
                (begin
                  (set! x.1 0)
                  (set! y.1 x.1)
