@@ -8,7 +8,7 @@
   scribble/eval)
 
 @(define cpsc411-eval
-  (make-base-eval "(require cpsc411/info-lib)"))
+  (make-base-eval "(require cpsc411/compiler-lib)"))
 
 @title{Info Data Structure}
 @defmodule[cpsc411/info-lib]
@@ -26,6 +26,31 @@ Returns @racket[#t] if @racket[v] is an @tech{info}, and @racket[#f] otherwise.
 (info? '())
 (info? '((a . 5)))
 (info? '((a 5)))]
+}
+
+@defproc[(info/c (key-name spec) ...) contract?]{
+Creates an @tech{info} contract, specifying that the @tech{info} must contain
+a mapping for each @racket[key-name], and the value for each key must satsify
+@racket[spec].
+The @racket[spec] language is roughly the same as the BNF pattern language used
+in this course, except all terminals must be @racket[contract?]s.
+
+@examples[#:eval cpsc411-eval
+(require racket/contract)
+((info/c) '())
+((info/c) 5)
+((info/c (locals (aloc? ...))) '())
+((info/c (locals (aloc? ...))) '((locals ())))
+((info/c (locals (aloc? ...))) '((locals (x.1))))
+((info/c (locals (aloc? ...))) '((locals (5))))
+((info/c (locals (aloc? ...)))
+ '((locals (x.1)) (assignments ((x.1 5)))))
+(define loc? (or/c register? fvar?))
+((info/c (locals (aloc? ...)) (assignments ((aloc? loc?) ...)))
+ '((locals (x.1)) (assignments ((x.1 5)))))
+((info/c (locals (aloc? ...)) (assignments ((aloc? loc?) ...)))
+'((locals (x.1)) (assignments ((x.1 rax)))))
+]
 }
 
 @defproc[(info-ref [v info?] [key any/c]) (or/c #f any/c)]{
