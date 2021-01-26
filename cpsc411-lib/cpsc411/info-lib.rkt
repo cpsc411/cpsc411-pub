@@ -101,20 +101,27 @@
     [(_ (k c) ...)
      (dictof/proc (list (cons 'k (list/c (transform c))) ...))]))
 
-(define-syntax transform
-  (syntax-rules ()
-    [(_ (c (... ...)))
-     (listof (transform c))]
+(require
+ (for-syntax
+  racket/base
+  syntax/parse))
+(define-syntax (transform stx)
+  (syntax-parse stx
+    [(_ (c (~literal ...)))
+     #'(listof (transform c))]
     [(_ (c ...))
-     (list/c (transform c) ...)]
+     #'(list/c (transform c) ...)]
     [(_ c)
-     c]))
+     #'c]))
 
 (module+ test
   (require
    racket/function)
 
   (define register? (dynamic-require "compiler-lib.rkt" 'register?))
+  (define aloc? (dynamic-require "compiler-lib.rkt" 'aloc?))
+  (define fvar? (dynamic-require "compiler-lib.rkt" 'fvar?))
+
   (check-true
    ((dictof
      ('locals (list/c (listof symbol?)))
@@ -157,4 +164,11 @@
      (assignment ((symbol? register?) ...)))
     (info-set '()
               'assignment
-              '((x rax) (y rbx))))))
+              '((x rax) (y rbx)))))
+
+  (check-true
+   ((let ([loc? (or/c register? fvar?)])
+      (info/c
+       (locals (aloc? ...))
+       (assignment ((aloc? loc?) ...))))
+    '((locals (x.1)) (assignment ((x.1 rax)))))))
