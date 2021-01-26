@@ -68,3 +68,93 @@
       (assignment ((x rax) (y rbx))))
     'assignment)
    '((x rax) (y rbx))))
+
+(require
+ racket/contract
+ racket/dict
+ racket/set)
+
+(define ((dictof/proc kc) d)
+  (and (dict? d)
+       (for/and ([(k c) (in-dict kc)])
+         (and (dict-has-key? d k)
+              ((flat-contract-predicate c) (dict-ref d k))))))
+
+(define ((dictof*/proc kc) d)
+  (and (dict? d)
+       (set=? (dict-keys d) (dict-keys kc))
+       (for/and ([(k c) (in-dict kc)])
+         ((flat-contract-predicate c) (dict-ref d k)))))
+
+(define-syntax dictof
+  (syntax-rules ()
+    [(_ (k c) ...)
+     (dictof/proc (list (cons k c) ...))]))
+
+(define-syntax dictof*
+  (syntax-rules ()
+    [(_ (k c) ...)
+     (dictof*/proc (list (cons k c) ...))]))
+
+(define-syntax info/c
+  (syntax-rules ()
+    [(_ (k c) ...)
+     (dictof/proc (list (cons 'k (list/c (transform c))) ...))]))
+
+(define-syntax transform
+  (syntax-rules ()
+    [(_ (c (... ...)))
+     (listof (transform c))]
+    [(_ (c ...))
+     (list/c (transform c) ...)]
+    [(_ c)
+     c]))
+
+(module+ test
+  (require
+   racket/function)
+
+  (define register? (dynamic-require "compiler-lib.rkt" 'register?))
+  (check-true
+   ((dictof
+     ('locals (list/c (listof symbol?)))
+     ('assignment (list/c (listof (list/c symbol? register?)))))
+    (info-set '((locals (x y)))
+              'assignment
+              '((x rax) (y rbx)))))
+
+  (check-false
+   ((dictof
+     ('locals (list/c (listof symbol?)))
+     ('assignment (list/c (listof (list/c symbol? register?)))))
+    (info-set '()
+              'assignment
+              '((x rax) (y rbx)))))
+
+  (check-true
+   ((dictof
+     ('assignment (list/c (listof (list/c symbol? register?)))))
+    (info-set '()
+              'assignment
+              '((x rax) (y rbx)))))
+
+  (check-true
+   ((info/c
+     (assignment ((symbol? register?) ...)))
+    (info-set '()
+              'assignment
+              '((x rax) (y rbx)))))
+  (check-true
+   ((info/c
+     (locals (symbol? ...))
+     (assignment ((symbol? register?) ...)))
+    (info-set '((locals (x y z)))
+              'assignment
+              '((x rax) (y rbx)))))
+  (check-false
+   ((info/c
+     (locals (symbol? ...))
+     (assignment ((symbol? register?) ...)))
+    (info-set '()
+              'assignment
+              '((x rax) (y rbx))))))
