@@ -28,10 +28,10 @@ Returns @racket[#t] if @racket[v] is an @tech{info}, and @racket[#f] otherwise.
 (info? '((a 5)))]
 }
 
-@defproc[(info/c (key-name spec) ...) contract?]{
-Creates an @tech{info} contract, specifying that the @tech{info} must contain
-a mapping for each @racket[key-name], and the value for each key must satsify
-@racket[spec].
+@defform[(info/c (key-name spec) ...)]{
+Creates an @tech{info} @racket[contract?], specifying that the @tech{info} must
+contain a mapping for each @racket[key-name], and the value for each key must
+satsify @racket[spec].
 The @racket[spec] language is roughly the same as the BNF pattern language used
 in this course, except all terminals must be @racket[contract?]s.
 
