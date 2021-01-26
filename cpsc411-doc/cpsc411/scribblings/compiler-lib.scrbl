@@ -825,3 +825,32 @@ The number of bytes to add to the address of a procedure to get the address of
 the environment of the procedure.
 Probably corresponds to 0, 1 or 2 words.
 }
+
+@section{Misc Compiler Helpers}
+
+@defproc[(make-begin [is (listof effect)] [t tail]) tail]{
+A language-generic helper to make @racket[begin] statements in tail position.
+The first arguments is a list of effect-context statements, while the final
+argument is a tail-context statement.
+@racket[make-begin] will construct @racket[`(begin ,is ... ,t)], but try to
+minimize @racket[begins] in the process.
+
+@examples[#:eval eg
+(make-begin '() '(halt 5))
+(make-begin '() '(begin (halt 5)))
+(make-begin '((set! rax 5)) '(begin (halt 5)))
+]
+}
+
+@defproc[(make-begin-effect [is (listof effect)]) effect]{
+A language-generic helper to make @racket[begin] statements effect position.
+The first arguments is a list of effect-context statements.
+@racket[make-begin-effect] will construct @racket[`(begin ,is ...)], but try to
+minimize @racket[begins] in the process.
+
+@examples[#:eval eg
+(make-begin-effect '())
+(make-begin-effect '((begin (set! rax 5))))
+(make-begin-effect '((set! rax 5)))
+]
+}

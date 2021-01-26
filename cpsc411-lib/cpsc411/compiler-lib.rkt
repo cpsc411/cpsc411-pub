@@ -125,6 +125,32 @@
 
 (define (register? r) (and (memq r (current-register-set)) #t))
 
+;; Expects list of effects and tail
+(define (make-begin is tail)
+  (let loop ([is (make-begin-effect is)]
+             [tail tail])
+    (match (cons is tail)
+      [(cons '() _) tail]
+      [(cons '(begin) _) tail] ; Happens due to interface mismatch between make-begin and make-begin-effect
+      [(cons `(begin ,is1 ...)
+             `(begin ,is2 ... ,tail))
+       (loop (append is1 is2) tail)]
+      [(cons `(begin ,is1 ...) tail)
+       `(begin ,@is1 ,tail)]
+      [(cons is tail)
+       `(begin ,@is ,tail)])))
+
+;; Expects non-empty list
+(define (make-begin-effect is)
+  `(begin
+     ,@(let loop ([is is])
+         (match is
+           ['() '()]
+           [`((begin ,e ...) ,e2 ...)
+            (append (loop e) (loop e2))]
+           [`(,e ,e2 ...)
+            (cons e (loop e2))]))))
+
 ;; Calling conventions
 ;; ------------------------------------------------------------------------
 
