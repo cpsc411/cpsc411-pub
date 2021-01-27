@@ -347,7 +347,7 @@ Instruments the @racket[current-pass-list] to trace the entire compiler using @r
 }
 
 @defproc[(untrace-compiler!) void?]{
-Un-instruments the @racket[currnet-pass-list]. Must only be called after calling @racket[trace-compiler!].
+Un-instruments the @racket[current-pass-list]. Must only be called after calling @racket[trace-compiler!].
 }
 
 @defform[(with-trace e)]{
@@ -374,7 +374,7 @@ The set of registers provided by the machine targeted by the compiler.
 @defparam[current-stack-size size exact-nonnegative-integer?
           #:value (* 8 1024 1024)]{
 Defines the maximum size of the stack, in bytes, created by the run-time system
-installed by @racket[wrap-64-run-time].
+installed by @racket[wrap-x64-run-time].
 Defaults to 8 MB.
 
 @examples[#:eval eg
