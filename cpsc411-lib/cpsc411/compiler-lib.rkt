@@ -151,6 +151,44 @@
            [`(,e ,e2 ...)
             (cons e (loop e2))]))))
 
+;; Asm-lang/assignents -> Asm-lang/assignents
+;; Assumes the 'conflicts info field is preserved into Asm-lang/assignments
+(define (check-assignment p)
+  (define who 'check-assignment)
+  (define info (second p))
+  (define assign
+    (make-immutable-hash
+     (map (lambda (pair) (cons (first pair) (second pair)))
+          (info-ref info 'assignment))))
+  (define conflicts
+    (make-immutable-hash
+     (map (lambda (adj-list) (cons (first adj-list) (second adj-list)))
+          (info-ref info 'conflicts))))
+  (define locals (info-ref info 'locals))
+  (unless (set=? locals (hash-keys assign))
+      (error who
+             (for/fold ([f "Some locals not assigned homes:~n  homeless locals:"])
+                       ([i (set-subtract locals (hash-keys assign))])
+               (format "~a ~a" f i))))
+  (let ([edges (foldl (lambda (pair result)
+                        (let ([node (car pair)]
+                              [adj-list (cdr pair)])
+                          (foldl (lambda (adj result2)
+                                   (set-add result2 (cons node adj)))
+                                 result
+                                 adj-list)))
+                      (set)
+                      (hash->list conflicts))])
+    (for ([edge edges])
+      (let ([u (car edge)]
+            [v (cdr edge)])
+        (when (equal? (hash-ref assign u)
+                      (hash-ref assign v))
+          (error who
+                 (format "Produced bad assignment:~n  ~a and ~a both assigned to ~a"
+                         u v (hash-ref assign u))))))
+    p))
+
 ;; Calling conventions
 ;; ------------------------------------------------------------------------
 
