@@ -395,7 +395,7 @@ Defaults to 128MB.
 }
 
 @defparam[current-frame-base-pointer-register reg register?
-          #:value (unsyntax (current-frame-base-pointer-register))]{
+          #:value '(unsyntax (current-frame-base-pointer-register))]{
 Defines the register in which the run-time system stores the base of the frame;
 everything above this address is free space.
 }
@@ -406,32 +406,32 @@ A predicate that returns @racket[#t] when @racket[v] is equal to the
 }
 
 @defparam[current-auxiliary-registers reg register?
-          #:value (unsyntax (current-auxiliary-registers))]{
+          #:value (unsyntax @racket['(unsyntax (current-auxiliary-registers))])]{
 Defines the set of registers used as auxiliary registers when compiling
 instructions to match x86-64 restrictions on which instructons use which kinds
 of physical locations.
 }
 
 @defparam[current-patch-instructions-registers reg register?
-          #:value (unsyntax (current-auxiliary-registers))]{
+          #:value (unsyntax @racket['(unsyntax (current-auxiliary-registers))])]{
 An alias for @racket[current-auxiliary-registers].
 }
 
 @defparam[current-return-value-register reg register?
-          #:value (unsyntax (current-return-value-register))]{
+          #:value '(unsyntax (current-return-value-register))]{
 Defines the register that the run-time system and calling convention expects to
 contain the return value.
 }
 
 @defparam[current-assignable-registers reg register?
-         #:value @racket['(unsyntax (current-assignable-registers))]]{
+         #:value (unsyntax @racket['(unsyntax (current-assignable-registers))])]{
 Defines the set of registers that can be assigned by register allocations.
 This set is derived from the @racket[current-register-set] and the other
 parameters that reserve registers.
 }
 
 @defparam[current-parameter-registers reg (set/c register?)
-          #:value (unsyntax (current-parameter-registers))]{
+          #:value (unsyntax @racket['(unsyntax (current-parameter-registers))])]{
 Define the set of registers using for passing the first @racket[n] arguments in
 a procedure call, where @racket[n] is the size of the set defined by this
 parameter.
@@ -439,13 +439,13 @@ The remaining arguments are passed on the stack.
 }
 
 @defparam[current-return-address-register reg register?
-          #:value (unsyntax (current-return-address-register))]{
+          #:value '(unsyntax (current-return-address-register))]{
 Define the register that the run-time system and calling convention expect to
 contain the return address.
 }
 
 @defparam[current-heap-base-pointer-register reg register?
-          #:value (unsyntax (current-heap-base-pointer-register))]{
+          #:value '(unsyntax (current-heap-base-pointer-register))]{
 Define the register that the run-time system initializes to the base address of
 the heap; everything above this address is free space.
 }
