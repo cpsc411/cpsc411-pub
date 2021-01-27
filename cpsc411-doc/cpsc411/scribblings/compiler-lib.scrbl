@@ -412,6 +412,11 @@ instructions to match x86-64 restrictions on which instructons use which kinds
 of physical locations.
 }
 
+@defparam[current-patch-instructions-registers reg register?
+          #:value (unsyntax (current-auxiliary-registers))]{
+An alias for @racket[current-auxiliary-registers].
+}
+
 @defparam[current-return-value-register reg register?
           #:value (unsyntax (current-return-value-register))]{
 Defines the register that the run-time system and calling convention expects to
@@ -419,7 +424,7 @@ contain the return value.
 }
 
 @defparam[current-assignable-registers reg register?
-         #:value (unsyntax (current-assignable-registers))]{
+         #:value @racket['(unsyntax (current-assignable-registers))]]{
 Defines the set of registers that can be assigned by register allocations.
 This set is derived from the @racket[current-register-set] and the other
 parameters that reserve registers.
