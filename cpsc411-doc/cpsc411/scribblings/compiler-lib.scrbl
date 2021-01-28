@@ -4,6 +4,7 @@
   scribble/example
   cpsc411/compiler-lib
   (for-label
+    racket/list
     cpsc411/compiler-lib
     racket/contract
     racket/set
@@ -857,5 +858,68 @@ minimize @racket[begins] in the process.
 (make-begin-effect '())
 (make-begin-effect '((begin (set! rax 5))))
 (make-begin-effect '((set! rax 5)))
+]
+}
+
+@defproc[(check-assignment (p any/c)) any/c]{
+Takes a program in any language where the @racket[second] element satisfies
+@racketblock[
+(info/c
+  (assignments ((aloc? (or/c register? fvar?)))
+  (conflicts ((aloc? (aloc? ...)) ...))
+  (locals (aloc? ...))))
+]
+
+Check that the given assignment is sound with respect to the conflicts graph
+and complete with respect the locals set.
+Returns @racket[p] if so, or raises an error.
+
+To be language agnostic, it doesn't actually check that the program is valid and
+only depends on the info field.
+
+@examples[#:eval eg
+(check-assignment
+ `(module
+    ((locals (v.1 w.2 x.3 y.4 z.5 t.6 p.1))
+     (conflicts
+      ((p.1 (z.5 t.6 y.4 x.3 w.2))
+       (t.6 (p.1 z.5))
+       (z.5 (p.1 t.6 w.2 y.4))
+       (y.4 (z.5 x.3 p.1 w.2))
+       (x.3 (y.4 p.1 w.2))
+       (w.2 (z.5 y.4 p.1 x.3 v.1))
+       (v.1 (w.2))))
+     (assignment
+      ((v.1 r15) (w.2 r8) (x.3 r14) (y.4 r9) (z.5 r13) (t.6 r14) (p.1 r15))))))
+
+(eval:error
+ (check-assignment
+ `(module
+    ((locals (v.1 w.2 x.3 y.4 z.5 t.6 p.1))
+     (conflicts
+      ((p.1 (z.5 t.6 y.4 x.3 w.2))
+       (t.6 (p.1 z.5))
+       (z.5 (p.1 t.6 w.2 y.4))
+       (y.4 (z.5 x.3 p.1 w.2))
+       (x.3 (y.4 p.1 w.2))
+       (w.2 (z.5 y.4 p.1 x.3 v.1))
+       (v.1 (w.2))))
+     (assignment
+      ((w.2 r8) (x.3 r14) (y.4 r9) (z.5 r13) (t.6 r14) (p.1 r15)))))))
+
+(eval:error
+ (check-assignment
+  `(module
+     ((locals (v.1 w.2 x.3 y.4 z.5 t.6 p.1))
+      (conflicts
+       ((p.1 (z.5 t.6 y.4 x.3 w.2))
+        (t.6 (p.1 z.5))
+        (z.5 (p.1 t.6 w.2 y.4))
+        (y.4 (z.5 x.3 p.1 w.2))
+        (x.3 (y.4 p.1 w.2))
+        (w.2 (z.5 y.4 p.1 x.3 v.1))
+        (v.1 (w.2))))
+      (assignment
+       ((v.1 r8) (w.2 r8) (x.3 r14) (y.4 r9) (z.5 r13) (t.6 r14) (p.1 r15)))))))
 ]
 }
