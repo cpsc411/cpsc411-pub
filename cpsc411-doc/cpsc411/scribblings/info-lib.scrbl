@@ -46,12 +46,12 @@ in this course, except all terminals must be @racket[contract?]s.
 ((info/c (locals (aloc? ...)))
  '((locals (x.1)) (assignments ((x.1 5)))))
 (define loc? (or/c register? fvar?))
-((info/c (locals (aloc? ...)) (assignments ((aloc? loc?) ...)))
- '((locals (x.1)) (assignments ((x.1 5)))))
-((info/c (locals (aloc? ...)) (assignments ((aloc? loc?) ...)))
-'((locals (x.1)) (assignments ((x.1 rax)))))
-((info/c (locals (aloc? ...)) (assignments ((aloc? loc?) ...)))
-'((assignments ((x.1 rax) (y.3 fv1) (x.2 rax)))
+((info/c (locals (aloc? ...)) (assignment ((aloc? loc?) ...)))
+ '((locals (x.1)) (assignment ((x.1 5)))))
+((info/c (locals (aloc? ...)) (assignment ((aloc? loc?) ...)))
+'((locals (x.1)) (assignment ((x.1 rax)))))
+((info/c (locals (aloc? ...)) (assignment ((aloc? loc?) ...)))
+'((assignment ((x.1 rax) (y.3 fv1) (x.2 rax)))
   (locals (x.1 x.2 y.3))))
 ]
 }
