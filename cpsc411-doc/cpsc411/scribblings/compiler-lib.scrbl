@@ -865,9 +865,9 @@ minimize @racket[begins] in the process.
 Takes a program in any language where the @racket[second] element satisfies
 @racketblock[
 (info/c
-  (assignments ((aloc? (or/c register? fvar?)))
-  (conflicts ((aloc? (aloc? ...)) ...))
-  (locals (aloc? ...))))
+ (assignment ((aloc? (or/c register? fvar?))))
+ (conflicts ((aloc? (aloc? ...)) ...))
+ (locals (aloc? ...)))
 ]
 
 Check that the given assignment is sound with respect to the conflicts graph
