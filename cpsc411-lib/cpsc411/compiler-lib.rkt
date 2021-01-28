@@ -447,10 +447,11 @@
 (require racket/contract)
 (define/contract (check-assignment p)
   (->
-   (*list/c any/c (info/c
-                   (assignments ((aloc? (or/c register? fvar?))))
-                   (conflicts ((aloc? (aloc? ...)) ...))
-                   (locals (aloc? ...))))
+   (*list/c any/c (let ([loc? (or/c register? fvar?)])
+                   (info/c
+                    (assignment ((aloc? loc?) ...))
+                    (conflicts ((aloc? (aloc? ...)) ...))
+                    (locals (aloc? ...)))))
    any/c)
   (define who 'check-assignment)
   (define info (second p))
