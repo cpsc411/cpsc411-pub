@@ -1090,10 +1090,10 @@
 
    (let ([x `(begin
                (set! r11 0)
-               (set! rbp 2)
+               (set! r8 2)
                (set! rcx 0)
                (set! rsi r11)
-               (set! rsi (+ rsi rbp))
+               (set! rsi (+ rsi r8))
                (set! rsi (+ rsi 0))
                (set! rdi rsi)
                (set! rdi (+ rdi rcx))
