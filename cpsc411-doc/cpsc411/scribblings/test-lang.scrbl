@@ -110,3 +110,12 @@ Probably either the default or set to @racket[exit-code-mask] for a1.
 @defproc[(exit-code-mask [v any/c]) (between/c 0 255)]{
 Mask a Racket value to the range of an exit code.
 }
+
+@defproc[(check-validator [f (-> any/c any/c)] [x any/c]) void?]{
+Tests that the validator @racket[f] returns @racket[x] without raising an error.
+}
+
+@defproc[(check-validator-exn [f (-> any/c any/c)] [x any/c]) void?]{
+Tests that the validator @racket[f] raises an exception when called on
+@racket[x].
+}
