@@ -31,6 +31,26 @@ functions, in order: @racket[check-paren-x64], @racket[generate-x64],
 @racket[interp] is expected to be the function @racket[interp-paren-x64].
 }
 
+@subsection{Milestone 2 Test Suites}
+@defmodule[cpsc411/test-suite/public/a2]
+
+@defproc[(a2-public-test-suite [pass-list (listof (-> any/c any/c))]
+                               [uncover-locals (-> asm-lang-v2? asm-lang-v2/locals?)]
+                               [assign-fvars (-> asm-lang-v2/locals? asm-lang-v2/assignments?)]
+                               [replace-locations (-> asm-lang-v2/assignments? nested-asm-lang-v2?)]
+                               [check-paren-x64 (-> any/c paren-x64-v2?)]
+                               [interp-values-lang (-> values-lang-v3? int64?)]
+                               [interp-paren-x64 (-> paren-x64-v2? int64?)])
+         test-suite?]{
+The Milestone 2 test suite.
+@racket[pass-list] is expected to be a list containing the milestone 2
+functions, in order.
+The remaining arguments are expected to be the correspondingly named passes,
+which are not directly included in the pass list.
+}
+
+
+
 @section{Test Lang}
 @defmodulelang[cpsc411/test-lang]
 This module defines a language with a small reader extension to simplify writing
