@@ -205,20 +205,28 @@
 ;; Undead analysis
 ;; ------------------------------------------------------------------------
 
-(define (undead-set? x)
+(define ((_undead-set? loc?) x)
   (and (list? x)
-       (andmap aloc? x)
+       (andmap loc? x)
        (= (set-count x) (length x))))
 
-(define (undead-set-tree? ust)
-  (match ust
-    [(? undead-set?) #t]
-    [(list (? undead-set?) (? undead-set-tree?) (? undead-set-tree?)) #t]
-    [`(,(? undead-set?) ...) #t]
-    [`(,(? undead-set?) ... (? undead-set-tree?)) #t]
-    [else #f]))
+(define undead-set? (_undead-set? aloc?))
 
-(define undead-set-list? (listof undead-set?))
+(define ((_undead-set-tree? loc?) ust)
+  (let ([undead-set? (_undead-set? loc?)]
+        [undead-set-tree? (_undead-set-tree? loc?)])
+    (match ust
+      [(? undead-set?) #t]
+      [(list (? undead-set?) (? undead-set-tree?) (? undead-set-tree?)) #t]
+      [`(,(? undead-set?) ...) #t]
+      [`(,(? undead-set?) ... (? undead-set-tree?)) #t]
+      [else #f])))
+
+(define undead-set-tree? (_undead-set-tree? aloc?))
+
+(define undead-set-tree/rloc? (_undead-set-tree? (or/c aloc? register?)))
+
+#;(define undead-set-list? (listof undead-set?))
 
 ;; Compiler stuff
 ;; ------------------------------------------------------------------------
