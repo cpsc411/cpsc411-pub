@@ -27,8 +27,8 @@
       (test-validator-exn "identifiers must be bound" check-values-lang x))
 
     (let ([x `(module (let ([foo 1]
-                            [bar foo]))
-                bar)])
+                            [bar foo])
+                        bar))])
       (test-validator-exn "let is parallel" check-values-lang x))
 
     (let ([x `(module (let ([foo 1]
