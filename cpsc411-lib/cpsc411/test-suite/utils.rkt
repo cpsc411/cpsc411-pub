@@ -71,6 +71,17 @@
     (with-check-info (['pass-ls (member pass pass-ls)])
       (check-equal?/upto (execute actual) expected))))
 
+(define-check (check-against-ref student-passes ref-passes program)
+  (let ([expected (parameterize ([current-pass-list ref-passes])
+                    (execute program))])
+    (for-each (λ (student-pass index)
+                (let ([prefix (take ref-passes index)]
+                      [suffix (drop ref-passes (add1 index))])
+                  (parameterize ([current-pass-list (append prefix (list student-pass) suffix)])
+                    (check-equal? (execute program) expected))))
+              student-passes
+              (range (length student-passes)))))
+
 (define exit-code-mask (lambda (x) (modulo x 256)))
 
 (define-check (check-import-list mod ls)
