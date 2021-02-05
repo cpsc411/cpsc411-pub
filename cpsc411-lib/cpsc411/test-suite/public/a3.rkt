@@ -10,7 +10,7 @@
 (provide (all-defined-out))
 
 ; validates register assignments in assign-registers
-(define (validate-assignments locals conflicts assigns regs)
+(define (validate-assignments locals conflicts assigns [regs (current-assignable-registers)])
   (let* ([a-hash (make-hash assigns)]
          [a-values (hash-values a-hash)]
          [f (lambda (e acc) (+ acc (cond [(set-member? a-values (list e)) 1]
@@ -109,6 +109,50 @@
 
   (test-suite
    "a3 assign-registers stress tests"
+
+   (test-case "Simple large test"
+     (let* ([locals '(v.1 w.2 x.3 y.4 z.5 t.6)]
+            [conflicts '((x.3 (z.5 y.4 v.1 w.2))
+                         (w.2 (z.5 y.4 v.1 x.3))
+                         (v.1 (w.2 x.3))
+                         (y.4 (t.6 z.5 w.2 x.3))
+                         (z.5 (t.6 y.4 w.2 x.3))
+                         (t.6 (z.5 y.4)))]
+            [p1 `(module
+                     ((locals ,locals)
+                      (conflicts ,conflicts))
+                     (begin
+                       (set! v.1 1)
+                       (set! w.2 46)
+                       (set! x.3 v.1)
+                       (set! x.3 (+ x.3 7))
+                       (set! y.4 x.3)
+                       (set! y.4 (+ y.4 4))
+                       (set! z.5 x.3)
+                       (set! z.5 (+ z.5 w.2))
+                       (set! t.6 y.4)
+                       (set! t.6 (* t.6 -1))
+                       (set! z.5 (+ z.5 t.6))
+                       (halt z.5)))])
+       (check-not-exn (thunk (assign-registers p1)))
+       (check-match
+        (assign-registers p1)
+        `(module
+             ,info
+             (begin
+               (set! v.1 1)
+               (set! w.2 46)
+               (set! x.3 v.1)
+               (set! x.3 (+ x.3 7))
+               (set! y.4 x.3)
+               (set! y.4 (+ y.4 4))
+               (set! z.5 x.3)
+               (set! z.5 (+ z.5 w.2))
+               (set! t.6 y.4)
+               (set! t.6 (* t.6 -1))
+               (set! z.5 (+ z.5 t.6))
+               (halt z.5)))
+        (validate-assignments locals conflicts (info-ref info 'assignment) ))))
 
    (test-case
      "Single variable with all registers"
