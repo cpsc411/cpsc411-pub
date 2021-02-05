@@ -9,29 +9,29 @@
 
 (provide (all-defined-out))
 
-(define (a3-public-test-suite passes
-                              assign-homes
-                              undead-analysis
-                              conflict-analysis
-                              assign-registers
-                              interp-values-lang
-                              check-paren-x64
-                              interp-paren-x64)
-  (match-define
-    (list
-     check-values-lang
-     uniquify
-     sequentialize-let
-     canonicalize-bind
-     select-instructions
-     assign-homes-opt
-     flatten-begins
-     patch-instructions
-     implement-fvars
-     generate-x64
-     wrap-x64-run-time
-     wrap-x64-boilerplate)
-    passes)
+(define (a3-public-test-suite
+         passes
+         interp-paren-x64
+         check-paren-x64
+         interp-values-lang
+         check-values-lang
+         uniquify
+         sequentialize-let
+         canonicalize-bind
+         select-instructions
+         uncover-locals
+         undead-analysis
+         conflict-analysis
+         assign-registers
+         replace-locations
+         assign-homes-opt
+         assign-homes
+         flatten-begins
+         patch-instructions
+         implement-fvars
+         generate-x64
+         wrap-x64-run-time
+         wrap-x64-boilerplate)
 
   (define decoder (current-actual-decoder))
   (define masker (current-expected-masker))
