@@ -460,7 +460,89 @@
                (set! x.1 5)
                (set! x.2 10)
                (halt x.1)))
-          (validate-conflicts l c e1)))))))
+          (validate-conflicts l c e1)))))
+
+   (test-case "Complex case for two variables"
+     (with-check-info (['conflicts (string-info "Conflicts of the form: (conflicts ((x.1 (x.2)) (x.2 (x.1))))")])
+       (let ([l '(x.1 x.2)]
+             [u '((x.1) (x.2) (x.1) ())]
+             [e1 '((x.1 ()) (x.2 ()))])
+         (check-match
+          (conflict-analysis
+           `(module
+              ((locals ,l)
+               (undead-out ,u))
+              (begin
+                (set! x.1 5)
+                (set! x.2 (+ x.2 x.1))
+                (set! x.1 (+ x.1 x.2))
+                (halt x.1))))
+          `(module
+             (,_ ... (conflicts (,c ...)) ,_ ...)
+             (begin
+               (set! x.1 5)
+               (set! x.2 (+ x.2 x.1))
+               (set! x.1 (+ x.1 x.2))
+               (halt x.1)))
+          (validate-conflicts l c e1)))))
+
+   (test-case "Simple case for three variables"
+     (with-check-info (['conflicts (string-info "Conflicts of the form: (conflicts ((x.3 (x.2 x.1)) (x.1 (x.2 x.3)) (x.2 (x.1 x.3))))")])
+       (let ([l '(x.1 x.2 x.3)]
+             [u '((x.1) (x.2 x.1) (x.2 x.1) (x.3 x.1) (x.3) ())]
+             [e '((x.3 (x.2 x.1)) (x.1 (x.2 x.3)) (x.2 (x.1 x.3)))])
+         (check-match
+          (conflict-analysis
+           `(module
+              ((locals ,l)
+               (undead-out ,u))
+              (begin
+                (set! x.1 1)
+                (set! x.2 2)
+                (set! x.3 3)
+                (set! x.3 (+ x.3 x.2))
+                (set! x.3 (+ x.3 x.1))
+                (halt x.3))))
+          `(module
+             (,_ ... (conflicts (,c ...)) ,_ ...)
+             (begin
+               (set! x.1 1)
+               (set! x.2 2)
+               (set! x.3 3)
+               (set! x.3 (+ x.3 x.2))
+               (set! x.3 (+ x.3 x.1))
+               (halt x.3)))
+          (validate-conflicts l c e)))))
+
+   (test-case "Complex case for multiple variables"
+     (with-check-info (['conflicts (string-info "Conflicts of the form: (conflicts ((b.2 (a.1 c.3)) (d.4 (a.1 c.3)) (c.3 (a.1 d.4 b.2)) (a.1 (c.3 d.4 b.2))))")])
+       (let ([l '(a.1 b.2 c.3 d.4)]
+             [u '((a.1) (a.1 c.3) (a.1 c.3 b.2) (a.1 c.3) (c.3) (d.4) ())]
+             [e '((b.2 (a.1 c.3)) (d.4 (c.3)) (c.3 (a.1 d.4 b.2)) (a.1 (c.3 b.2)))])
+         (check-match
+          (conflict-analysis
+           `(module
+              ((locals ,l)
+               (undead-out ,u))
+              (begin
+                (set! a.1 1)
+                (set! c.3 2)
+                (set! b.2 a.1)
+                (set! b.2 (+ b.2 c.3))
+                (set! d.4 a.1)
+                (set! d.4 (* d.4 c.3))
+                (halt d.4))))
+          `(module
+             (,_ ... (conflicts (,c ...)) ,_ ...)
+             (begin
+               (set! a.1 1)
+               (set! c.3 2)
+               (set! b.2 a.1)
+               (set! b.2 (+ b.2 c.3))
+               (set! d.4 a.1)
+               (set! d.4 (* d.4 c.3))
+               (halt d.4)))
+          (validate-conflicts l c e)))))))
 
 (define (a3-public-test-suite
          passes
