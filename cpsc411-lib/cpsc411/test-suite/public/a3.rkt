@@ -249,7 +249,7 @@
                (set! t.6 (* t.6 -1))
                (set! z.5 (+ z.5 t.6))
                (halt z.5)))
-        (validate-assignments locals conflicts (info-ref info 'assignment) ))))
+        (validate-assignments locals conflicts (info-ref info 'assignment)))))
 
    (test-case
      "Single variable with all registers"
@@ -441,7 +441,7 @@
            (halt x.1)))))
 
    (test-case "Simple case for two variables"
-     (with-check-info (['expected (string-info "Conflicts of the form: (conflicts ((x.1 (x.2)) (x.2 (x.1)))")])
+     (with-check-info (['conflicts (string-info "Conflicts of the form: (conflicts ((x.1 (x.2)) (x.2 (x.1)))")])
        (let ([l '(x.1 x.2)]
              [u '((x.1) (x.1) ())]
              [e1 '((x.1 (x.2)) (x.2 (x.1)))])
