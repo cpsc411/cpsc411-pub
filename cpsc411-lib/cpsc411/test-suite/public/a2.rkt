@@ -361,10 +361,11 @@
    "a2 select-instructions tests"
 
    (let ([x `(module 5)])
-     (check-match (select-instructions x)
-                  `(module
+     (test-case "Fragile test; allowed to fail"
+       (check-match (select-instructions x)
+                    `(module
                        ()
-                       (halt 5)))
+                       (halt 5))))
      (check-from select-instructions passes x 5))
 
    (let ([x `(module (+ 1 2))])
