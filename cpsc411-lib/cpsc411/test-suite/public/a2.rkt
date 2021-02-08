@@ -353,8 +353,8 @@
                            (begin
                              (begin (set! z.4 (+ 4 5)) (set! y.4 z.4))
                              (set! x.3 y.4))
-                           x.3)))
-       (check-from canonicalize-bind passes x 9)))))
+                           x.3))))
+     (check-from canonicalize-bind passes x 9))))
 
 (define (a2-select-instructions-test-suite passes select-instructions)
   (test-suite
@@ -982,7 +982,7 @@
                      (set! rax 1)
                      (set! rax (+ rax (rbp - 8)))
                      (set! rax (* rax (rbp - 0)))))
-     (check-from implement-fvars passes x 4)))
+     (check-from implement-fvars passes x 4))
 
    (let ([x `(begin
                (set! r11 0)
@@ -1021,7 +1021,7 @@
                      (set! (rbp - 40) rax)
                      (set! rax (rbp - 40))))
 
-     (check-from implement-fvars passes x 4)))
+     (check-from implement-fvars passes x 4))))
 
 (define (a2-paren-x64-v2-test-suite passes interp-paren-x64)
   (define pass-list (current-pass-list))
