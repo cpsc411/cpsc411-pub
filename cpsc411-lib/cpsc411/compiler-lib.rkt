@@ -219,7 +219,7 @@
       [(? undead-set?) #t]
       [(list (? undead-set?) (? undead-set-tree?) (? undead-set-tree?)) #t]
       [`(,(? undead-set?) ...) #t]
-      [`(,(? undead-set?) ... ,(? undead-set-tree?)) #t]
+      [`(,(? undead-set-tree?) ... ,(? undead-set-tree?)) #t]
       [else #f])))
 
 (define undead-set-tree? (_undead-set-tree? aloc?))
