@@ -218,7 +218,6 @@
     (match ust
       [(? undead-set?) #t]
       [(list (? undead-set?) (? undead-set-tree?) (? undead-set-tree?)) #t]
-      [`(,(? undead-set?) ...) #t]
       [`(,(? undead-set-tree?) ... ,(? undead-set-tree?)) #t]
       [else #f])))
 
