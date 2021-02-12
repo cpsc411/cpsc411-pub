@@ -914,37 +914,52 @@
                                (list p1))
                        #t)))
 
-   (let ([x `(begin (set! r12 (+ r12 r8))
-                    (halt 1))])
+   (let ([x `(begin
+               (set! r12 0)
+               (set! r8 0)
+               (set! r12 (+ r12 r8))
+               (halt 1))])
      (test-case "Fragile test; allowed to fail"
        (check-match (patch-instructions x)
                     `(begin
+                       (set! r12 0)
+                       (set! r8 0)
                        (set! r12 (+ r12 r8))
                        (set! rax 1))))
      (check-from patch-instructions passes x 1))
 
-   (let ([x `(begin (set! fv0 (+ fv0 1))
-                    (halt 1))])
+   (let ([x `(begin
+               (set! fv0 0)
+               (set! fv0 (+ fv0 1))
+               (halt 1))])
      (test-case "Fragile test; allowed to fail"
        (check-match (patch-instructions x)
-                    `(begin (set! ,p1 fv0)
-                            (set! ,p1 (+ ,p1 1))
-                            (set! fv0 ,p1)
-                            (set! rax 1))
+                    `(begin
+                       (set! fv0 0)
+                       (set! ,p1 fv0)
+                       (set! ,p1 (+ ,p1 1))
+                       (set! fv0 ,p1)
+                       (set! rax 1))
                     (and (andmap (curryr memv (current-patch-instructions-registers))
                                  (list p1))
                          #t)))
      (check-from patch-instructions passes x 1))
 
-   (let ([x `(begin (set! fv0 (+ fv0 fv1))
-                    (halt 1))])
+   (let ([x `(begin
+               (set! fv0 0)
+               (set! fv1 0)
+               (set! fv0 (+ fv0 fv1))
+               (halt 1))])
      (test-case "Fragile test; allowed to fail"
        (check-match (patch-instructions x)
-                    `(begin (set! ,p1 fv0)
-                            (set! ,p2 fv1)
-                            (set! ,p1 (+ ,p1 ,p2))
-                            (set! fv0 ,p1)
-                            (set! rax 1))
+                    `(begin
+                       (set! fv0 0)
+                       (set! fv1 0)
+                       (set! ,p1 fv0)
+                       (set! ,p2 fv1)
+                       (set! ,p1 (+ ,p1 ,p2))
+                       (set! fv0 ,p1)
+                       (set! rax 1))
                     (and (andmap (curryr memv (current-patch-instructions-registers))
                                  (list p1 p2))
                          #t)))
