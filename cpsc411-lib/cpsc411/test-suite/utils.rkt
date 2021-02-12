@@ -66,6 +66,13 @@
 (define-check (check-confluent?/upto compiled interpreted expected)
   (check-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
 
+(define-check (check-correct interp1 interp2 source target)
+  (with-check-info (['source-interpreter interp1]
+                    ['target-interpreter interp2]
+                    ['source source]
+                    ['target target])
+    (check-equal? (interp2 target) (interp1 source))))
+
 (define-check (check-from pass pass-ls actual expected)
   (parameterize ([current-pass-list (member pass pass-ls)])
     (with-check-info (['pass-ls (member pass pass-ls)])
