@@ -5,6 +5,7 @@
   rackunit
   cpsc411/test-suite/utils
   cpsc411/compiler-lib
+  "../../langs/a2.rkt"
   "a1.rkt")
 
 (provide
@@ -64,22 +65,33 @@
       (check-validator check-values-lang x)))))
 
 (define (a2-uniquify-test-suite passes uniquify)
+  (define (check-uniquify-correct actual source)
+    (check-correct interp-values-lang-v3 interp-values-lang-unique-v3 source actual))
+
   (test-suite
    "a2 uniquify tests"
 
    (let ([x `(module 5)])
-     (check-match (uniquify x)
-                  `(module 5))
+     (check-match (uniquify x) `(module 5))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 5))
 
    (let ([x `(module (let ([foo 1]) foo))])
      (check-match (uniquify x)
                   `(module (let ([,foo 1]) ,foo)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 1))
 
    (let ([x `(module (let ([foo 1]) (+ foo foo)))])
      (check-match (uniquify x)
                   `(module (let ([,foo 1]) (+ ,foo ,foo))))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 2))
 
    (let ([x `(module (let ([foo 1])
@@ -90,6 +102,9 @@
                              (let ([,bar 2])
                                (+ ,foo ,bar))))
                   (unique? (list foo bar)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 3))
 
    (let ([x `(module (let ([foo 1]
@@ -100,6 +115,9 @@
                                  [,bar 2])
                              (+ ,foo ,bar)))
                   (unique? (list foo bar)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 3))
 
    (let ([x `(module (let ([foo 1])
@@ -110,6 +128,9 @@
                              (let ([,bar ,foo])
                                ,bar)))
                   (unique? (list foo bar)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 1))
 
    (let ([x `(module (let ([foo (let ([bar 1]) bar)]
@@ -120,6 +141,9 @@
                                  [,bar.2 2])
                              (+ ,foo ,bar.2)))
                   (unique? (list foo bar.1 bar.2)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 3))
 
    (let ([x `(module (let ([foo 1])
@@ -130,6 +154,9 @@
                              (let ([,foo.2 2])
                                ,foo.2)))
                   (unique? (list foo.1 foo.2)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 2))
 
    (let ([x `(module (let ([foo 1])
@@ -140,6 +167,9 @@
                              (let ([,foo.2 (+ 1 ,foo.1)])
                                ,foo.2)))
                   (unique? (list foo.1 foo.2)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 2))
 
    (let ([x `(module (let ([foo 1])
@@ -152,6 +182,9 @@
                                    [,bar (+ 2 ,foo.1)])
                                (+ ,foo.2 ,bar))))
                   (unique? (list foo.1 foo.2 bar)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 5))
 
    ;; large tests
@@ -171,6 +204,9 @@
                              (let ([,m (+ ,x ,y)])
                                (* ,m ,z))))
                   (unique? (list x y z q r m)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 152))
 
    (let ([x `(module (let ([x 1]
@@ -183,20 +219,32 @@
                                  [,z.1 (let ([,y.2 2]) (+ ,y.2 ,y.2))])
                              (+ ,y.1 ,z.1)))
                   (unique? (list x y.1 z.1 z.2 y.2)))
+
+     (check-uniquify-correct (uniquify x) x)
+
      (check-from uniquify passes x 7))))
 
 (define (a2-sequentialize-let-test-suite passes sequentialize-let)
+  (define (check-seqlet-correct actual source)
+    (check-correct interp-values-lang-unique-v3 interp-mf-lang-v3 source actual))
+
   (test-suite
    "a2 sequentialize-let tests"
 
    (let ([x `(module 5)])
      (check-match (sequentialize-let x)
                   `(module 5))
+
+     (check-seqlet-correct (sequentialize-let x) x)
+
      (check-from sequentialize-let passes x 5))
 
    (let ([x `(module (let ([foo.1 1]) foo.1))])
      (check-match (sequentialize-let x)
                   `(module (begin (set! foo.1 1) foo.1)))
+
+     (check-seqlet-correct (sequentialize-let x) x)
+
      (check-from sequentialize-let passes x 1))
 
    (let ([x `(module (let ([foo.1 1]) (+ foo.1 foo.1)))])
@@ -208,6 +256,9 @@
      #;(check-match (sequentialize-let x)
                   `(module (begin ,@(list-no-order `(set! foo.1 1) `(set! bar.1 2))
                                   (+ foo.1 bar.1))))
+
+     (check-seqlet-correct (sequentialize-let x) x)
+
      (check-from sequentialize-let passes x 3))
 
    (let ([x `(module (let ([foo.1 1])
@@ -217,6 +268,9 @@
                   `(module (begin (set! foo.1 1)
                                   (begin (set! bar.1 foo.1)
                                          (+ foo.1 bar.1)))))
+
+     (check-seqlet-correct (sequentialize-let x) x)
+
      (check-from sequentialize-let passes x 2))
 
    (let ([x1 `(module (let ([foo.1 1])
@@ -233,6 +287,10 @@
                   `(module (begin (set! bar.1 1)
                                   (begin (set! foo.1 2)
                                          (+ foo.1 bar.1)))))
+
+     (check-seqlet-correct (sequentialize-let x1) x1)
+     (check-seqlet-correct (sequentialize-let x2) x2)
+
      (check-from sequentialize-let passes x1 3)
      (check-from sequentialize-let passes x2 3))
 
@@ -243,15 +301,24 @@
                   `(module (begin ,@(list-no-order `(set! x.1 5)
                                                    `(set! y.1 (begin (set! z.1 (+ 7 8)) z.1)))
                                   (+ x.1 y.1))))
+
+     (check-seqlet-correct (sequentialize-let x) x)
+
      (check-from sequentialize-let passes x 20))))
 
 (define (a2-canonicalize-bind-test-suite passes canonicalize-bind)
+  (define (check-canonicalize-bind-correct actual source)
+    (check-correct interp-mf-lang-v3 interp-cmf-lang-v3 source actual))
+
   (test-suite
    "a2 canonicalize-bind tests"
 
    (let ([x `(module 5)])
      (check-match (canonicalize-bind x)
                   `(module 5))
+
+     (check-canonicalize-bind-correct (canonicalize-bind x) x)
+
      (check-from canonicalize-bind passes x 5))
 
    (let ([x `(module (begin (set! x.1 (+ 5 6))
@@ -262,6 +329,9 @@
                     `(module (begin (set! x.1 (+ 5 6))
                                     (set! y.1 (+ 1 x.1))
                                     y.1))))
+
+     (check-canonicalize-bind-correct (canonicalize-bind x) x)
+
      (check-from canonicalize-bind passes x 12))
 
    (let ([x `(module (begin (set! x.1 (begin (set! y.1 1)
@@ -272,6 +342,9 @@
                     `(module (begin (begin (set! y.1 1)
                                            (set! x.1 y.1))
                                     x.1))))
+
+     (check-canonicalize-bind-correct (canonicalize-bind x) x)
+
      (check-from canonicalize-bind passes x 1))
 
    (let ([x `(module
@@ -290,6 +363,9 @@
                                (set! y.4 z.4))
                              (set! x.3 y.4))
                            x.3))))
+
+     (check-canonicalize-bind-correct (canonicalize-bind x) x)
+
      (check-from canonicalize-bind passes x 9))
 
    (let ([x `(module
@@ -314,6 +390,9 @@
                                (set! x.4 2)
                                (set! x.6 x.4))
                              2)))))
+
+     (check-canonicalize-bind-correct (canonicalize-bind x) x)
+
      (check-from canonicalize-bind passes x 2))
 
    (let ([x `(module
@@ -331,6 +410,9 @@
                          (begin
                            (set! y.2 5)
                            x.6))))
+
+     (check-canonicalize-bind-correct (canonicalize-bind x) x)
+
      (check-from canonicalize-bind passes x 5))
 
    (let ([x `(module
@@ -354,6 +436,9 @@
                              (begin (set! z.4 (+ 4 5)) (set! y.4 z.4))
                              (set! x.3 y.4))
                            x.3))))
+
+     (check-canonicalize-bind-correct (canonicalize-bind x) x)
+
      (check-from canonicalize-bind passes x 9))))
 
 (define (a2-select-instructions-test-suite passes select-instructions)
