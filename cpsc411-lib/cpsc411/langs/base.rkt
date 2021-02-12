@@ -10,7 +10,19 @@
  +
  -
  *
- halt)
+ halt
+
+ not
+ if
+ <
+ <=
+ =
+ >=
+ >
+ !=
+ true
+ false
+ nop)
 
 (compile-allow-set!-undefined #t)
 
@@ -21,6 +33,12 @@
 (define - x64-sub)
 (define * x64-mul)
 (define halt values)
+
+(define (true) #t)
+(define (false) #f)
+(define (!= e1 e2) (not (= e1 e2)))
+(define (nop) (void))
+
 
 (module+ interp
   (provide interp-base)
