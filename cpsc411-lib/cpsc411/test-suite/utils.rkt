@@ -71,7 +71,8 @@
                     ['target-interpreter interp2]
                     ['source source]
                     ['target target])
-    (check-equal? (interp2 target) (interp1 source))))
+    (with-handlers ([values (lambda (e) (fail (exn-message e)))])
+      (check-equal? (interp2 target) (interp1 source)))))
 
 (define-check (check-from pass pass-ls actual expected)
   (parameterize ([current-pass-list (member pass pass-ls)])
