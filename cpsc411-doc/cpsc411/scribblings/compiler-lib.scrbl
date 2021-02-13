@@ -374,19 +374,8 @@ The set of registers provided by the machine targeted by the compiler.
 
 @defparam[current-stack-size size exact-nonnegative-integer?
           #:value (* 8 1024 1024)]{
-Defines the maximum size of the stack, in bytes, created by the run-time system
-installed by @racket[wrap-x64-run-time].
-Defaults to 8 MB.
-
-@examples[#:eval eg
-(require
-  cpsc411/ptr-run-time)
-(current-stack-size)
-(x86-64-uninitialized-data)
-
-(current-stack-size (* 16 1024 1024))
-(x86-64-uninitialized-data)
-]
+Deprecated; has no effect. The stack size is now defined by the operating system
+using the SYS V ABI.
 }
 
 @defparam[current-heap-size size exact-nonnegative-integer?

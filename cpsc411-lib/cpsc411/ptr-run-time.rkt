@@ -315,8 +315,7 @@ procedure_len: equ $-procedure_msg
 ; statically allocated uninitialized data used by the runtime
 ; NOTE: Must be a function to get binding time of parameters right.
 (define (x86-64-uninitialized-data)
-  @~a{stack:   resb @(current-stack-size)
-      scratch: resb 8
+  @~a{scratch: resb 8
       fixnum_msg:   resb 19})
 
 ; TODO should separate boilerplate and run-time
@@ -341,9 +340,7 @@ section .text
   mov r9, 0    ; no offset
   syscall
   mov @(current-heap-base-pointer-register), rax
-  mov @(current-frame-base-pointer-register), stack
-  ; move pointer to middle stack, to allow operands in both directions.
-  add @(current-frame-base-pointer-register), @(/ (current-stack-size) 2)
+  mov @(current-frame-base-pointer-register), rsp
   mov @(current-return-address-register), done
 @|e|
   jmp done

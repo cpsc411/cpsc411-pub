@@ -84,8 +84,7 @@ msg:   times len db '0'})
 
 ; statically allocated uninitialized data used by the runtime
 (define x86-64-uninitialized-data
-  @~a{
-stack:   resb @(current-stack-size)})
+  @~a{})
 
 ; TODO should separate boilerplate and run-time
 (define wrap-x64-run-time values)
@@ -97,8 +96,7 @@ global @|start-label|
 section .text
 
 @|start-label|:
-  mov rbp, stack
-  add rbp, @(current-stack-size) ; move pointer to end of stack, since stacks are upsize down?
+  mov @(current-frame-base-pointer-register), rsp
 @|e|
   ; The result should be a number in RAX
   jmp done
