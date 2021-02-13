@@ -33,6 +33,8 @@
       (check-match (expose-basic-blocks x)
                    `(module (define ,L.main.1 (begin (halt 5))))))
 
+     (check-ebb-correct (expose-basic-blocks x) x)
+
      (check-from expose-basic-blocks passes x 5))
 
    (let ([x `(module
@@ -48,6 +50,8 @@
                          (set! fv1 2)
                          (set! fv0 (+ fv0 fv1))
                          (halt fv0)))))
+     (check-ebb-correct (expose-basic-blocks x) x)
+
      (check-from expose-basic-blocks passes x 3))
 
    (let ([x `(module
@@ -63,6 +67,9 @@
                          (set! fv1 2)
                          (set! fv0 (+ fv0 fv1))
                          (halt fv0)))))
+
+     (check-ebb-correct (expose-basic-blocks x) x)
+
      (check-from expose-basic-blocks passes x 3))))
 
 (define (a4-public-test-suite
