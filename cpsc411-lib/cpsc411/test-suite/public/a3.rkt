@@ -465,8 +465,8 @@
    (test-case "Complex case for two variables"
      (with-check-info (['conflicts (string-info "Conflicts of the form: (conflicts ((x.1 (x.2)) (x.2 (x.1))))")])
        (let ([l '(x.1 x.2)]
-             [u '((x.1) (x.2) (x.1) ())]
-             [e1 '((x.1 ()) (x.2 ()))])
+             [u '((x.2 x.1) (x.2 x.1) (x.1) ())]
+             [e1 '((x.1 (x.2)) (x.2 (x.1)))])
          (check-match
           (conflict-analysis
            `(module
