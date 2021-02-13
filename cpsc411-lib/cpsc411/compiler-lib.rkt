@@ -383,6 +383,17 @@
 (define nasm-run/read
   (nasm-run/observe (lambda (x) (with-input-from-string (with-output-to-string (thunk (system x)))
                                   (thunk (read))))))
+(define (nasm-run/input-read n)
+  (nasm-run/observe
+   (lambda (x)
+     (with-input-from-string
+       (with-output-to-string
+         (thunk
+          (system
+           (string-join
+            (cons x (build-list (sub1 n) (lambda _ "a")))
+            " "))))
+       (thunk (read))))))
 
 (define nasm-run/error-string
   (nasm-run/observe (lambda (x)
