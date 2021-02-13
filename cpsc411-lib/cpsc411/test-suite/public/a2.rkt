@@ -324,7 +324,7 @@
    (let ([x `(module (begin (set! x.1 (+ 5 6))
                             (set! y.1 (+ 1 x.1))
                             y.1))])
-     (test-case "Fragile test; failure allowed"
+     (fragile-test-case
        (check-match (canonicalize-bind x)
                     `(module (begin (set! x.1 (+ 5 6))
                                     (set! y.1 (+ 1 x.1))
@@ -337,7 +337,7 @@
    (let ([x `(module (begin (set! x.1 (begin (set! y.1 1)
                                              y.1))
                             x.1))])
-     (test-case "Fragile test; failure allowed"
+     (fragile-test-case
        (check-match (canonicalize-bind x)
                     `(module (begin (begin (set! y.1 1)
                                            (set! x.1 y.1))
@@ -353,7 +353,7 @@
                                                      z.4))
                                     y.4))
                    x.3))])
-     (test-case "Fragile test; failure allowed"
+     (fragile-test-case
        (check-match (canonicalize-bind x)
                     `(module
                          (begin
@@ -378,7 +378,7 @@
                            (begin
                              (set! x.4 2) x.4))
                      2)))])
-     (test-case "Fragile test; failure allowed"
+     (fragile-test-case
        (check-match (canonicalize-bind x)
                     `(module
                          (begin
@@ -425,7 +425,7 @@
                                                      z.4))
                                     y.4))
                    x.3))])
-     (test-case "Fragile test; failure allowed"
+     (fragile-test-case
        (check-match (canonicalize-bind x)
                     `(module
                          (begin
@@ -446,7 +446,7 @@
    "a2 select-instructions tests"
 
    (let ([x `(module 5)])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (select-instructions x)
                     `(module
                        ()
@@ -454,7 +454,7 @@
      (check-from select-instructions passes x 5))
 
    (let ([x `(module (+ 1 2))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (select-instructions x)
                     `(module
                          ()
@@ -467,7 +467,7 @@
    (let ([x `(module (begin (set! x.1 1)
                             (set! y.1 1)
                             (+ x.1 y.1)))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (select-instructions x)
                   `(module
                        ()
@@ -491,7 +491,7 @@
                             (set! y.1 1)
                             (set! z.1 (+ x.1 y.1))
                             z.1))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (select-instructions x)
                     `(module
                          ()
@@ -510,7 +510,7 @@
                             (set! w.1 x.1)
                             (set! w.1 (+ w.1 z.1))
                             w.1))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (select-instructions x)
                     `(module
                          ()
@@ -530,7 +530,7 @@
    (let ([x `(module (begin (set! x.1 1)
                             (set! y.1 (+ 1 x.1))
                             y.1))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (select-instructions x)
                     `(module
                          ()
@@ -543,7 +543,7 @@
      (check-from select-instructions passes x 2))
 
    (let ([x `(module (begin (+ 1 2)))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (select-instructions x)
                     `(module
                          ()
@@ -921,7 +921,7 @@
                (set! r8 0)
                (set! r12 (+ r12 r8))
                (halt 1))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (patch-instructions x)
                     `(begin
                        (set! r12 0)
@@ -935,7 +935,7 @@
                (set! fv0 0)
                (set! fv0 (+ fv0 1))
                (halt 1))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (patch-instructions x)
                     `(begin
                        (set! fv0 0)
@@ -954,7 +954,7 @@
                (set! fv1 0)
                (set! fv0 (+ fv0 fv1))
                (halt 1))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (patch-instructions x)
                     `(begin
                        (set! fv0 0)
@@ -978,7 +978,7 @@
                (set! r12 (+ r12 r8))
                (set! fv2 (+ fv2 4))
                (halt fv2))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (patch-instructions x)
                     `(begin
                        (set! fv1 7)
@@ -1003,7 +1003,7 @@
                (set! rbx (+ rbx rcx))
                (set! rbx (+ rbx r9))
                (halt rbx))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (patch-instructions x)
                     `(begin
                        (set! rbx 0)
@@ -1020,7 +1020,7 @@
                (set! fv1 5)
                (set! fv0 (+ fv0 fv1))
                (halt fv0))])
-     (test-case "Fragile test; allowed to fail"
+     (fragile-test-case
        (check-match (patch-instructions x)
                     `(begin
                        (set! fv0 2)

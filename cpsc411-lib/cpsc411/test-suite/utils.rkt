@@ -15,6 +15,15 @@
 (define current-actual-decoder (make-parameter (lambda (x) x)))
 (define current-expected-masker (make-parameter (lambda (x) x)))
 
+; Disables fragile/feedback-only tests, typically for grading but also if you
+; just want to.
+(define current-enable-grading (make-parameter #f))
+
+(define-syntax-rule (fragile-test-case e)
+  (test-case "Fragile test; failure allowed"
+    (unless (current-enable-grading)
+      e)))
+
 (define-check (check-validator f e)
   (check-equal? (f e) e))
 
