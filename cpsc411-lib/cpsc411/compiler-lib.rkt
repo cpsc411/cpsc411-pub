@@ -93,7 +93,8 @@
 
 (define (label? s)
   (and (symbol? s)
-       (regexp-match-exact? #rx"L\\..+\\.[0-9]+" (symbol->string s))))
+       (or (eq? s 'done)
+        (regexp-match-exact? #rx"L\\..+\\.[0-9]+" (symbol->string s)))))
 
 (define fresh
   (let ([counter (let ([x 0])
