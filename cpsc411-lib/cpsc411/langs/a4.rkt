@@ -92,7 +92,7 @@
         [((with-label l s) ss ...)
          (let-values ([(defs e) (labelify-begin defs #`(s ss ...))])
            (values
-            (cons #`(r:define (l) #,e) defs)
+            (cons #`(l (lambda () #,e)) defs)
             #`(r:begin (l))))]
         [(s ss ...)
          (if (null? (attribute ss))
@@ -111,12 +111,11 @@
        (syntax->datum
         #`(r:begin
            (let/ec done
-             (r:begin
-              #,@defs
-              (r:define (halt v)
-               (set! rax v)
-               (done))
-              #,e))
+             (letrec (#,@defs
+                      [halt (lambda (v) (set! rax v) (done))])
+               (r:begin
+                #,e
+                (done))))
            rax)))))
 
   (module+ interp
