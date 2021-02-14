@@ -541,8 +541,9 @@ mov rax, rdx")
        (check-resolve-predicates-correct x)))))
 
 (define (a4-expose-basic-blocks-test-suite passes expose-basic-blocks)
-  (define (check-ebb-correct actual source)
-    (check-correct interp-nested-asm-lang-v4 interp-block-asm-lang-v4 source actual))
+  (define (check-ebb-correct source)
+    (check-correct interp-nested-asm-lang-v4 interp-block-pred-lang-v4 source
+                   (expose-basic-blocks source)))
 
   (test-suite
    "a4 expose-basic-blocks tests"
@@ -552,7 +553,7 @@ mov rax, rdx")
       (check-match (expose-basic-blocks x)
                    `(module (define ,L.main.1 (begin (halt 5))))))
 
-     (check-ebb-correct (expose-basic-blocks x) x)
+     (check-ebb-correct x)
 
      (check-from expose-basic-blocks passes x 5))
 
@@ -561,7 +562,7 @@ mov rax, rdx")
       (check-match (expose-basic-blocks x)
                    `(module (define ,L.main.1 (begin (halt 5))))))
 
-     (check-ebb-correct (expose-basic-blocks x) x)
+     (check-ebb-correct x)
 
      (check-from expose-basic-blocks passes x 5))
 
@@ -578,7 +579,7 @@ mov rax, rdx")
                          (set! fv1 2)
                          (set! fv0 (+ fv0 fv1))
                          (halt fv0)))))
-     (check-ebb-correct (expose-basic-blocks x) x)
+     (check-ebb-correct x)
 
      (check-from expose-basic-blocks passes x 3))
 
@@ -596,9 +597,23 @@ mov rax, rdx")
                          (set! fv0 (+ fv0 fv1))
                          (halt fv0)))))
 
-     (check-ebb-correct (expose-basic-blocks x) x)
+     (check-ebb-correct x)
 
-     (check-from expose-basic-blocks passes x 3))))
+     (check-from expose-basic-blocks passes x 3))
+
+
+  (test-case "Something with if and multiple halts"
+    (check-ebb-correct
+     '(module
+          (begin (set! rbx 1)
+                 (set! rcx 2)
+                 (if (< rbx rcx)
+                     (begin (set! rdx 4)
+                            (halt rdx))
+                     (begin (set! rdx 8)
+                            (halt rdx)))))))))
+
+
 
 (define (a4-public-test-suite
          passes
