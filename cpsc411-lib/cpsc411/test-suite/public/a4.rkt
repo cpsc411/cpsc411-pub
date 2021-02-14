@@ -430,6 +430,112 @@ mov rax, rdx")
          (with-label L.tmp.4
            (halt rdx)))))))
 
+(define (a4-resolve-predicates-test-suite passes resolve-predicates)
+  (define (check-resolve-predicates-correct source)
+    (check-correct interp-block-pred-lang-v4 interp-block-asm-lang-v4 source
+                   (resolve-predicates source)))
+
+  (test-suite
+   "a4 resolve-predicates tests"
+
+   (test-suite
+    "trivial predicate"
+    (let ([x '(module
+                (define L.main.1
+                  (begin (set! rbx 1)
+                         (set! rcx 2)
+                         (if (true)
+                             (jump L.t.1)
+                             (jump L.t.2))))
+                (define L.t.1
+                  (begin (set! rdx 4)
+                         (halt rdx)))
+                (define L.t.2
+                  (begin (set! rdx 8)
+                         (halt rdx))))])
+
+      (check-match
+       (resolve-predicates x)
+       `(module
+          (define L.main.1
+            (begin (set! rbx 1)
+                   (set! rcx 2)
+                   (jump L.t.1)))
+          (define L.t.1
+            (begin (set! rdx 4)
+                   (halt rdx)))
+          (define L.t.2
+            (begin (set! rdx 8)
+                   (halt rdx)))))
+
+      (check-resolve-predicates-correct x)))
+
+   (test-suite
+    "trivial predicate"
+    (let ([x '(module
+                (define L.main.1
+                  (begin (set! rbx 1)
+                         (set! rcx 2)
+                         (if (false)
+                             (jump L.t.1)
+                             (jump L.t.2))))
+                (define L.t.1
+                  (begin (set! rdx 4)
+                         (halt rdx)))
+                (define L.t.2
+                  (begin (set! rdx 8)
+                         (halt rdx))))])
+
+      (check-match
+       (resolve-predicates x)
+       `(module
+          (define L.main.1
+            (begin (set! rbx 1)
+                   (set! rcx 2)
+                   (jump L.t.2)))
+          (define L.t.1
+            (begin (set! rdx 4)
+                   (halt rdx)))
+          (define L.t.2
+            (begin (set! rdx 8)
+                   (halt rdx)))))
+
+      (check-resolve-predicates-correct x)))
+
+   (test-suite
+    "switching predicate"
+     (let ([x '(module
+                 (define L.main.1
+                   (begin (set! rbx 1)
+                          (set! rcx 2)
+                          (if (not (< rbx rcx))
+                              (jump L.t.1)
+                              (jump L.t.2))))
+                 (define L.t.1
+                   (begin (set! rdx 4)
+                          (halt rdx)))
+                 (define L.t.2
+                   (begin (set! rdx 8)
+                          (halt rdx))))])
+
+       (check-match
+        (resolve-predicates x)
+        `(module
+           (define L.main.1
+             (begin (set! rbx 1)
+                    (set! rcx 2)
+                    (if (< rbx rcx)
+                        (jump L.t.2)
+                        (jump L.t.1))))
+           (define L.t.1
+             (begin (set! rdx 4)
+                    (halt rdx)))
+           (define L.t.2
+             (begin (set! rdx 8)
+                    (halt rdx)))))
+
+       (check-resolve-predicates-correct x)))))
+
 (define (a4-expose-basic-blocks-test-suite passes expose-basic-blocks)
   (define (check-ebb-correct actual source)
     (check-correct interp-nested-asm-lang-v4 interp-block-asm-lang-v4 source actual))
@@ -560,6 +666,7 @@ mov rax, rdx")
    (a4-generate-x64-test-suite passes interp-paren-x64 generate-x64)
    (a4-patch-instructions-test-suite passes patch-instructions)
    (a4-flatten-program-test-suite passes flatten-program)
+   (a4-resolve-predicates-test-suite passes resolve-predicates)
    (a4-expose-basic-blocks-test-suite passes expose-basic-blocks)))
 
 ;; Local Variables:
