@@ -228,7 +228,8 @@ mov rax, rdx")
   (test-suite
    "a4 patch-instructions tests"
 
-   (test-case "Simple label case without jump"
+   (test-suite
+    "Simple label case without jump"
      (let ([x '(begin
                  (set! rsi L.label.1)
                  (with-label L.label.1
@@ -246,7 +247,8 @@ mov rax, rdx")
        (check-patch-instructions x)))
 
 
-   (test-case "Simple label case with jump"
+   (test-suite
+    "Simple label case with jump"
      (let ([x '(begin
                  (set! rcx L.label.1)
                  (jump rcx)
@@ -265,7 +267,8 @@ mov rax, rdx")
 
        (check-patch-instructions x)))
 
-   (test-case "Moderate single label case"
+   (test-suite
+    "Moderate single label case"
      (let ([x '(begin
                  (set! rdx 9)
                  (set! rcx 18)
@@ -291,7 +294,8 @@ mov rax, rdx")
        (check-patch-instructions x)))
 
    ; or checks could be made more precise
-   (test-case "Complex multiple label case"
+   (test-suite
+    "Complex multiple label case"
      (let ([x '(begin
                  (with-label L.main.51 (set! r14 1))
                  (set! r15 5)
