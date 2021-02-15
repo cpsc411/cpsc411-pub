@@ -66,11 +66,11 @@
               (set! x.1 5)
               (halt x.1))))
         `(module
-           ((locals (x.1)) (undead-out ,u))
+           ,info
            (begin
              (set! x.1 5)
              (halt x.1)))
-        (validate-undead u '((x.1) ())))))
+        (validate-undead (info-ref info 'undead-out) '((x.1) ())))))
 
    (test-case "Simple case with two variables"
      (let ([e '((x.1) (x.1) ())])
