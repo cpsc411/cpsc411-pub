@@ -602,18 +602,32 @@ mov rax, rdx")
      (check-from expose-basic-blocks passes x 3))
 
 
-  (test-case "Something with if and multiple halts"
-    (check-ebb-correct
-     '(module
-          (begin (set! rbx 1)
-                 (set! rcx 2)
-                 (if (< rbx rcx)
-                     (begin (set! rdx 4)
-                            (halt rdx))
-                     (begin (set! rdx 8)
-                            (halt rdx)))))))))
+   (test-suite
+    "Something with if and multiple halts"
+    (let ([x '(module (begin (set! rbx 1)
+                             (set! rcx 2)
+                             (if (< rbx rcx)
+                                 (begin (set! rdx 4)
+                                        (halt rdx))
+                                 (begin (set! rdx 8)
+                                        (halt rdx)))))])
+      (check-match
+       (expose-basic-blocks x)
+       `(module
+          (define ,l2
+            (begin (set! rbx 1)
+                   (set! rcx 2)
+                   (if (< rbx rcx)
+                       (jump ,l3)
+                       (jump ,l4))))
+          (define ,l3
+            (begin (set! rdx 4)
+                   (halt rdx)))
+          (define ,l4
+            (begin (set! rdx 8)
+                   (halt rdx)))))
 
-
+      (check-ebb-correct x)))))
 
 (define (a4-public-test-suite
          passes
