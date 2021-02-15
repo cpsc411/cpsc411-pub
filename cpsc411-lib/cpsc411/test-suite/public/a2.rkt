@@ -449,7 +449,7 @@
      (fragile-test-case
        (check-match (select-instructions x)
                     `(module
-                       ()
+                       ,info
                        (halt 5))))
      (check-from select-instructions passes x 5))
 
@@ -457,7 +457,7 @@
      (fragile-test-case
        (check-match (select-instructions x)
                     `(module
-                         ()
+                         ,info
                          (begin (set! ,tmp 1)
                                 (set! ,tmp (+ ,tmp 2))
                                 (halt ,tmp)))
@@ -468,21 +468,21 @@
                             (set! y.1 1)
                             (+ x.1 y.1)))])
      (fragile-test-case
-       (check-match (select-instructions x)
-                  `(module
-                       ()
-                     (begin (set! x.1 1)
-                            (set! y.1 1)
-                            (set! ,tmp x.1)
-                            (set! ,tmp (+ ,tmp y.1))
-                            (halt ,tmp)))
-                  (andmap aloc? (list tmp))))
+      (check-match (select-instructions x)
+                   `(module
+                        ,info
+                        (begin (set! x.1 1)
+                               (set! y.1 1)
+                               (set! ,tmp x.1)
+                               (set! ,tmp (+ ,tmp y.1))
+                               (halt ,tmp)))
+                   (andmap aloc? (list tmp))))
      (check-from select-instructions passes x 2))
 
    (let ([x `(module (begin (set! x.1 1) x.1))])
      (check-match (select-instructions x)
                   `(module
-                       ()
+                       ,info
                      (begin (set! x.1 1)
                             (halt x.1))))
      (check-from select-instructions passes x 1))
@@ -494,7 +494,7 @@
      (fragile-test-case
        (check-match (select-instructions x)
                     `(module
-                         ()
+                         ,info
                          (begin (set! x.1 1)
                                 (set! y.1 1)
                                 (set! ,tmp x.1)
@@ -513,7 +513,7 @@
      (fragile-test-case
        (check-match (select-instructions x)
                     `(module
-                         ()
+                         ,info
                          (begin (set! x.1 1)
                                 (set! y.1 1)
                                 (set! ,tmp1 x.1)
@@ -533,7 +533,7 @@
      (fragile-test-case
        (check-match (select-instructions x)
                     `(module
-                         ()
+                         ,info
                          (begin (set! x.1 1)
                                 (set! ,tmp 1)
                                 (set! ,tmp (+ ,tmp x.1))
@@ -546,7 +546,7 @@
      (fragile-test-case
        (check-match (select-instructions x)
                     `(module
-                         ()
+                         ,info
                          (begin (set! ,tmp 1)
                                 (set! ,tmp (+ ,tmp 2))
                                 (halt ,tmp)))
@@ -556,7 +556,7 @@
    (let ([x `(module undefined.1)])
      (check-match (select-instructions x)
                   `(module
-                       ()
+                       ,info
                        (halt undefined.1))))))
 
 (define (a2-uncover-locals-test-suite passes uncover-locals)
