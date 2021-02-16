@@ -213,12 +213,19 @@
 
 (define undead-set? (_undead-set? aloc?))
 
+;; TODO: Parameterize by the language features, so we can provide the v1, v4,
+;; and v6 versions.
 (define ((_undead-set-tree? loc?) ust)
   (let ([undead-set? (_undead-set? loc?)]
         [undead-set-tree? (_undead-set-tree? loc?)])
     (match ust
+      ; for an instructions
       [(? undead-set?) #t]
+      ; for a return point
+      [(list (? undead-set?) (? undead-set-tree?)) #t]
+      ; for an if
       [(list (? undead-set?) (? undead-set-tree?) (? undead-set-tree?)) #t]
+      ; for a begin
       [`(,(? undead-set-tree?) ... ,(? undead-set-tree?)) #t]
       [else #f])))
 
