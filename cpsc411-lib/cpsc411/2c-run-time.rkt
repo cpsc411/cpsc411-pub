@@ -97,6 +97,7 @@ section .text
 
 @|start-label|:
   mov @(current-frame-base-pointer-register), rsp
+  mov @(current-return-address-register), done
 @|e|
   ; The result should be a number in RAX
   jmp done
