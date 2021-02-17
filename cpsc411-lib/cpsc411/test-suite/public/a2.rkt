@@ -480,11 +480,12 @@
      (check-from select-instructions passes x 2))
 
    (let ([x `(module (begin (set! x.1 1) x.1))])
-     (check-match (select-instructions x)
-                  `(module
-                       ,info
-                     (begin (set! x.1 1)
-                            (halt x.1))))
+     (fragile-test-case
+       (check-match (select-instructions x)
+                    `(module
+                         ,info
+                       (begin (set! x.1 1)
+                              (halt x.1)))))
      (check-from select-instructions passes x 1))
 
    (let ([x `(module (begin (set! x.1 1)
@@ -554,10 +555,11 @@
      (check-from select-instructions passes x 3))
 
    (let ([x `(module undefined.1)])
-     (check-match (select-instructions x)
-                  `(module
-                       ,info
-                       (halt undefined.1))))))
+     (fragile-test-case
+       (check-match (select-instructions x)
+                    `(module
+                         ,info
+                         (halt undefined.1)))))))
 
 (define (a2-uncover-locals-test-suite passes uncover-locals)
   (test-suite
