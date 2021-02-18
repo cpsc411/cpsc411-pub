@@ -235,6 +235,15 @@
 
 #;(define undead-set-list? (listof undead-set?))
 
+(define (ascii-char-literal? x)
+  (and (char? x) (<= 40 (char->integer x) 176)))
+
+(define (int61? x)
+  (int-size? 61 x))
+
+(define (uint8? x)
+  (<= 0 x 255))
+
 ;; Compiler stuff
 ;; ------------------------------------------------------------------------
 
