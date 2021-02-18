@@ -170,7 +170,7 @@ print_final_paren:
   mov rsi, scratch
   mov BYTE [rsi], ')'
   mov rdx, 1
-  mov rax, @|sys-write|
+  mov rax, @|(sys-write)|
   mov rdi, 1
   syscall
   jmp r13
