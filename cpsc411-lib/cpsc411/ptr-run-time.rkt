@@ -21,8 +21,7 @@
 done:
   mov rax, @(current-return-value-register)
   ; exit after printing.
-  mov rsp, stack
-  add rsp, @(current-stack-size)
+  mov rsp, @(current-frame-base-pointer-register)
   mov r13, exit
 printer:
   mov r10, rax
