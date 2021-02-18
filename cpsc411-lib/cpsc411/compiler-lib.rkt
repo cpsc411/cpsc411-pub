@@ -231,7 +231,7 @@
 
 (define undead-set-tree? (_undead-set-tree? aloc?))
 
-(define undead-set-tree/rloc? (_undead-set-tree? (or/c aloc? register?)))
+(define undead-set-tree/rloc? (_undead-set-tree? (or/c aloc? fvar? register?)))
 
 #;(define undead-set-list? (listof undead-set?))
 
