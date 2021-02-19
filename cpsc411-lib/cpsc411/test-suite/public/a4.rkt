@@ -538,7 +538,17 @@ mov rax, rdx")
              (begin (set! rdx 8)
                     (halt rdx)))))
 
-       (test-resolve-predicates-correct x)))))
+       (test-resolve-predicates-correct x)))
+
+   (test-case "negating constant"
+     (check-equal?
+      (resolve-predicates
+       '(module
+            (define L.start.1
+              (if (not (false))
+                  (jump L.start.1)
+                  (jump L.start.2)))))
+      '(module (define L.start.1 (jump L.start.1)))))))
 
 (define (a4-expose-basic-blocks-test-suite passes expose-basic-blocks)
   (define-check (test-ebb-correct source)
