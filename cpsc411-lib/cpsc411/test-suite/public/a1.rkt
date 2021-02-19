@@ -80,22 +80,22 @@
     "valid programs must be accepted"
 
     (let ([x `(begin (set! rax 5))])
-      (check-validator check-paren-x64 x))
+      (test-begin (check-validator check-paren-x64 x)))
 
     (let ([x `(begin
                 (set! rdi 5)
                 (set! rax rdi))])
-      (check-validator check-paren-x64 x))
+      (test-begin (check-validator check-paren-x64 x)))
 
     (let ([x `(begin
                 (set! rax 4)
                 (set! rax (+ rax 1)))])
-      (check-validator check-paren-x64 x))
+      (test-begin (check-validator check-paren-x64 x)))
 
     (let ([x `(begin
                 (set! rax 4)
                 (set! rax (* rax 2)))])
-      (check-validator check-paren-x64 x))
+      (test-begin (check-validator check-paren-x64 x)))
 
     (let ([x `(begin (set! rax ,(- (expt 2 63) 1)))])
       (test-validator "may set! register <= 2^63 - 1" check-paren-x64 x))

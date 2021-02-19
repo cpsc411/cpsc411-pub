@@ -75,6 +75,22 @@
 (define-check (check-confluent?/upto compiled interpreted expected)
   (check-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
 
+(define-check (test-confluent?/mask decode mask compiled interpreted expected)
+  (test-suite
+   ""
+   (test-begin
+     (unless (equal? (decode compiled) (mask expected))
+       (fail-check "compiled isn't equal to expected")))
+   (test-begin
+     (unless (equal? (decode interpreted) (mask expected))
+       (fail-check "interpreted isn't equal to expected")))
+   (test-begin
+     (unless (equal? (decode compiled) (decode interpreted))
+       (fail-check "compiled isn't equal to interpreted")))))
+
+(define-check (test-confluent?/upto compiled interpreted expected)
+  (test-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
+
 (define-check (check-correct interp1 interp2 source target)
   (with-check-info (['source-interpreter interp1]
                     ['target-interpreter interp2]
@@ -87,6 +103,10 @@
   (parameterize ([current-pass-list (member pass pass-ls)])
     (with-check-info (['pass-ls (member pass pass-ls)])
       (check-equal?/upto (execute actual) expected))))
+
+(define-check (test-from pass pass-ls actual expected)
+  (test-begin
+    (check-from pass pass-ls actual expected)))
 
 (define-check (check-against-ref student-passes ref-passes program)
   (let ([expected (parameterize ([current-pass-list ref-passes])
@@ -108,3 +128,7 @@
 
 (define (unique? lst)
   (not (check-duplicates lst)))
+
+(define-syntax-rule (test-match s ...)
+  (test-begin
+    (check-match s ...)))
