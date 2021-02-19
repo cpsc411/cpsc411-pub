@@ -207,7 +207,7 @@
   (test-suite
    "a3 assign-registers stress tests"
 
-   (test-case "Simple large test"
+   (test-suite "Simple large test"
      (let* ([locals '(v.1 w.2 x.3 y.4 z.5 t.6)]
             [conflicts '((x.3 (z.5 y.4 v.1 w.2))
                          (w.2 (z.5 y.4 v.1 x.3))
@@ -231,8 +231,9 @@
                        (set! t.6 (* t.6 -1))
                        (set! z.5 (+ z.5 t.6))
                        (halt z.5)))])
-       (check-not-exn (thunk (assign-registers p1)))
-       (check-match
+       (test-begin
+         (check-not-exn (thunk (assign-registers p1))))
+       (test-match
         (assign-registers p1)
         `(module
              ,info
