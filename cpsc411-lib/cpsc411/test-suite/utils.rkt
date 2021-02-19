@@ -119,6 +119,18 @@
               student-passes
               (range (length student-passes)))))
 
+(define-check (test-against-ref student-passes ref-passes program)
+  (test-begin
+   (let ([expected (parameterize ([current-pass-list ref-passes])
+                    (execute program))])
+    (for-each (λ (student-pass index)
+                (let ([prefix (take ref-passes index)]
+                      [suffix (drop ref-passes (add1 index))])
+                  (parameterize ([current-pass-list (append prefix (list student-pass) suffix)])
+                    (check-equal? (execute program) expected))))
+              student-passes
+              (range (length student-passes))))))
+
 (define exit-code-mask (lambda (x) (modulo x 256)))
 
 (define-check (check-import-list mod ls)
