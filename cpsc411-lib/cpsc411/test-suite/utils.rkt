@@ -141,6 +141,10 @@
 (define (unique? lst)
   (not (check-duplicates lst)))
 
-(define-syntax-rule (test-match s ...)
-  (test-begin
-    (check-match s ...)))
+(define-syntax (test-match stx)
+  (syntax-case stx ()
+    [(_ s ...)
+     (quasisyntax/loc stx
+       (test-begin
+         #,(quasisyntax/loc stx
+             (check-match s ...))))]))
