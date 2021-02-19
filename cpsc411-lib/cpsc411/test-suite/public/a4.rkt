@@ -11,7 +11,7 @@
 
 (provide (all-defined-out))
 
-(define (test-eq-normal m f e o)
+(define-check (test-eq-normal m f e o)
   (let ([s string-normalize-spaces])
     (test-case m (check-equal? (s (f e)) (s o)))))
 
@@ -20,7 +20,7 @@
    "a4 link-paren-x64 test suite"
 
    (test-case "Single label case"
-     (check-match
+     (test-match
       (link-paren-x64
        '(begin
           (with-label L.test.1 (set! (rbp - 0) 8))
@@ -34,7 +34,7 @@
          (set! rax (* rax (rbp - 0))))))
 
    (test-case "Single label case with jump"
-     (check-match
+     (test-match
       (link-paren-x64
        '(begin
           (with-label L.test.1 (set! r9 7))
@@ -44,7 +44,7 @@
          (jump 0))))
 
    (test-case "Multiple label case with jumps"
-     (check-match
+     (test-match
       (link-paren-x64
        '(begin
           (set! rsp 1)
@@ -64,7 +64,7 @@
          (jump 1))))
 
    (test-case "Complex nested label case"
-     (check-match
+     (test-match
       (link-paren-x64
        '(begin
           (set! rax L.link.1)
@@ -162,9 +162,9 @@
  add rdx, -111
  mov rax, rdx")
 
-     (check-equal? (interp-paren-x64 x) -107)
+     (test-begin (check-equal? (interp-paren-x64 x) -107))
 
-     (check-from generate-x64 passes x -107))
+     (test-from generate-x64 passes x -107))
 
    (let ([x '(begin
                (set! (rbp - 0) 21)
@@ -190,9 +190,9 @@
   mov rax, QWORD [rbp - 0]
   imul rax, QWORD [rbp - 8]")
 
-     (check-equal? (interp-paren-x64 x) 42)
+     (test-begin (check-equal? (interp-paren-x64 x) 42))
 
-     (check-from generate-x64 passes x 42))
+     (test-from generate-x64 passes x 42))
 
    (let ([x '(begin
                (set! rdx 4)
@@ -216,13 +216,13 @@ jmp rcx
 L.testing.4:
 mov rax, rdx")
 
-     (check-equal? (interp-paren-x64 x) 4)
+     (test-begin (check-equal? (interp-paren-x64 x) 4))
 
-     (check-from generate-x64 passes x 4))))
+     (test-from generate-x64 passes x 4))))
 
 (define (a4-patch-instructions-test-suite passes patch-instructions)
-  (define-check (check-patch-instructions x)
-    (check-correct interp-para-asm-lang-v4 interp-paren-x64-fvars-v4
+  (define-check (test-patch-instructions x)
+    (test-correct interp-para-asm-lang-v4 interp-paren-x64-fvars-v4
                    x
                    (patch-instructions x)))
   (test-suite
@@ -235,7 +235,7 @@ mov rax, rdx")
                  (with-label L.label.1
                    (set! rbx 18))
                  (halt rbx))])
-       (check-match
+       (test-match
         (patch-instructions x)
         `(begin
            (set! rsi ,l1)
@@ -244,7 +244,7 @@ mov rax, rdx")
            (set! rax rbx)
            (jump done)))
 
-       (check-patch-instructions x)))
+       (test-patch-instructions x)))
 
 
    (test-suite
@@ -255,7 +255,7 @@ mov rax, rdx")
                  (with-label L.label.1
                    (set! rcx 42))
                  (halt rcx))])
-       (check-match
+       (test-match
         (patch-instructions x)
         `(begin
            (set! rcx L.label.1)
@@ -265,7 +265,7 @@ mov rax, rdx")
            (set! rax rcx)
            (jump done)))
 
-       (check-patch-instructions x)))
+       (test-patch-instructions x)))
 
    (test-suite
     "Moderate single label case"
@@ -278,7 +278,7 @@ mov rax, rdx")
                  (with-label L.label.1
                    (set! rdx 27))
                  (halt rdx))])
-       (check-match
+       (test-match
         (patch-instructions x)
         `(begin
            (set! rdx 9)
@@ -291,7 +291,7 @@ mov rax, rdx")
            (set! rax rdx)
            (jump done)))
 
-       (check-patch-instructions x)))
+       (test-patch-instructions x)))
 
    ; or checks could be made more precise
    (test-suite
@@ -306,7 +306,7 @@ mov rax, rdx")
                  (set! r14 (* r14 r13))
                  (jump L.fact_loop.50)
                  (with-label L.nested.54 (halt r14)))])
-       (check-match
+       (test-match
         (patch-instructions x)
         `(begin
            (with-label L.main.51 (set! r14 1))
@@ -320,7 +320,7 @@ mov rax, rdx")
            (with-label L.nested.54 (set! rax r14))
            (jump done)))
 
-       (check-patch-instructions x)))))
+       (test-patch-instructions x)))))
 
 (define (a4-flatten-program-test-suite passes flatten-program)
   (test-suite
@@ -435,8 +435,8 @@ mov rax, rdx")
            (halt rdx)))))))
 
 (define (a4-resolve-predicates-test-suite passes resolve-predicates)
-  (define (check-resolve-predicates-correct source)
-    (check-correct interp-block-pred-lang-v4 interp-block-asm-lang-v4 source
+  (define-check (test-resolve-predicates-correct source)
+    (test-correct interp-block-pred-lang-v4 interp-block-asm-lang-v4 source
                    (resolve-predicates source)))
 
   (test-suite
@@ -458,7 +458,7 @@ mov rax, rdx")
                   (begin (set! rdx 8)
                          (halt rdx))))])
 
-      (check-match
+      (test-match
        (resolve-predicates x)
        `(module
           (define L.main.1
@@ -472,7 +472,7 @@ mov rax, rdx")
             (begin (set! rdx 8)
                    (halt rdx)))))
 
-      (check-resolve-predicates-correct x)))
+      (test-resolve-predicates-correct x)))
 
    (test-suite
     "trivial predicate"
@@ -490,7 +490,7 @@ mov rax, rdx")
                   (begin (set! rdx 8)
                          (halt rdx))))])
 
-      (check-match
+      (test-match
        (resolve-predicates x)
        `(module
           (define L.main.1
@@ -504,7 +504,7 @@ mov rax, rdx")
             (begin (set! rdx 8)
                    (halt rdx)))))
 
-      (check-resolve-predicates-correct x)))
+      (test-resolve-predicates-correct x)))
 
    (test-suite
     "switching predicate"
@@ -522,7 +522,7 @@ mov rax, rdx")
                    (begin (set! rdx 8)
                           (halt rdx))))])
 
-       (check-match
+       (test-match
         (resolve-predicates x)
         `(module
            (define L.main.1
@@ -538,11 +538,11 @@ mov rax, rdx")
              (begin (set! rdx 8)
                     (halt rdx)))))
 
-       (check-resolve-predicates-correct x)))))
+       (test-resolve-predicates-correct x)))))
 
 (define (a4-expose-basic-blocks-test-suite passes expose-basic-blocks)
-  (define (check-ebb-correct source)
-    (check-correct interp-nested-asm-lang-v4 interp-block-pred-lang-v4 source
+  (define-check (test-ebb-correct source)
+    (test-correct interp-nested-asm-lang-v4 interp-block-pred-lang-v4 source
                    (expose-basic-blocks source)))
 
   (test-suite
@@ -550,28 +550,28 @@ mov rax, rdx")
 
    (let ([x `(module (begin (halt 5)))])
      (fragile-test-case
-      (check-match (expose-basic-blocks x)
+      (test-match (expose-basic-blocks x)
                    `(module (define ,L.main.1 (begin (halt 5))))))
 
-     (check-ebb-correct x)
+     (test-ebb-correct x)
 
-     (check-from expose-basic-blocks passes x 5))
+     (test-from expose-basic-blocks passes x 5))
 
    (let ([x `(module (begin (begin (halt 5))))])
      (fragile-test-case
-      (check-match (expose-basic-blocks x)
+      (test-match (expose-basic-blocks x)
                    `(module (define ,L.main.1 (begin (halt 5))))))
 
-     (check-ebb-correct x)
+     (test-ebb-correct x)
 
-     (check-from expose-basic-blocks passes x 5))
+     (test-from expose-basic-blocks passes x 5))
 
    (let ([x `(module
                (begin (begin (set! fv0 1)
                              (set! fv1 2))
                       (set! fv0 (+ fv0 fv1))
                       (halt fv0)))])
-     (check-match (expose-basic-blocks x)
+     (test-match (expose-basic-blocks x)
                   `(module
                      (define ,L.main.1
                        (begin
@@ -579,16 +579,16 @@ mov rax, rdx")
                          (set! fv1 2)
                          (set! fv0 (+ fv0 fv1))
                          (halt fv0)))))
-     (check-ebb-correct x)
+     (test-ebb-correct x)
 
-     (check-from expose-basic-blocks passes x 3))
+     (test-from expose-basic-blocks passes x 3))
 
    (let ([x `(module
                (begin (begin (set! fv0 1)
                              (set! fv1 2))
                       (begin (begin (set! fv0 (+ fv0 fv1))))
                       (halt fv0)))])
-     (check-match (expose-basic-blocks x)
+     (test-match (expose-basic-blocks x)
                   `(module
                      (define ,L.main.1
                        (begin
@@ -597,9 +597,9 @@ mov rax, rdx")
                          (set! fv0 (+ fv0 fv1))
                          (halt fv0)))))
 
-     (check-ebb-correct x)
+     (test-ebb-correct x)
 
-     (check-from expose-basic-blocks passes x 3))
+     (test-from expose-basic-blocks passes x 3))
 
 
    (test-suite
@@ -611,7 +611,7 @@ mov rax, rdx")
                                         (halt rdx))
                                  (begin (set! rdx 8)
                                         (halt rdx)))))])
-      (check-match
+      (test-match
        (expose-basic-blocks x)
        `(module
           (define ,l2
@@ -627,7 +627,7 @@ mov rax, rdx")
             (begin (set! rdx 8)
                    (halt rdx)))))
 
-      (check-ebb-correct x)))))
+      (test-ebb-correct x)))))
 
 (define (a4-public-test-suite
          passes

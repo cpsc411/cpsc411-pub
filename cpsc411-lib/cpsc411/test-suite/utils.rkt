@@ -99,6 +99,15 @@
     (with-handlers ([values (lambda (e) (fail (exn-message e)))])
       (check-equal? (interp2 target) (interp1 source)))))
 
+(define-check (test-correct interp1 interp2 source target)
+  (test-begin
+    (with-check-info (['source-interpreter interp1]
+                      ['target-interpreter interp2]
+                      ['source source]
+                      ['target target])
+      (with-handlers ([values (lambda (e) (fail (exn-message e)))])
+        (check-equal? (interp2 target) (interp1 source))))))
+
 (define-check (check-from pass pass-ls actual expected)
   (parameterize ([current-pass-list (member pass pass-ls)])
     (with-check-info (['pass-ls (member pass pass-ls)])
