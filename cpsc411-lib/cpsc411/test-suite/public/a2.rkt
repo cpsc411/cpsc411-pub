@@ -1036,7 +1036,19 @@
                     (and (andmap (curryr memv (current-patch-instructions-registers))
                                  (list p1 p2))
                          #t)))
-     (test-from patch-instructions passes x 7))))
+     (test-from patch-instructions passes x 7))
+
+   (test-case "Set fvar to max int64 val"
+     (check-match
+      (patch-instructions
+       '(begin (set! fv0 2147483648) (halt 12)))
+      `(begin
+         (set! ,reg 2147483648)
+         (set! fv0 ,reg)
+         (set! ,rax 12)
+         ,_ ...)
+      (and (eq? rax (current-return-value-register))
+           (memq reg (current-auxiliary-registers)))))))
 
 (define (a2-implement-fvars-test-suite passes implement-fvars)
   (test-suite

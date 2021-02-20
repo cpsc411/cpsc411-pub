@@ -320,7 +320,21 @@ mov rax, rdx")
            (with-label L.nested.54 (set! rax r14))
            (jump done)))
 
-       (test-patch-instructions x)))))
+       (test-patch-instructions x)))
+
+   (test-case
+       "compare register and fvar"
+     (check-match
+      (patch-instructions
+       '(begin (compare rax fv0) (halt 12)))
+      `(begin
+         (set! ,reg fv0)
+         (compare rax ,reg)
+         (set! ,rax 12)
+         (jump done))
+      (and (eq? rax  (current-return-value-register))
+           (memq reg (current-auxiliary-registers))
+           #t)))))
 
 (define (a4-flatten-program-test-suite passes flatten-program)
   (test-suite
