@@ -128,17 +128,25 @@
               student-passes
               (range (length student-passes)))))
 
-(define-check (test-against-ref student-passes ref-passes program)
-  (test-begin
-   (let ([expected (parameterize ([current-pass-list ref-passes])
-                    (execute program))])
-    (for-each (λ (student-pass index)
-                (let ([prefix (take ref-passes index)]
-                      [suffix (drop ref-passes (add1 index))])
-                  (parameterize ([current-pass-list (append prefix (list student-pass) suffix)])
-                    (check-equal? (execute program) expected))))
-              student-passes
-              (range (length student-passes))))))
+(define (test-against-ref student-passes ref-passes program)
+  (make-test-suite
+   ""
+   (map (λ (student-pass index)
+          (let ([prefix (take ref-passes index)]
+                [suffix (drop ref-passes (add1 index))])
+            (test-suite
+             ""
+             (test-case ""
+               (let ([expected (parameterize ([current-pass-list ref-passes])
+                                 (execute program))])
+                 (parameterize ([current-pass-list (append prefix (list student-pass) suffix)])
+                   (check-equal? (execute program) expected)))))))
+        student-passes
+        (range (length student-passes)))))
+  #;(syntax-case stx ()
+    [(_ student-passes ref-passes program)
+     (quasisyntax/loc stx
+       )])
 
 (define exit-code-mask (lambda (x) (modulo x 256)))
 
