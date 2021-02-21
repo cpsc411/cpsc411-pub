@@ -28,10 +28,10 @@
   (check-equal? (f e) e))
 
 (define-check (test-validator name f e)
-  (test-case name (check-validator f e)))
+  (test-suite name (check-validator f e)))
 
 (define-check (test-validator-exn name f e)
-  (test-case name (check-validator-exn f e)))
+  (test-suite name (check-validator-exn f e)))
 
 (define-check (check-validator-exn f e)
   (with-check-info (['validator f]
@@ -78,13 +78,13 @@
 (define-check (test-confluent?/mask decode mask compiled interpreted expected)
   (test-suite
    ""
-   (test-begin
+   (test-suite ""
      (unless (equal? (decode compiled) (mask expected))
        (fail-check "compiled isn't equal to expected")))
-   (test-begin
+   (test-suite ""
      (unless (equal? (decode interpreted) (mask expected))
        (fail-check "interpreted isn't equal to expected")))
-   (test-begin
+   (test-suite ""
      (unless (equal? (decode compiled) (decode interpreted))
        (fail-check "compiled isn't equal to interpreted")))))
 
@@ -100,7 +100,7 @@
       (check-equal? (interp2 target) (interp1 source)))))
 
 (define-check (test-correct interp1 interp2 source target)
-  (test-begin
+  (test-suite ""
     (with-check-info (['source-interpreter interp1]
                       ['target-interpreter interp2]
                       ['source source]
@@ -114,7 +114,7 @@
       (check-equal?/upto (execute actual) expected))))
 
 (define-check (test-from pass pass-ls actual expected)
-  (test-begin
+  (test-suite ""
     (check-from pass pass-ls actual expected)))
 
 (define-check (check-against-ref student-passes ref-passes program)
