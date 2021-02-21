@@ -325,7 +325,7 @@
                             (set! y.1 (+ 1 x.1))
                             y.1))])
      (fragile-test-case
-       (test-match (canonicalize-bind x)
+       (check-match (canonicalize-bind x)
                     `(module (begin (set! x.1 (+ 5 6))
                                     (set! y.1 (+ 1 x.1))
                                     y.1))))
@@ -338,7 +338,7 @@
                                              y.1))
                             x.1))])
      (fragile-test-case
-       (test-match (canonicalize-bind x)
+       (check-match (canonicalize-bind x)
                     `(module (begin (begin (set! y.1 1)
                                            (set! x.1 y.1))
                                     x.1))))
@@ -354,7 +354,7 @@
                                     y.4))
                    x.3))])
      (fragile-test-case
-       (test-match (canonicalize-bind x)
+       (check-match (canonicalize-bind x)
                     `(module
                          (begin
                            (begin
@@ -379,7 +379,7 @@
                              (set! x.4 2) x.4))
                      2)))])
      (fragile-test-case
-       (test-match (canonicalize-bind x)
+       (check-match (canonicalize-bind x)
                     `(module
                          (begin
                            (set! x.6 2)
@@ -426,7 +426,7 @@
                                     y.4))
                    x.3))])
      (fragile-test-case
-       (test-match (canonicalize-bind x)
+       (check-match (canonicalize-bind x)
                     `(module
                          (begin
                            (begin
@@ -447,7 +447,7 @@
 
    (let ([x `(module 5)])
      (fragile-test-case
-       (test-match (select-instructions x)
+       (check-match (select-instructions x)
                     `(module
                        ,info
                        (halt 5))))
@@ -455,7 +455,7 @@
 
    (let ([x `(module (+ 1 2))])
      (fragile-test-case
-       (test-match (select-instructions x)
+       (check-match (select-instructions x)
                     `(module
                          ,info
                          (begin (set! ,tmp 1)
@@ -468,7 +468,7 @@
                             (set! y.1 1)
                             (+ x.1 y.1)))])
      (fragile-test-case
-      (test-match (select-instructions x)
+      (check-match (select-instructions x)
                    `(module
                         ,info
                         (begin (set! x.1 1)
@@ -481,7 +481,7 @@
 
    (let ([x `(module (begin (set! x.1 1) x.1))])
      (fragile-test-case
-       (test-match (select-instructions x)
+       (check-match (select-instructions x)
                     `(module
                          ,info
                        (begin (set! x.1 1)
@@ -493,7 +493,7 @@
                             (set! z.1 (+ x.1 y.1))
                             z.1))])
      (fragile-test-case
-       (test-match (select-instructions x)
+       (check-match (select-instructions x)
                     `(module
                          ,info
                          (begin (set! x.1 1)
@@ -512,7 +512,7 @@
                             (set! w.1 (+ w.1 z.1))
                             w.1))])
      (fragile-test-case
-       (test-match (select-instructions x)
+       (check-match (select-instructions x)
                     `(module
                          ,info
                          (begin (set! x.1 1)
@@ -532,7 +532,7 @@
                             (set! y.1 (+ 1 x.1))
                             y.1))])
      (fragile-test-case
-       (test-match (select-instructions x)
+       (check-match (select-instructions x)
                     `(module
                          ,info
                          (begin (set! x.1 1)
@@ -545,7 +545,7 @@
 
    (let ([x `(module (begin (+ 1 2)))])
      (fragile-test-case
-       (test-match (select-instructions x)
+       (check-match (select-instructions x)
                     `(module
                          ,info
                          (begin (set! ,tmp 1)
@@ -556,7 +556,7 @@
 
    (let ([x `(module undefined.1)])
      (fragile-test-case
-       (test-match (select-instructions x)
+       (check-match (select-instructions x)
                     `(module
                          ,info
                          (halt undefined.1)))))))
@@ -924,7 +924,7 @@
                (set! r12 (+ r12 r8))
                (halt 1))])
      (fragile-test-case
-       (test-match (patch-instructions x)
+       (check-match (patch-instructions x)
                     `(begin
                        (set! r12 0)
                        (set! r8 0)
@@ -938,7 +938,7 @@
                (set! fv0 (+ fv0 1))
                (halt 1))])
      (fragile-test-case
-       (test-match (patch-instructions x)
+       (check-match (patch-instructions x)
                     `(begin
                        (set! fv0 0)
                        (set! ,p1 fv0)
@@ -957,7 +957,7 @@
                (set! fv0 (+ fv0 fv1))
                (halt 1))])
      (fragile-test-case
-       (test-match (patch-instructions x)
+       (check-match (patch-instructions x)
                     `(begin
                        (set! fv0 0)
                        (set! fv1 0)
@@ -981,7 +981,7 @@
                (set! fv2 (+ fv2 4))
                (halt fv2))])
      (fragile-test-case
-       (test-match (patch-instructions x)
+       (check-match (patch-instructions x)
                     `(begin
                        (set! fv1 7)
                        (set! fv2 0)
@@ -1006,7 +1006,7 @@
                (set! rbx (+ rbx r9))
                (halt rbx))])
      (fragile-test-case
-       (test-match (patch-instructions x)
+       (check-match (patch-instructions x)
                     `(begin
                        (set! rbx 0)
                        (set! rcx 0)
@@ -1023,7 +1023,7 @@
                (set! fv0 (+ fv0 fv1))
                (halt fv0))])
      (fragile-test-case
-       (test-match (patch-instructions x)
+       (check-match (patch-instructions x)
                     `(begin
                        (set! fv0 2)
                        (set! fv1 5)
