@@ -1048,7 +1048,8 @@
          (set! ,rax 12)
          ,_ ...)
       (and (eq? rax (current-return-value-register))
-           (memq reg (current-auxiliary-registers)))))))
+           (memq reg (current-auxiliary-registers))
+           #t)))))
 
 (define (a2-implement-fvars-test-suite passes implement-fvars)
   (test-suite
