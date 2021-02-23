@@ -96,6 +96,18 @@
        (or (eq? s 'done)
         (regexp-match-exact? #rx"L\\..+\\.[0-9]+" (symbol->string s)))))
 
+(define (allowed-character? c)
+  (and (member c (string->list "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_#@~.?"))
+       #t))
+
+(define (sanitize-label l)
+  (string-append*
+   (map (λ (c)
+          (if (allowed-character? c)
+              (string c)
+              (format "$~x$" (char->integer c))))
+        (string->list (symbol->string l)))))
+
 (define fresh
   (let ([counter (let ([x 0])
                    (lambda ()

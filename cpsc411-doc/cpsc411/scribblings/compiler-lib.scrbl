@@ -59,7 +59,7 @@ target machine, and @racket[#f] otherwise.
 
 @defproc[(label? [v any/c]) boolean?]{
 A predicate that returns @racket[#t] when @racket[v] is a valid label in
-@tt{nasm} and in the CPSC411 languages.
+in the CPSC411 languages.
 
 @examples[#:eval eg
 (label? 'L.start.1)
@@ -78,6 +78,17 @@ generated.
 (fresh-label)
 (fresh-label)
 (fresh-label)
+]
+}
+
+@defproc[(sanitize-label [l label?]) string?]{
+Transform @racket[l] into a string that is valid as a @tt{nasm} label, escaping
+any special characters.
+
+@examples[
+#:eval eg
+(sanitize-label 'L.main.1)
+(sanitize-label 'L.$!!@#*main.2)
 ]
 }
 
