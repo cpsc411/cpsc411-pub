@@ -337,21 +337,28 @@ mov rax, rdx")
            #t)))))
 
 (define (a4-flatten-program-test-suite passes flatten-program)
+  (define-check (test-flatten-correct x)
+    (test-correct interp-block-asm-lang-v4 interp-para-asm-lang-v4
+                  x
+                  (flatten-program x)))
+
   (test-suite
    "a4 flatten-program tests"
 
    (test-case "Simple case"
-     (check-equal?
+     (check-match
       (flatten-program
        '(module
           (define L.x.1
             (halt 123))))
-      '(begin
-         (with-label L.x.1
-           (halt 123)))))
+      `(begin
+         ,(or
+           `(with-label L.x.1
+              (halt 123))
+           `(halt 123)))))
 
    (test-case "Simple case with jump"
-     (check-equal?
+     (check-match
       (flatten-program
        '(module
           (define L.x.0
@@ -361,16 +368,18 @@ mov rax, rdx")
               (jump L.x.1)))
           (define L.x.1
             (halt rsi))))
-      '(begin
-         (with-label L.x.0
-           (set! rsi 123))
+      `(begin
+         ,(or
+           `(with-label L.x.0
+              (set! rsi 123))
+           `(set! rsi 123))
          (set! rsi (+ rsi 1))
          (jump L.x.1)
          (with-label L.x.1
            (halt rsi)))))
 
    (test-case "Simple case with two blocks"
-     (check-equal?
+     (check-match
       (flatten-program
        '(module
           (define L.x.1
@@ -381,14 +390,16 @@ mov rax, rdx")
             (begin
               (set! rcx rcx)
               (halt 0)))))
-      '(begin
-         (with-label L.x.1 (set! rcx rcx))
+      `(begin
+         ,(or
+           `(with-label L.x.1 (set! rcx rcx))
+           `(set! rcx rcx))
          (jump L.x.1)
          (with-label L.x.2 (set! rcx rcx))
          (halt 0))))
 
    (test-case "Complex case"
-     (check-equal?
+     (check-match
       (flatten-program
        `(module
           (define L.tmp.1
@@ -403,8 +414,10 @@ mov rax, rdx")
             (begin
               (halt rdx)))))
       `(begin
-         (with-label L.tmp.1
-           (set! rdx 42))
+         ,(or
+           `(with-label L.tmp.1
+              (set! rdx 42))
+           `(set! rdx 42))
          (set! rdx 20)
          (set! rdx (+ rdx rdx))
          (jump L.tmp.2)
@@ -412,7 +425,7 @@ mov rax, rdx")
            (halt rdx)))))
 
    (test-case "Complex case"
-     (check-equal?
+     (check-match
       (flatten-program
        `(module
           (define
@@ -434,8 +447,10 @@ mov rax, rdx")
             L.tmp.4
             (halt rdx))))
       `(begin
-         (with-label L.tmp.1
-           (set! rdx 42))
+         ,(or
+           `(with-label L.tmp.1
+              (set! rdx 42))
+           `(set! rdx 42))
          (compare rdx 43)
          (jump-if > L.tmp.2)
          (jump L.tmp.3)
