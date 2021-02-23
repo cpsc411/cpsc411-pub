@@ -77,20 +77,20 @@
 (define-check (check-confluent?/upto compiled interpreted expected)
   (check-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
 
-(define-check (test-confluent?/mask decode mask compiled interpreted expected)
+(define-syntax-rule (test-confluent?/mask decode mask compiled interpreted expected)
   (test-suite
    ""
-   (test-suite ""
+   (test-begin
      (unless (equal? (decode compiled) (mask expected))
        (fail-check "compiled isn't equal to expected")))
-   (test-suite ""
+   (test-begin
      (unless (equal? (decode interpreted) (mask expected))
        (fail-check "interpreted isn't equal to expected")))
-   (test-suite ""
+   (test-begin
      (unless (equal? (decode compiled) (decode interpreted))
        (fail-check "compiled isn't equal to interpreted")))))
 
-(define-check (test-confluent?/upto compiled interpreted expected)
+(define-syntax-rule (test-confluent?/upto compiled interpreted expected)
   (test-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
 
 (define-check (check-correct interp1 interp2 source target)
@@ -102,13 +102,15 @@
       (check-equal? (interp2 target) (interp1 source)))))
 
 (define-check (test-correct interp1 interp2 source target)
-  (test-suite ""
-    (with-check-info (['source-interpreter interp1]
-                      ['target-interpreter interp2]
-                      ['source source]
-                      ['target target])
-      (with-handlers ([values (lambda (e) (fail (exn-message e)))])
-        (check-equal? (interp2 target) (interp1 source))))))
+  (test-suite
+   ""
+   (test-begin
+     (with-check-info (['source-interpreter interp1]
+                       ['target-interpreter interp2]
+                       ['source source]
+                       ['target target])
+       (with-handlers ([values (lambda (e) (fail (exn-message e)))])
+         (check-equal? (interp2 target) (interp1 source)))))))
 
 (define-check (check-from pass pass-ls actual expected)
   (parameterize ([current-pass-list (member pass pass-ls)])
@@ -117,7 +119,7 @@
 
 (define-check (test-from pass pass-ls actual expected)
   (test-suite ""
-    (check-from pass pass-ls actual expected)))
+    (test-begin (check-from pass pass-ls actual expected))))
 
 (define-check (check-against-ref student-passes ref-passes program)
   (let ([expected (parameterize ([current-pass-list ref-passes])
@@ -130,7 +132,7 @@
               student-passes
               (range (length student-passes)))))
 
-(define (test-against-ref student-passes ref-passes program)
+(define-check (test-against-ref student-passes ref-passes program)
   (test-suite
    ""
    (test-begin
@@ -162,6 +164,7 @@
   (syntax-case stx ()
     [(_ s ...)
      (quasisyntax/loc stx
-       (test-begin
+       (test-suite
+        ""
          #,(quasisyntax/loc stx
-             (check-match s ...))))]))
+             (test-begin (check-match s ...)))))]))
