@@ -81,14 +81,32 @@
   (test-suite
    ""
    (test-begin
-     (unless (equal? (decode compiled) (mask expected))
-       (fail-check "compiled isn't equal to expected")))
+     (with-check-info (['raw-compiled compiled]
+                       ['raw-expected expected]
+                       ['decode-actual decode]
+                       ['mask-expected mask]
+                       ['compiled-decoded (decode compiled)]
+                       ['expected-masked (mask expected)])
+       (unless (equal? (decode compiled) (mask expected))
+         (fail-check "compiled isn't equal to expected"))))
    (test-begin
-     (unless (equal? (decode interpreted) (mask expected))
-       (fail-check "interpreted isn't equal to expected")))
+     (with-check-info (['raw-interpreted interpreted]
+                       ['raw-expected expected]
+                       ['decode-actual decode]
+                       ['mask-expected mask]
+                       ['interpreted-decoded (decode interpreted)]
+                       ['expected-masked (mask expected)])
+       (unless (equal? (decode interpreted) (mask expected))
+       (fail-check "interpreted isn't equal to expected"))))
    (test-begin
-     (unless (equal? (decode compiled) (decode interpreted))
-       (fail-check "compiled isn't equal to interpreted")))))
+     (with-check-info (['raw-compiled compiled]
+                       ['raw-interpreted interpreted]
+                       ['decode-actual decode]
+                       ['mask-expected mask]
+                       ['compiled-decoded (decode compiled)]
+                       ['interpreted-decoded (decode interpreted)])
+       (unless (equal? (decode compiled) (decode interpreted))
+         (fail-check "compiled isn't equal to interpreted"))))))
 
 (define-syntax-rule (test-confluent?/upto compiled interpreted expected)
   (test-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
