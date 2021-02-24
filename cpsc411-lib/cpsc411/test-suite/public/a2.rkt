@@ -225,7 +225,7 @@
      (test-from uniquify passes x 7))))
 
 (define (a2-sequentialize-let-test-suite passes sequentialize-let)
-  (define-check (test-seqlet-correct actual source)
+  (define-syntax-rule (test-seqlet-correct actual source)
     (test-correct interp-values-lang-unique-v3 interp-mf-lang-v3 source actual))
 
   (test-suite
@@ -307,7 +307,7 @@
      (test-from sequentialize-let passes x 20))))
 
 (define (a2-canonicalize-bind-test-suite passes canonicalize-bind)
-  (define-check (test-canonicalize-bind-correct actual source)
+  (define-syntax-rule (test-canonicalize-bind-correct actual source)
     (test-correct interp-mf-lang-v3 interp-cmf-lang-v3 source actual))
 
   (test-suite

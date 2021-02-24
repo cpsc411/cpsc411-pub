@@ -134,7 +134,7 @@
     (with-handlers ([values (lambda (e) (fail (exn-message e)))])
       (check-equal? (interp2 target) (interp1 source)))))
 
-(define-check (test-correct interp1 interp2 source target)
+(define-syntax-rule (test-correct interp1 interp2 source target)
   (test-suite
    ""
    (test-begin
