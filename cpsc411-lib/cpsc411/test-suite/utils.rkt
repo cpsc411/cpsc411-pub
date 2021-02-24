@@ -20,11 +20,11 @@
 (define current-enable-grading (make-parameter #f))
 
 (define-syntax-rule (fragile-test-case e)
-  (make-test-suite
-   "Fragile test; failure allowed"
-   (if (current-enable-grading)
-       (list (test-suite "" e))
-       '())))
+  (if (current-enable-grading)
+      (test-suite "")
+      (test-suite
+       "Fragile test; failure allowed"
+       (test-begin e))))
 
 (define-check (check-validator f e)
   (check-equal? (f e) e))
