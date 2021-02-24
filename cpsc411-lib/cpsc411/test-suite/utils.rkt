@@ -27,13 +27,20 @@
        (test-begin e))))
 
 (define-check (check-validator f e)
-  (check-equal? (f e) e))
+  (with-check-info (['validator f]
+                    ['source e])
+    (with-handlers ([values (lambda (e)
+                             (fail (exn-message e)))])
+      (check-equal? (f e) e))))
 
 (define-check (test-validator name f e)
-  (test-suite name (check-validator f e)))
+  (test-suite
+   name
+   (test-begin
+     (check-validator f e))))
 
 (define-check (test-validator-exn name f e)
-  (test-suite name (check-validator-exn f e)))
+  (test-suite name (test-begin (check-validator-exn f e))))
 
 (define-check (check-validator-exn f e)
   (with-check-info (['validator f]
@@ -77,36 +84,44 @@
 (define-check (check-confluent?/upto compiled interpreted expected)
   (check-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
 
-(define-syntax-rule (test-confluent?/mask decode mask compiled interpreted expected)
-  (test-suite
-   ""
-   (test-begin
-     (with-check-info (['raw-compiled compiled]
-                       ['raw-expected expected]
-                       ['decode-actual decode]
-                       ['mask-expected mask]
-                       ['compiled-decoded (decode compiled)]
-                       ['expected-masked (mask expected)])
-       (unless (equal? (decode compiled) (mask expected))
-         (fail-check "compiled isn't equal to expected"))))
-   (test-begin
-     (with-check-info (['raw-interpreted interpreted]
-                       ['raw-expected expected]
-                       ['decode-actual decode]
-                       ['mask-expected mask]
-                       ['interpreted-decoded (decode interpreted)]
-                       ['expected-masked (mask expected)])
-       (unless (equal? (decode interpreted) (mask expected))
-       (fail-check "interpreted isn't equal to expected"))))
-   (test-begin
-     (with-check-info (['raw-compiled compiled]
-                       ['raw-interpreted interpreted]
-                       ['decode-actual decode]
-                       ['mask-expected mask]
-                       ['compiled-decoded (decode compiled)]
-                       ['interpreted-decoded (decode interpreted)])
-       (unless (equal? (decode compiled) (decode interpreted))
-         (fail-check "compiled isn't equal to interpreted"))))))
+(define-syntax (test-confluent?/mask stx)
+  (syntax-case stx ()
+    [(_ decode mask compiled interpreted expected)
+     (quasisyntax/loc stx
+       (test-suite
+        ""
+        (test-begin
+          (with-handlers ([values (lambda (e) #,(quasisyntax/loc stx
+                                                 (fail (exn-message e))))])
+            (with-check-info (['raw-compiled compiled]
+                              ['raw-expected expected]
+                              ['decode-actual decode]
+                              ['mask-expected mask]
+                              ['compiled-decoded (decode compiled)]
+                              ['expected-masked (mask expected)])
+              (check-equal? (decode compiled) (mask expected)))))
+
+        (test-begin
+          (with-handlers ([values (lambda (e) #,(quasisyntax/loc stx
+                                                  (fail (exn-message e))))])
+            (with-check-info (['raw-interpreted interpreted]
+                              ['raw-expected expected]
+                              ['decode-actual decode]
+                              ['mask-expected mask]
+                              ['interpreted-decoded (decode interpreted)]
+                              ['expected-masked (mask expected)])
+              (check-equal? (decode interpreted) (mask expected)))))
+
+        (test-begin
+          (with-handlers ([values (lambda (e) #,(quasisyntax/loc stx
+                                                  (fail (exn-message e))))])
+            (with-check-info (['raw-compiled compiled]
+                              ['raw-interpreted interpreted]
+                              ['decode-actual decode]
+                              ['mask-expected mask]
+                              ['compiled-decoded (decode compiled)]
+                              ['interpreted-decoded (decode interpreted)])
+              (check-equal? (decode compiled) (decode interpreted)))))))]))
 
 (define-syntax-rule (test-confluent?/upto compiled interpreted expected)
   (test-confluent?/mask (current-actual-decoder) (current-expected-masker) compiled interpreted expected))
