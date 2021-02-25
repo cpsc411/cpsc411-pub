@@ -134,25 +134,35 @@
     (with-handlers ([values (lambda (e) (fail (exn-message e)))])
       (check-equal? (interp2 target) (interp1 source)))))
 
-(define-syntax-rule (test-correct interp1 interp2 source target)
-  (test-suite
-   ""
-   (test-begin
-     (with-check-info (['source-interpreter interp1]
-                       ['target-interpreter interp2]
-                       ['source source]
-                       ['target target])
-       (with-handlers ([values (lambda (e) (fail (exn-message e)))])
-         (check-equal? (interp2 target) (interp1 source)))))))
+(define-syntax (test-correct stx)
+  (syntax-case stx ()
+    [(_  interp1 interp2 s t)
+     (quasisyntax/loc stx
+       (test-begin
+         (with-check-info (['source-interpreter interp1]
+                           ['target-interpreter interp2]
+                           ['source s]
+                           ['target t]
+                           ['name 'test-correct])
+           (with-handlers ([values (lambda (e)
+                                     #,(quasisyntax/loc stx
+                                         (fail (exn-message e))))])
+             #,(quasisyntax/loc stx
+                 (check-equal? (interp2 t) (interp1 s)))))))]))
 
 (define-check (check-from pass pass-ls actual expected)
   (parameterize ([current-pass-list (member pass pass-ls)])
     (with-check-info (['pass-ls (member pass pass-ls)])
-      (check-equal?/upto (execute actual) expected))))
+      (with-handlers ([values (lambda (e) (fail (exn-message e)))])
+        (check-equal?/upto (execute actual) expected)))))
 
-(define-check (test-from pass pass-ls actual expected)
-  (test-suite ""
-    (test-begin (check-from pass pass-ls actual expected))))
+(define-syntax (test-from stx)
+  (syntax-case stx ()
+    [(_ pass pass-ls actual expected)
+     (quasisyntax/loc stx
+       (test-begin
+         #,(quasisyntax/loc stx
+             (check-from pass pass-ls actual expected))))]))
 
 (define-check (check-against-ref student-passes ref-passes program)
   (let ([expected (parameterize ([current-pass-list ref-passes])
@@ -165,9 +175,7 @@
               student-passes
               (range (length student-passes)))))
 
-(define-check (test-against-ref student-passes ref-passes program)
-  (test-suite
-   ""
+(define-syntax-rule (test-against-ref student-passes ref-passes program)
    (test-begin
      (let ([expected (parameterize ([current-pass-list ref-passes])
                      (execute program))])
@@ -177,7 +185,7 @@
                    (parameterize ([current-pass-list (append prefix (list student-pass) suffix)])
                      (check-equal? (execute program) expected))))
                student-passes
-               (range (length student-passes)))))))
+               (range (length student-passes))))))
   #;(syntax-case stx ()
     [(_ student-passes ref-passes program)
      (quasisyntax/loc stx
@@ -197,7 +205,5 @@
   (syntax-case stx ()
     [(_ s ...)
      (quasisyntax/loc stx
-       (test-suite
-        ""
          #,(quasisyntax/loc stx
-             (test-begin (check-match s ...)))))]))
+             (test-begin (check-match s ...))))]))

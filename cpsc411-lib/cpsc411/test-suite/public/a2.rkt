@@ -65,7 +65,7 @@
       (test-begin (check-validator check-values-lang x))))))
 
 (define (a2-uniquify-test-suite passes uniquify)
-  (define-check (test-uniquify-correct actual source)
+  (define-syntax-rule (test-uniquify-correct actual source)
     (test-correct interp-values-lang-v3 interp-values-lang-unique-v3 source actual))
 
   (test-suite
