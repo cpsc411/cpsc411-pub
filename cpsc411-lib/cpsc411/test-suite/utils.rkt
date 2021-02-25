@@ -21,10 +21,9 @@
 
 (define-syntax-rule (fragile-test-case e)
   (if (current-enable-grading)
-      (test-suite "")
-      (test-suite
-       "Fragile test; failure allowed"
-       (test-begin e))))
+      (void)
+      (test-case "Fragile test; failure allowed"
+        e)))
 
 (define-check (check-validator f e)
   (with-check-info (['validator f]
