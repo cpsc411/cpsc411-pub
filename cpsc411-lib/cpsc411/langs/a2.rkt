@@ -10,8 +10,11 @@
    (all-from-out "base.rkt")
    (all-defined-out))
 
-  (define-syntax-rule (module tail)
-    (begin tail))
+  (define-syntax-rule (module (define l body) ... tail)
+    (letrec ([l body] ...) tail))
+
+  (define (call f . ops)
+    (apply f ops))
 
   (module+ interp
     (define-namespace-anchor a)
