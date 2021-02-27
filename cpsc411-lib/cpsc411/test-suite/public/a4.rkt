@@ -557,9 +557,13 @@ mov rax, rdx")
            (define L.main.1
              (begin (set! rbx 1)
                     (set! rcx 2)
-                    (if (< rbx rcx)
+                    ,(or
+                      `(if (< rbx rcx)
                         (jump L.t.2)
-                        (jump L.t.1))))
+                        (jump L.t.1))
+                      `(if (>= rbx rcx)
+                           (jump L.t.1)
+                           (jump L.t.2)))))
            (define L.t.1
              (begin (set! rdx 4)
                     (halt rdx)))
