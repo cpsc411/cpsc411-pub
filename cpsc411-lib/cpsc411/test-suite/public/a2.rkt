@@ -402,14 +402,15 @@
                    (begin
                      (set! y.2 5)
                      x.6)))])
-     (test-match (canonicalize-bind x)
+     (fragile-test-case
+      (check-match (canonicalize-bind x)
                   `(module
                        (begin
                          (set! x.6 (+ 2 3))
                          (set! x.7 (+ x.6 x.6))
                          (begin
                            (set! y.2 5)
-                           x.6))))
+                           x.6)))))
 
      (test-canonicalize-bind-correct (canonicalize-bind x) x)
 
