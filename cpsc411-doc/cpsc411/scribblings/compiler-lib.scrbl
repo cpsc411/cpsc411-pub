@@ -208,6 +208,19 @@ and @racket[#f] otherwise.
 (undead-set-tree? '((5 b.2 c.3) ((a.1 b.2 c.3) (a.1 b.2 c.3) (a.1 b.2 c.3))))
 ]
 }
+
+@defproc[(undead-set-tree/rloc? [ust any/c]) boolean?]{
+A predicate that returns @racket[#t] when @racket[ust] is an undead set tree
+that might contain physical locations or abstract locations,and @racket[#f] otherwise.
+
+@examples[#:eval eg
+(undead-set-tree/rloc? '(a.1 b.2 c.3))
+(undead-set-tree/rloc? '((a.1 b.2 c.3)))
+(undead-set-tree/rloc? '((a.1 b.2 c.3) (a.1 b.2 c.3) (a.1 b.2 c.3)))
+(undead-set-tree/rloc? '((a.1 b.2 c.3) ((a.1 b.2 c.3) (a.1 b.2 c.3) (a.1 b.2 c.3))))
+(undead-set-tree/rloc? '((5 b.2 c.3) ((a.1 b.2 c.3) (a.1 b.2 c.3) (a.1 b.2 c.3))))
+(undead-set-tree/rloc? '((rax rbx r8 c.3) ((a.1 r9 c.3) (a.1 b.2 c.3) (a.1 b.2 c.3))))
+]
 }
 
 @section{Compilation Harness}
