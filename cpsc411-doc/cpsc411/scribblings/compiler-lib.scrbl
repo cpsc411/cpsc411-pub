@@ -194,6 +194,7 @@ and @racket[#f] otherwise.
 (undead-set? '(a.1 b.2 a.1))
 (undead-set? '(5 3))
 ]
+}
 
 @defproc[(undead-set-tree? [ust any/c]) boolean?]{
 A predicate that returns @racket[#t] when @racket[ust] is an undead set tree,
