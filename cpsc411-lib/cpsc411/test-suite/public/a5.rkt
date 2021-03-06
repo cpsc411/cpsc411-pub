@@ -67,9 +67,11 @@
           ""
           (test-suite
            (format "a5 from ~a tests" 'pass)
-           (for/list ([t progs-id]
-                      [s values-lang-v5-programs])
-             (test-from pass passes t (interp-values-lang-v5 s))))
+           (for ([t progs-id]
+                 [s values-lang-v5-programs])
+             (if (member pass passes)
+                 (test-from pass passes t (interp-values-lang-v5 s))
+                 (displayln "Warning: Couldn't test from ~a, as it wasn't found in the current-pass-list" pass))))
           ...))]))
 
 (define (a5-public-test-suite
