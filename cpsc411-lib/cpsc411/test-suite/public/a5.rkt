@@ -167,5 +167,5 @@
     impose-calling-conventions
     sequentialize-let)
 
-   #;(a5-end-to-end-test-suite passes)
+   (a5-end-to-end-test-suite passes)
    ))
