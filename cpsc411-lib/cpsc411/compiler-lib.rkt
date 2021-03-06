@@ -94,7 +94,7 @@
 (define (label? s)
   (and (symbol? s)
        (or (eq? s 'done)
-        (regexp-match-exact? #rx"L\\..+\\.[0-9]+" (symbol->string s)))))
+           (regexp-match-exact? #rx"L\\..+\\.[0-9]+" (symbol->string s)))))
 
 (define (allowed-character? c)
   (and (member c (string->list "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_#@~.?"))
@@ -134,6 +134,7 @@
 (define (aloc? s)
   (and (symbol? s)
        (not (register? s))
+       (not (label? s))
        (regexp-match-exact? #rx".+\\.[0-9]+" (symbol->string s))))
 
 (define (register? r) (and (memq r (current-register-set)) #t))
