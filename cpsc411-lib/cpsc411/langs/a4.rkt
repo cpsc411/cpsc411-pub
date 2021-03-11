@@ -6,7 +6,7 @@
 (provide
  (all-defined-out))
 
-(require (submod "a2.rkt" m interp))
+(require "a2.rkt")
 (require (submod "base.rkt" interp))
 
 (define interp-values-lang-v4 interp-values-lang-v3)
@@ -27,15 +27,6 @@
   (provide
    (all-from-out "base.rkt")
    (all-defined-out))
-
-  (define-syntax-rule (define l tail)
-    (r:define (l) tail))
-
-  (define-syntax-rule (module (define l tail) b ...)
-    (begin
-      (define l tail)
-      b ...
-      (l)))
 
   (define-syntax-rule (jump l)
     (l))

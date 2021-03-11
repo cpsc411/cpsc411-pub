@@ -1,38 +1,14 @@
 #lang racket/base
 
 (provide
- (all-defined-out)
- interp-values-lang-v3)
-
-(module m racket/base
-  (require (except-in "base.rkt" module))
-  (provide
-   (all-from-out "base.rkt")
-   (all-defined-out))
-
-  (define-syntax-rule (module (define l body) ... tail)
-    (letrec ([l body] ...) tail))
-
-  (define (call f . ops)
-    (apply f ops))
-
-  (module+ interp
-    (define-namespace-anchor a)
-    (provide interp-values-lang-v3)
-    (define interp-values-lang-v3
-      (begin
-        (let ([ns (namespace-anchor->namespace a)])
-          (lambda (x)
-            (eval x ns)))))))
-
-(require (submod 'm interp))
-
-(define interp-values-lang-unique-v3 interp-values-lang-v3)
-(define interp-mf-lang-v3 interp-values-lang-v3)
-(define interp-cmf-lang-v3 interp-values-lang-v3)
+ (all-defined-out))
 
 (require (submod "base.rkt" interp))
 
+(define interp-values-lang-v3 interp-base)
+(define interp-values-lang-unique-v3 interp-values-lang-v3)
+(define interp-mf-lang-v3 interp-values-lang-v3)
+(define interp-cmf-lang-v3 interp-values-lang-v3)
 (define interp-asm-lang-v2 interp-base)
 (define interp-asm-lang-v2/locals interp-asm-lang-v2)
 (define interp-asm-lang-v2/assignments interp-asm-lang-v2)
