@@ -75,6 +75,8 @@
 
 (define-syntax (new-define stx)
   (syntax-parse stx
+    [(_ name info ((~literal lambda) (args ...) body))
+     #`(define name (lambda (args ...) #,(bind-info #'info #'body)))]
     [(_ name (~and (~var body) ((~literal lambda) _ ...)))
      #`(define name body)]
     [(_ name body)
