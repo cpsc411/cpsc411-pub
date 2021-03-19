@@ -136,6 +136,10 @@
    (for/list ([i exprs-lang-v7-programs])
      (test-correct interp-exprs-lang-v7 execute i i))))
 
+(define (a7-void-test-suite passes)
+  (test-suite
+   "a7 void tests"
+   (test-equal? "" (execute '(module (void)) nasm-run/print-string) "")))
 
 (define (a7-public-test-suite
          passes
@@ -205,4 +209,5 @@
     impose-calling-conventions
     sequentialize-let)
 
-   (a7-end-to-end-test-suite passes)))
+   (a7-end-to-end-test-suite passes)
+   (a7-void-test-suite passes)))
