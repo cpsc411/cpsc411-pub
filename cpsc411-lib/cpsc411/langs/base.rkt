@@ -8,11 +8,18 @@
   racket/dict
   racket/syntax
   syntax/parse)
- (only-in racket/base [define r:define]))
+ (only-in racket/base [define r:define])
+ (only-in racket/list empty))
 
 (provide
  (rename-out [new-define define])
- (except-out (all-defined-out) new-define))
+ (except-out (all-defined-out) new-define)
+ bitwise-and
+ fixnum?
+ boolean?
+ void?
+ empty
+ void)
 
 (compile-allow-set!-undefined #t)
 
