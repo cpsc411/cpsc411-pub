@@ -112,6 +112,17 @@
 (define (!= e1 e2) (not (= e1 e2)))
 (define (nop) (void))
 
+(define (unsafe-fx+ x y) (twos-complement-add 61 x y))
+(define (unsafe-fx- x y) (twos-complement-sub 61 x y))
+(define (unsafe-fx* x y) (twos-complement-mul 61 x y))
+(define unsafe-fx<= <=)
+(define unsafe-fx>= >=)
+(define unsafe-fx< <)
+(define unsafe-fx> >)
+(define (error n) `(error ,n))
+(define (arithmetic-shift-right x y) (arithmetic-shift x (- 0 y)))
+(define (ascii-char? x)
+  (and (char? x) (<= 40 (char->integer x) 176)))
 
 (module+ interp
   (provide interp-base)
