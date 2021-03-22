@@ -508,6 +508,18 @@ A predicate that decides whether @racket[i] is in the range for a two's compleme
 ]
 }
 
+@defproc[(uint8? [i any/c]) boolean?]{
+Returns @racket[#t] when @racket[i] is in the range for an two's complement
+unsigned @racket[8]-bit integer.
+
+@examples[#:eval eg
+(uint8? 0)
+(uint8? 5)
+(uint8? 255)
+(uint8? 'x)
+]
+}
+
 @defproc[(int32? [i any/c]) boolean?]{
 A predicate that decides whether @racket[i] is in the range for a two's complement signed
 @racket[32]-bit integer; shorthand for @racket[(int-size 32 i)].
@@ -537,6 +549,22 @@ A predicate that decides whether @racket[i] is in the range for a two's compleme
 (int64? (+ (min-int 64) 1))
 (int64? 'x)
 (int64? 'x.1)
+]
+}
+
+@defproc[(int61? [i any/c]) boolean?]{
+A predicate that decides whether @racket[i] is in the range for a two's complement signed
+@racket[61]-bit integer; shorthand for @racket[(int-size 61 i)].
+
+@examples[#:eval eg
+(int61? 0)
+(int61? 5)
+(int61? (max-int 61))
+(int61? (min-int 61))
+(int61? (- (min-int 61) 1))
+(int61? (+ (min-int 61) 1))
+(int61? 'x)
+(int61? 'x.1)
 ]
 }
 
@@ -844,6 +872,20 @@ Probably corresponds to 0, 1 or 2 words.
 The number of bytes to add to the address of a procedure to get the address of
 the environment of the procedure.
 Probably corresponds to 0, 1 or 2 words.
+}
+
+@defproc[(ascii-char-literal? [c any/c]) boolean?]{
+Returns @racket[#t] for ASCII character literals and @racket[#f] otherwise.
+
+@examples[#:eval eg
+(ascii-char-literal? #\a)
+(ascii-char-literal? #\b)
+(ascii-char-literal? #\6)
+(ascii-char-literal? #\?)
+(ascii-char-literal? #\space)
+(char? #\λ)
+(ascii-char-literal? #\λ)
+]
 }
 
 @section{Misc Compiler Helpers}
