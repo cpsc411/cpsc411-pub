@@ -129,6 +129,43 @@
       (call fib_loop 5 0 1))
     ))
 
+(define (make-tests passes . test-passes)
+  (make-test-suite
+   ""
+   (for/list ([pass test-passes]
+              [progs (reverse
+                      (list
+                       implement-safe-primops-source-progs
+                       specify-representation-source-progs
+                       remove-complex-opera*-source-progs
+                       sequentialize-let-source-progs
+                       impose-calling-conventions-source-progs
+                       canonicalize-bind-source-progs
+                       select-instructions-source-progs
+                       uncover-locals-source-progs
+                       undead-analysis-source-progs
+                       conflict-analysis-source-progs
+                       assign-call-undead-variables-source-progs
+                       allocate-frames-source-progs
+                       assign-registers-source-progs
+                       assign-frame-variables-source-progs
+                       replace-locations-source-progs
+                       optimize-predicates-source-progs
+                       implement-fvars-source-progs
+                       expose-basic-blocks-source-progs
+                       resolve-predicates-source-progs
+                       flatten-program-source-progs
+                       patch-instructions-source-progs
+                       generate-x64-source-progs))])
+     (test-suite
+      (format "a7 from ~a tests" (object-name pass))
+      (for ([t progs]
+            [s exprs-lang-v7-programs])
+        (if (member pass passes)
+            (test-from pass passes t (interp-exprs-lang-v7 s))
+            (displayln "Warning: Couldn't test from ~a, as it wasn't found in the current-pass-list" pass)))))))
+
+(require "a7-progs.rkt")
 
 (define (a7-end-to-end-test-suite passes)
   (test-suite
@@ -187,7 +224,7 @@
    (thunk
     (current-run/read run/read))
 
-   #;(make-tests
+   (make-tests
     passes
     generate-x64
     patch-instructions
@@ -207,7 +244,10 @@
     select-instructions
     canonicalize-bind
     impose-calling-conventions
-    sequentialize-let)
+    sequentialize-let
+    remove-complex-opera*
+    specify-representation
+    implement-safe-primops)
 
    (a7-end-to-end-test-suite passes)
    (a7-void-test-suite passes)))
