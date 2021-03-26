@@ -3,6 +3,7 @@
 (require
  cpsc411/machine-ints
  racket/local
+ racket/list
  (for-syntax
   racket/base
   racket/dict
@@ -19,6 +20,7 @@
  boolean?
  void?
  empty
+ empty?
  void)
 
 (compile-allow-set!-undefined #t)
@@ -120,6 +122,7 @@
 (define unsafe-fx< <)
 (define unsafe-fx> >)
 (define (error n) `(error ,n))
+(define (error? n) (and (list? n) (eq? (car n) 'error) (int64? (second n))))
 (define (arithmetic-shift-right x y) (arithmetic-shift x (- 0 y)))
 (define (ascii-char? x)
   (and (char? x) (<= 40 (char->integer x) 176)))
