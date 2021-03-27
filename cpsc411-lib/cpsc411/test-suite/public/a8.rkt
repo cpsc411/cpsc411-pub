@@ -15,6 +15,106 @@
 
 (provide (all-defined-out))
 
+(define (a8-end-to-end-test-suite)
+  (test-suite
+   "a8 end-to-end"
+
+   (test-equal?
+    ""
+    (execute
+     `(module (call cons 7 empty)))
+    '(7))
+
+   (test-equal?
+    ""
+    (execute
+     `(module (call car (call cons 7 empty))))
+    7)
+
+   (test-equal?
+    ""
+    (execute
+     `(module (call car 7))
+     nasm-run/exit-code)
+    11)
+
+   (check-equal?
+    ""
+    (execute
+     `(module (call cons (call * 7 8) empty)))
+    '(56))
+
+   (test-equal?
+    ""
+    (execute
+     `(module (call cons (if (call eq? 7 8) (call * 7 8) (call * 8 7)) empty)))
+    '(56))
+
+   (test-equal?
+    ""
+    (execute
+     `(module
+        (let ([x.1 (call make-vector 0)])
+          x.1)))
+    #())
+
+   (test-equal?
+    ""
+    (execute
+     `(module
+        (let ([x.1 (call make-vector 2)])
+          x.1)))
+    #(0 0))
+
+   (test-equal?
+    ""
+    (execute `(module (call make-vector #\x)) nasm-run/exit-code)
+    7)
+
+   (test-equal?
+    ""
+    (execute
+     `(module
+        (let ([x.1 (call make-vector 3)])
+          (let ([x.2 (call vector-set! x.1 0 1)])
+            (let ([x.3 (call vector-set! x.1 1 2)])
+              (let ([x.4 (call vector-set! x.1 2 3)])
+                x.1))))))
+    #(1 2 3))
+
+   (check-equal?
+    (execute
+     `(module
+        (let ([x.1 (call make-vector 3)])
+          (let ([x.2 (call vector-set! x.1 0 1)])
+            (let ([x.3 (call vector-set! x.1 1 2)])
+              (let ([x.4 (call vector-set! x.1 2 3)])
+                x.1))))))
+    #(1 2 3))
+
+   (test-equal?
+    ""
+    (execute
+     `(module
+        (let ([x.1 (call make-vector 2)])
+          (let ([x.2 (call vector-set! x.1 0 1)])
+            (let ([x.3 (call vector-set! x.1 1 2)])
+              (let ([x.4 (call vector-set! x.1 2 3)])
+                x.1))))))
+    #(1 2))
+
+   (test-equal?
+    ""
+    (execute
+     `(module
+        (let ([x.1 (call make-vector 2)])
+          (let ([x.2 (call vector-set! x.1 0 1)])
+            (let ([x.3 (call vector-set! x.1 1 2)])
+              (let ([x.4 (call vector-set! x.1 2 3)])
+                x.4)))))
+     nasm-run/exit-code)
+    10)))
+
 (define (a8-public-test-suite
          passes
 
