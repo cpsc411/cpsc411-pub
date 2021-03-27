@@ -163,7 +163,7 @@
             [s exprs-lang-v7-programs])
         (if (member pass passes)
             (test-from pass passes t (interp-exprs-lang-v7 s))
-            (displayln "Warning: Couldn't test from ~a, as it wasn't found in the current-pass-list" pass)))))))
+            (printf "Warning: Couldn't test from ~a, as it wasn't found in the current-pass-list~n" pass)))))))
 
 (require "a7-progs.rkt")
 
