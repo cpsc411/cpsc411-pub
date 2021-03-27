@@ -181,7 +181,7 @@
 (define (a7-public-test-suite
          passes
 
-         interp-paren-x64
+         _ ; deprecated
 
          check-exprs-lang
          uniquify
