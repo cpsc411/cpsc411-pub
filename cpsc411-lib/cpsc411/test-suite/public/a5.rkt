@@ -58,36 +58,6 @@
    (for/list ([i values-lang-v5-programs])
     (test-correct interp-values-lang-v5 execute i i))))
 
-(define (make-tests passes . test-passes)
-  (make-test-suite
-   ""
-   (for/list ([pass test-passes]
-              [progs (reverse
-                      (list
-                       sequentialize-let-source-progs
-                       impose-calling-conventions-source-progs
-                       canonicalize-bind-source-progs
-                       select-instructions-source-progs
-                       uncover-locals-source-progs
-                       undead-analysis-source-progs
-                       conflict-analysis-source-progs
-                       assign-registers-source-progs
-                       replace-locations-source-progs
-                       optimize-predicates-source-progs
-                       expose-basic-blocks-source-progs
-                       resolve-predicates-source-progs
-                       flatten-program-source-progs
-                       patch-instructions-source-progs
-                       implement-fvars-source-progs
-                       generate-x64-source-progs))])
-     (test-suite
-      (format "a5 from ~a tests" (object-name pass))
-      (for ([t progs]
-            [s values-lang-v5-programs])
-        (if (member pass passes)
-            (test-from pass passes t (interp-values-lang-v5 s))
-            (displayln "Warning: Couldn't test from ~a, as it wasn't found in the current-pass-list" pass)))))))
-
 (define (a5-public-test-suite
          passes
 
@@ -163,6 +133,28 @@
     (a4-expose-basic-blocks-test-suite passes expose-basic-blocks))
 
    (make-tests
+    "a5"
+    (reverse
+     (list
+      sequentialize-let-source-progs
+      impose-calling-conventions-source-progs
+      canonicalize-bind-source-progs
+      select-instructions-source-progs
+      uncover-locals-source-progs
+      undead-analysis-source-progs
+      conflict-analysis-source-progs
+      assign-registers-source-progs
+      replace-locations-source-progs
+      optimize-predicates-source-progs
+      expose-basic-blocks-source-progs
+      resolve-predicates-source-progs
+      flatten-program-source-progs
+      patch-instructions-source-progs
+      implement-fvars-source-progs
+      generate-x64-source-progs))
+
+    (map interp-values-lang-v5 values-lang-v5-programs)
+
     passes
     generate-x64
     implement-fvars

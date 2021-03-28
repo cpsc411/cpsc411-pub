@@ -69,39 +69,6 @@
    (for/list ([i values-lang-v6-programs])
      (test-correct interp-values-lang-v6 execute i i))))
 
-(define (make-tests passes . test-passes)
-  (make-test-suite
-   ""
-   (for/list ([pass test-passes]
-              [progs (reverse
-                      (list
-                       sequentialize-let-source-progs
-                       impose-calling-conventions-source-progs
-                       canonicalize-bind-source-progs
-                       select-instructions-source-progs
-                       uncover-locals-source-progs
-                       undead-analysis-source-progs
-                       conflict-analysis-source-progs
-                       assign-call-undead-variables-source-progs
-                       allocate-frames-source-progs
-                       assign-registers-source-progs
-                       assign-frame-variables-source-progs
-                       replace-locations-source-progs
-                       optimize-predicates-source-progs
-                       implement-fvars-source-progs
-                       expose-basic-blocks-source-progs
-                       resolve-predicates-source-progs
-                       flatten-program-source-progs
-                       patch-instructions-source-progs
-                       generate-x64-source-progs))])
-     (test-suite
-      (format "a6 from ~a tests" (object-name pass))
-      (for ([t progs]
-            [s values-lang-v6-programs])
-        (if (member pass passes)
-            (test-from pass passes t (interp-values-lang-v6 s))
-            (displayln "Warning: Couldn't test from ~a, as it wasn't found in the current-pass-list" pass)))))))
-
 (require "a6-progs.rkt")
 
 (define (a6-public-test-suite
@@ -148,6 +115,32 @@
     (current-run/read run/read))
 
    (make-tests
+    "a6"
+
+    (reverse
+     (list
+      sequentialize-let-source-progs
+      impose-calling-conventions-source-progs
+      canonicalize-bind-source-progs
+      select-instructions-source-progs
+      uncover-locals-source-progs
+      undead-analysis-source-progs
+      conflict-analysis-source-progs
+      assign-call-undead-variables-source-progs
+      allocate-frames-source-progs
+      assign-registers-source-progs
+      assign-frame-variables-source-progs
+      replace-locations-source-progs
+      optimize-predicates-source-progs
+      implement-fvars-source-progs
+      expose-basic-blocks-source-progs
+      resolve-predicates-source-progs
+      flatten-program-source-progs
+      patch-instructions-source-progs
+      generate-x64-source-progs))
+
+    (map interp-values-lang-v6 values-lang-v6-programs)
+
     passes
     generate-x64
     patch-instructions

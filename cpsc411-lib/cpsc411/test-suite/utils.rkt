@@ -208,3 +208,21 @@
      (quasisyntax/loc stx
          #,(quasisyntax/loc stx
              (test-begin (check-match s ...))))]))
+
+;; Make a bunch of intermediate tests
+(define (make-tests name-tag
+                    ir-progs-ls
+                    expected-ls
+                    passes . test-passes)
+  (make-test-suite
+   ""
+   (for/list ([pass test-passes]
+              [progs ir-progs-ls]
+              #:when (unless (member pass passes)
+                       (printf "Warning: Couldn't test from ~a, as it wasn't found in the current-pass-list~n" pass)
+                       #f))
+     (test-suite
+      (format "~a from ~a tests" name-tag (object-name pass))
+      (for ([t progs]
+            [expected expected-ls])
+        (test-from pass passes t expected))))))
