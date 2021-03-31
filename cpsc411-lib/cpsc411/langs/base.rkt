@@ -9,7 +9,7 @@
   racket/dict
   racket/syntax
   syntax/parse)
- (only-in racket/base [define r:define])
+ (only-in racket/base [define r:define] [error r:error])
  (only-in racket/list empty))
 
 (provide
@@ -21,7 +21,17 @@
  void?
  empty
  empty?
- void)
+ void
+ vector?
+ pair?
+
+ cons
+ car
+ cdr
+ make-vector
+ vector-length
+ vector-set!
+ vector-ref)
 
 (compile-allow-set!-undefined #t)
 
@@ -51,7 +61,7 @@
       '(rsp rbp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15))
      #:with (vals ...)
      #'((void) (void) (void) (void) (void) (void) (void) (void) (void)
-               (void) (void) (void) (void) (void)
+               (void) (void) (alloc 5000) (void) (void)
                (lambda () rax))
      #`(let ([rax (void)])
          (let ([regs vals] ...)
@@ -126,6 +136,50 @@
 (define (arithmetic-shift-right x y) (arithmetic-shift x (- 0 y)))
 (define (ascii-char? x)
   (and (char? x) (<= 40 (char->integer x) 176)))
+
+(define unsafe-car car)
+(define unsafe-cdr cdr)
+(define (unsafe-make-vector size) (make-vector size 'uninitialized))
+(define unsafe-vector-length vector-length)
+(define unsafe-vector-set! vector-set!)
+(define (unsafe-vector-ref vec pos)
+  (let ([val (vector-ref vec pos)])
+    (when (equal? val 'uninitialized)
+      (r:error 'unsafe-vector-ref "attempting to read from uninitialized memory"))
+    val))
+
+(define ALIGN 8)
+(define memory (make-vector 10000 'un-aloced))
+(define hbp (* ALIGN 2))
+
+(define (mset! base offset value)
+  (let ([loc (/ (+ base offset) ALIGN)])
+    (unless (integer? loc)
+      (r:error 'mset! "attempting to write to unaligned memory (base: ~a, offset: ~a)" base offset))
+    (when (equal? 'un-aloced (vector-ref memory loc))
+      (r:error 'mset! "attempting to write to unallocated memory (base: ~a, offset: ~a)" base offset))
+    (vector-set! memory loc value)))
+
+(define (mref base offset)
+  (let ([loc (/ (+ base offset) ALIGN)])
+    (unless (integer? loc)
+      (r:error 'mref "attempting to read from unaligned memory (base: ~a, offset: ~a)" base offset))
+    (when (equal? 'un-aloced (vector-ref memory loc))
+      (r:error 'mref "attempting to read from unallocated memory (base: ~a, offset: ~a)" base offset))
+    (when (equal? 'aloced (vector-ref memory loc))
+      (r:error 'mref "attempting to read from uninitialized memory (base: ~a, offset: ~a)" base offset))
+    (vector-ref memory loc)))
+
+(define (alloc len8)
+  (let ([len (/ len8 ALIGN)]
+        [oldhbp hbp])
+    (unless (integer? len)
+      (r:error 'alloc "attemptying to allocate unaligned memory (len: ~a)" len8))
+    (for ([i (in-range len)])
+      (vector-set! memory (+ (/ oldhbp ALIGN) i) 'alloced))
+    ;; leave buffer space to check over/underflows
+    (set! hbp (+ (+ hbp len8) (* ALIGN 3)))
+    oldhbp))
 
 (module+ interp
   (provide interp-base)
