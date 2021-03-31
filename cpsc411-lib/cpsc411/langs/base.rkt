@@ -86,6 +86,7 @@
      #`(module () defs ... tail)]
     [(module info defs ... tail)
      #`(begin
+         (init-heap)
          (compile-allow-set!-undefined #t)
          (bind-fvars 1000 (bind-regs #,(bind-info #'info #`(local [defs ...] tail)))))]))
 
@@ -180,6 +181,11 @@
     ;; leave buffer space to check over/underflows
     (set! hbp (+ (+ hbp len8) (* ALIGN 3)))
     oldhbp))
+
+(define (init-heap)
+  (begin
+    (set! hbp (* ALIGN 2))
+    (set! memory (make-vector 10000 'un-aloced))))
 
 (module+ interp
   (provide interp-base)
