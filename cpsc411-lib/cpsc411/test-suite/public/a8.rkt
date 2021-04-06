@@ -38,7 +38,7 @@
      nasm-run/exit-code)
     11)
 
-   (check-equal?
+   (test-equal?
     ""
     (execute
      `(module (call cons (call * 7 8) empty)))
