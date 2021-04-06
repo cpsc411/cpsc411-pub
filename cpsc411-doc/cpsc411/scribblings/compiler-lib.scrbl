@@ -980,3 +980,25 @@ only depends on the info field.
        ((v.1 r8) (w.2 r8) (x.3 r14) (y.4 r9) (z.5 r13) (t.6 r14) (p.1 r15)))))))
 ]
 }
+
+@defproc[(map-n [n any/c] [f procedure?] [ls list?] ...+) any]{
+Like @racket[map], but returns @racket[n] lists.
+Expects @racket[f] to returns @racket[n] return values.
+Support mapping over any non-zero number of lists.
+
+@examples[
+#:eval eg
+(map-n 2 (lambda (x y) (values (add1 x) (sub1 y))) '(1 2 3) '(1 2 3))
+(map-n 3 (lambda (x) (values (add1 x) (sub1 x) (* 2 x))) '(1 2 3))
+]
+}
+
+@defproc[(map2 [f procedure?] [ls list?] ...+) any]{
+Short-hand for @racket[(curry map-n 2)]
+
+@examples[
+#:eval eg
+(map-n 2 (lambda (x y) (values (add1 x) (sub1 y))) '(1 2 3) '(1 2 3))
+(map2 (lambda (x y) (values (add1 x) (sub1 y))) '(1 2 3) '(1 2 3))
+]
+}

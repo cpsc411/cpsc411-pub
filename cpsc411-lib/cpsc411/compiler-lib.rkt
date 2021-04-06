@@ -165,7 +165,20 @@
            [`(,e ,e2 ...)
             (cons e (loop e2))]))))
 
+(define (map-n n f ls . lss)
+  (if (empty? ls)
+      (apply values (build-list n (lambda _ '())))
+      (call-with-values
+       (thunk (apply f (car ls) (map car lss)))
+       (lambda vs
+         (call-with-values
+          (thunk (apply map-n n f (cdr ls) (map cdr lss)))
+          (lambda lss
+            (apply
+             values
+             (map cons vs lss))))))))
 
+(define map2 (curry map-n 2))
 
 ;; Calling conventions
 ;; ------------------------------------------------------------------------
