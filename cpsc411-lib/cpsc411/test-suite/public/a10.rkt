@@ -425,11 +425,11 @@
                                                                    x))))
                                       str)))])
             (if (engine-run (* 60 1000) e)
-                (void)
                 (if (eq? 0 (engine-result e))
                     (fail "Omega terminated normally")
                     (with-check-info (['ulimit-exit (engine-result e)])
-                      (fail "Omega ate too much memory")))))))
+                      (fail "Omega ate too much memory")))
+                (void)))))
 
       (test-case "Big Fact"
         (let ([stack-limit (current-big-fact-stack-limit)]
