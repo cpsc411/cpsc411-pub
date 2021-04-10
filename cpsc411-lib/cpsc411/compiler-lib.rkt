@@ -406,7 +406,10 @@
 ; x64 String -> Integer
 ; Returns the exit code resulting from assembling, linking, and natively executing the x64 input.
 (define nasm-run/exit-code
-  (nasm-run/observe system/exit-code))
+  (nasm-run/observe (lambda (x)
+                      (parameterize ([current-output-port (open-output-nowhere)]
+                                     [current-error-port (open-output-nowhere)])
+                        (system/exit-code x)))))
 
 ; x64 String -> String
 ; Returns the string output resulting from assembling, linking, and natively executing the x64 input.
@@ -424,7 +427,7 @@
 ; and natively executing the x64 input.
 (define nasm-run/read
   (nasm-run/observe (lambda (x) (with-input-from-string (with-output-to-string (thunk (system x)))
-                                  (thunk (read))))))
+                                  read))))
 (define (nasm-run/input-read n)
   (nasm-run/observe
    (lambda (x)
