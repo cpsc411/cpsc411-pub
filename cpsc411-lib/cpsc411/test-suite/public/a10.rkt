@@ -11,7 +11,6 @@
  cpsc411/ptr-run-time
  racket/performance-hint
  racket/engine
- racket/sandbox
  ;"../../langs/a9.rkt"
  #;"a8.rkt")
 
@@ -419,26 +418,18 @@
         (let ([stack-limit (current-omega-stack-limit)]
               [str (compile '(module ((lambda (x) (x x))
                                       (lambda (x) (x x)))))])
-          (with-handlers ([exn:fail:resource?
-                           (lambda (e)
-                             (when (eq? 'memory (exn:fail:resource-resource e))
-                               (fail "Omega ate too much memory"))
-                             (void))])
-            (cond [(call-with-limits
-                    60
-                    0
-                    (thunk ((nasm-run/observe (lambda (x)
-                                                (system/exit-code
-                                                 (format "ulimit -Ss ~a -Hs ~a; ~a"
-                                                         stack-limit stack-limit
-                                                         x))))
-                            str)))
-                   =>
-                   (lambda (x)
-                     (displayln x)
-                     (if (zero? x)
-                         (fail "Omega terminated normally")
-                         (void)))]))))
+          (let ([e (engine (lambda _ ((nasm-run/observe (lambda (x)
+                                                          (system/exit-code
+                                                           (format "ulimit -Ss ~a -Hs ~a; ~a"
+                                                                   stack-limit stack-limit
+                                                                   x))))
+                                      str)))])
+            (if (engine-run (* 60 1000) e)
+                (void)
+                (if (eq? 0 (engine-result e))
+                    (fail "Omega terminated normally")
+                    (with-check-info (['ulimit-exit (engine-result e)])
+                      (fail "Omega ate too much memory")))))))
 
       (test-case "Big Fact"
         (let ([stack-limit (current-big-fact-stack-limit)]
@@ -448,20 +439,23 @@
                                      acc
                                      (fact (- n 1) (* n acc))))
                                (fact 19 1)))])
-          (with-handlers ([exn:fail:resource?
-                           (lambda (e)
-                             (when (eq? 'memory (exn:fail:resource-resource e))
-                               (fail "Fact ate too much memory"))
-                             (void))])
-            (check-equal?
-             ((nasm-run/observe (lambda (x)
-                                 (with-input-from-string
-                                   (with-output-to-string
-                                      (thunk (system/exit-code (format "ulimit -Ss ~a -Hs ~a; ~a"
-                                                                       stack-limit stack-limit x))))
-                                   read))) str)
+          (check-equal?
+           ((nasm-run/observe (lambda (x)
+                                (with-input-from-string
+                                  (with-output-to-string
+                                    (thunk
+                                     (let ([exit-code
+                                            (system/exit-code (format "ulimit -Ss ~a -Hs ~a; ~a"
+                                                                      stack-limit
+                                                                      stack-limit
+                                                                      x))])
+                                       (if (zero? exit-code)
+                                           (void)
+                                           (with-check-info (['ulimit-exit exit-code])
+                                             (fail "Fact ate too much memory"))))))
+                                  read))) str)
 
-             121645100408832000)))))))
+           121645100408832000))))))
 
    #:before
    (thunk
