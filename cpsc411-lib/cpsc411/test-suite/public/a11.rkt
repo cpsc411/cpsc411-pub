@@ -42,4 +42,6 @@
    #:after
    (thunk
     (current-pass-list passls)
-    (current-run/read run/read))))
+    (current-run/read run/read))
+
+   (a10-public-test-suite)))
