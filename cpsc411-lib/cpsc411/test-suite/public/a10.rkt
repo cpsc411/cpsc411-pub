@@ -24,6 +24,10 @@
 
 (define non-zero? (and/c integer? (not/c zero?)))
 
+(define-inline (valid-p expected p . rest)
+  `((,expected . (,p ,@rest))
+    (,zero? . (,p ,nasm-run/exit-code))))
+
 (define-inline (valid-expr expected expr . rest)
   `((,expected . ((module ,expr) ,@rest))
     (,zero? . ((module ,expr) ,nasm-run/exit-code))))
@@ -309,20 +313,20 @@
             (valid-expr #t `(procedure? ,(cdr proc-x-arity)))
             (valid-expr (car proc-x-arity) `(procedure-arity ,(cdr proc-x-arity)))))))
 
-     ("Overfloe Tests"
+     ("Overflow Tests"
       ,@(make-valid-expr-tests
          `((#t (fixnum? ,(max-int 61)))
            (#t (fixnum? ,(min-int 61)))
 
-           (#,(max-int 61) ,(max-int 61))
-           (#,(min-int 61) ,(min-int 61))
+           (,(max-int 61) ,(max-int 61))
+           (,(min-int 61) ,(min-int 61))
 
-           (#,(min-int 61) (+ 1 ,(max-int 61)))
-           (#,(max-int 61) (- ,(min-int 61) 1)))))
+           (,(min-int 61) (+ 1 ,(max-int 61)))
+           (,(max-int 61) (- ,(min-int 61) 1)))))
 
 
      ("Big Tests"
-      ,@(valid-expr
+      ,@(valid-p
          (lambda (x) (apply <= x))
          '(module
            (define* (filter f ls)
@@ -377,7 +381,12 @@
                                 (begin
                                   (vector-set! x 0 p)
                                   p))))])
-             (quicksort (build-list (lambda (x) (random)) 10000))))))
+             (quicksort (build-list (lambda (x) (random)) 10000)))))
+
+      #;,@(valid-p
+         `(module
+
+            )))
 
      ))
 
