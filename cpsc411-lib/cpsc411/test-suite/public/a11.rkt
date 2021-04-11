@@ -9,9 +9,6 @@
  cpsc411/test-suite/utils
  cpsc411/compiler-lib
  cpsc411/ptr-run-time
- racket/performance-hint
- racket/engine
- racket/sandbox
  ;"../../langs/a9.rkt"
  "a10.rkt"
  "a11-front-end.rkt"
