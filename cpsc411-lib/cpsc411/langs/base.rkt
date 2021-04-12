@@ -187,6 +187,44 @@
     (set! hbp (* ALIGN 2))
     (set! memory (make-vector 10000 'un-aloced))))
 
+(define-syntax lambda
+  (syntax-rules ()
+    [(_ info args tail) (λ args tail)]
+    [(_ args tail) (λ args tail)]))
+
+(define-values (procedure-label:prop procedure-label:prop? unsafe-procedure-label)
+    (make-impersonator-property 'procedure-label))
+
+(define-values (procedure-env:prop procedure-env:prop? unsafe-procedure-env)
+    (make-impersonator-property 'procedure-label))
+
+(define (make-procedure label env-size)
+  (impersonate-procedure label #f procedure-label:prop label procedure-env:prop (unsafe-make-vector env-size)))
+(define (unsafe-procedure-ref p i)
+  (unsafe-vector-ref (unsafe-procedure-env p) i))
+(define (unsafe-procedure-set! p i v)
+  (unsafe-vector-set! (unsafe-procedure-env p) i v))
+
+(define unsafe-procedure-call call)
+(define unsafe-procedure-arity procedure-arity)
+(define closure-call call)
+(define closure-ref unsafe-procedure-ref)
+
+(define (fill-env proc . es)
+  (let ([v (unsafe-procedure-env proc)])
+    (for ([e (in-list es)] [i (in-naturals)])
+      (vector-set! v i e))))
+
+(define-syntax (cletrec stx)
+  (syntax-parse stx
+    [(_ ([aloc ((~literal make-closure) label es ...)] oths ...) tail)
+     #`(let ([aloc (make-procedure label #,(length (syntax->datum #'(es ...))))])
+         (cletrec (oths ...)
+           (begin
+             (fill-env aloc es ...)
+             tail)))]
+    [(_ () tail) #'tail]))
+
 (module+ interp
   (provide interp-base)
   (require (only-in racket (define r:define)))
