@@ -16,9 +16,9 @@
 
 (provide (all-defined-out))
 
-(define current-test-timeout (make-parameter 1000))
+(define current-test-timeout (make-parameter 2000))
 
-(define current-omega-stack-limit (make-parameter 8))
+(define current-omega-stack-limit (make-parameter 16))
 (define current-big-fact-stack-limit (make-parameter 32))
 
 (struct exn:fail:timeout exn:fail ())
