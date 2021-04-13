@@ -16,7 +16,8 @@
 
 (provide (all-defined-out))
 
-(define current-test-timeout (make-parameter 5000))
+(define current-test-timeout (make-parameter 1000))
+
 (define current-omega-stack-limit (make-parameter 8))
 (define current-big-fact-stack-limit (make-parameter 32))
 
@@ -176,7 +177,7 @@
 
     ("Primops work"
      ,@(make-valid-expr-tests
-        '((#t (not #f))
+        `((#t (not #f))
           (#f (not #t))
           (#f (not 5))
           (#f (not (error 42)))
@@ -262,9 +263,33 @@
           (-43 (- -1 42))
           (-1 (- -1 0))
 
+          (1 (car (cons 1 2)))
+          (2 (cdr (cons 1 2)))
+
+          (1 (vector-ref (vector 1) 0))
+          (2 (vector-ref (vector 1 2) 1))
+          (3 (vector-ref (vector 1 2 3) 2))
+
+          ("" (vector-set! (vector 1) 0 2) ,nasm-run/print-string)
+          ("" (vector-set! (vector 1 2) 1 3) ,nasm-run/print-string)
+          (#t (void? (vector-set! (vector 1) 0 2)))
+          (#t (void? (vector-set! (vector 1 2) 1 3)))
+          (,(curry equal? #(2 3 4))
+           (let ([p (vector 1 2 3)])
+               (begin
+                 (vector-set! p 0 2)
+                 (vector-set! p 1 3)
+                 (vector-set! p 2 4)
+                 p)))
+
+          (1 (vector-length (vector 1)))
+          (2 (vector-length (vector 1 2)))
+          (3 (vector-length (vector 1 2 3)))
+
           (1 (procedure-arity (lambda (x) x)))
           (2 (procedure-arity (lambda (x y) x)))
-          (3 (procedure-arity (lambda (x y z) x)))))
+          (3 (procedure-arity (lambda (x y z) x)))
+          (1 (procedure-arity (let ([y 5]) (lambda (x) y))))))
 
      ,@(make-invalid-expr-tests
         `((,non-zero? (< #t 5))
@@ -290,7 +315,78 @@
           (,non-zero? (+ 1 #t))
 
           (,non-zero? (- #t 1))
-          (,non-zero? (- 1 #t))))
+          (,non-zero? (- 1 #t))
+
+          (,non-zero? (car 1))
+          (,non-zero? (car '()))
+          (,non-zero? (car (void)))
+          (,non-zero? (car (lambda (x) x)))
+          (,non-zero? (car #f))
+          (,non-zero? (car #t))
+          (,non-zero? (car #\a))
+          (,non-zero? (car (error 42)))
+          (,non-zero? (car (vector 1)))
+
+          (,non-zero? (cdr 1))
+          (,non-zero? (cdr '()))
+          (,non-zero? (cdr (void)))
+          (,non-zero? (cdr (lambda (x) x)))
+          (,non-zero? (cdr #f))
+          (,non-zero? (cdr #t))
+          (,non-zero? (cdr #\a))
+          (,non-zero? (cdr (error 42)))
+          (,non-zero? (cdr (vector 1)))
+
+          (,non-zero? (vector-length 1))
+          (,non-zero? (vector-length '()))
+          (,non-zero? (vector-length (void)))
+          (,non-zero? (vector-length (lambda (x) x)))
+          (,non-zero? (vector-length #f))
+          (,non-zero? (vector-length #t))
+          (,non-zero? (vector-length #\a))
+          (,non-zero? (vector-length (error 42)))
+          (,non-zero? (vector-length (cons 1 empty)))
+
+          (,non-zero? (vector-ref 1 0))
+          (,non-zero? (vector-ref '() 0))
+          (,non-zero? (vector-ref (void) 0))
+          (,non-zero? (vector-ref (lambda (x) x) 0))
+          (,non-zero? (vector-ref #f 0))
+          (,non-zero? (vector-ref #t 0))
+          (,non-zero? (vector-ref #\a 0))
+          (,non-zero? (vector-ref (error 42) 0))
+          (,non-zero? (vector-ref (cons 1 empty) 0))
+          (,non-zero? (vector-ref (vector 1) #t))
+          (,non-zero? (vector-ref (vector 1) #f))
+          (,non-zero? (vector-ref (vector 1) '()))
+          (,non-zero? (vector-ref (vector 1) (void)))
+          (,non-zero? (vector-ref (vector 1) (lambda (x) x)))
+          (,non-zero? (vector-ref (vector 1) #\a))
+          (,non-zero? (vector-ref (vector 1) (error 42)))
+          (,non-zero? (vector-ref (vector 1) (cons 1 empty)))
+          (,non-zero? (vector-ref (vector 1) 1))
+          (,non-zero? (vector-ref (vector 1) 2))
+
+          (,non-zero? (vector-set! 1 0 1))
+          (,non-zero? (vector-set! '() 0 1))
+          (,non-zero? (vector-set! (void) 0 1))
+          (,non-zero? (vector-set! (lambda (x) x) 0 1))
+          (,non-zero? (vector-set! #f 0 1))
+          (,non-zero? (vector-set! #t 0 1))
+          (,non-zero? (vector-set! #\a 0 1))
+          (,non-zero? (vector-set! (error 42) 0 1))
+          (,non-zero? (vector-set! (cons 1 empty) 0 1))
+          (,non-zero? (vector-set! (vector 1) #t 1))
+          (,non-zero? (vector-set! (vector 1) #f 1))
+          (,non-zero? (vector-set! (vector 1) '() 1))
+          (,non-zero? (vector-set! (vector 1) (void) 1))
+          (,non-zero? (vector-set! (vector 1) (lambda (x) x) 1))
+          (,non-zero? (vector-set! (vector 1) #\a 1))
+          (,non-zero? (vector-set! (vector 1) (error 42) 1))
+          (,non-zero? (vector-set! (vector 1) (cons 1 empty) 1))
+          (,non-zero? (vector-set! (vector 1) 1 1))
+          (,non-zero? (vector-set! (vector 1) 2 1))))
+
      ,@(for/fold ([tests '()])
                  ([bad-value
                    '(5 #t #f #\a (void) (cons 1 empty) empty (make-vector 1)
@@ -311,7 +407,48 @@
                        (3 . vector-set!))])
            (append
             (valid-expr #t `(procedure? ,(cdr proc-x-arity)))
-            (valid-expr (car proc-x-arity) `(procedure-arity ,(cdr proc-x-arity)))))))
+            (valid-expr (car proc-x-arity) `(procedure-arity ,(cdr proc-x-arity))))))
+
+      ,@(make-invalid-expr-tests
+         `((,non-zero? (cons 1))
+           (,non-zero? (cons))
+           (,non-zero? (cons 1 2 3))
+
+           (,non-zero? (car 1 2))
+           (,non-zero? (car '() 2))
+
+           (,non-zero? (cdr 1 2))
+           (,non-zero? (cdr '() 2))
+
+           (,non-zero? (vector-ref))
+           (,non-zero? (vector-ref 1 2 3))
+
+           (,non-zero? (vector-set!))
+           (,non-zero? (vector-set! 1 2 3 4 5 6))
+
+           (,non-zero? (make-vector))
+           (,non-zero? (make-vector 1 2 3 4))
+
+           (,non-zero? (procedure-arity))
+           (,non-zero? (procedure-arity (lambda (x) x) 2 3 4))
+
+           (,non-zero? (empty?) )
+           (,non-zero? (empty? '() '() '()) )
+
+           (,non-zero? (void?))
+           (,non-zero? (void? (void) (void) (void)))
+
+           (,non-zero? (pair?))
+           (,non-zero? (pair? '() '() '()))
+
+           (,non-zero? (fixnum?))
+           (,non-zero? (fixnum? 5 5 5 5))
+
+           (,non-zero? (ascii-char?))
+           (,non-zero? (ascii-char? #\a 5 5 5))
+
+           (,non-zero? (boolean?))
+           (,non-zero? (boolean? #t #t #t)))))
 
      ("Overflow Tests"
       ,@(make-valid-expr-tests
@@ -324,8 +461,41 @@
            (,(min-int 61) (+ 1 ,(max-int 61)))
            (,(max-int 61) (- ,(min-int 61) 1)))))
 
+     ("Closures"
+      ,@(make-valid-expr-tests
+         `((5 (let ([x 5]) ((lambda (y) x) 2)))
+           (,(+ 5 6 7)
+            (let ([x 5] [y 6] [z 7])
+              ((lambda (a) (+ (+ x y) z)) 2)))))
+      ,@(valid-p
+         (curry equal? `((1 1 1 1 1)
+                         .
+                         (6 5 4 3 2)))
+         `(module
+            (define* (zero? n)
+              (eq? n 0))
+
+            (define* (sub1 n)
+              (- n 1))
+
+            (define* (curry f x)
+              (lambda (y)
+                (f x y)))
+
+            (define* (build-list f n)
+              (if (zero? n)
+                  '()
+                  (cons (f n) (build-list f (sub1 n)))))
+
+            (cons
+             (build-list (lambda (n) 1) 5)
+             (build-list (curry + 1) 5)))))
 
      ("Big Tests"
+      ,@(valid-expr
+         (curry equal? '#(#\h #\e #\l #\l #\o #\space #\w #\o #\r #\l #\d))
+         '(vector #\h #\e #\l #\l #\o #\space #\w #\o #\r #\l #\d))
+
       ,@(valid-p
          (lambda (x) (apply <= x))
          '(module
@@ -383,10 +553,56 @@
                                   p))))])
              (quicksort (build-list (lambda (x) (random)) 10000)))))
 
-      #;,@(valid-p
+      ,@(valid-p
+         (curry
+          equal?
+          '(1
+            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)
+            #(#\f #\i #\z #\z)
+            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)
+            #(#\b #\u #\z #\z)
+            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)
+            7
+            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)
+            #(#\f #\i #\z #\z)
+            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)))
          `(module
+            (define* (zero? n)
+              (eq? n 0))
 
-            )))
+            (define* (mod x y)
+              (if (>= x y)
+                  (mod (- x y) y)
+                  x))
+
+            (define* (sub1 n) (- n 1))
+
+            (define* (append ls1 ls2)
+              (if (empty? ls1)
+                  ls2
+                  (cons (car ls1) (append (cdr ls1) ls2))))
+
+            (define* (reverse ls)
+              (if (empty? ls)
+                  '()
+                  (append (reverse (cdr ls)) (cons (car ls) '()))))
+
+            (define* (fizzbuzz n)
+              (cond
+                [(zero? n)
+                 '()]
+                [(zero? (mod n 2))
+                 ;; The Arthur Shappey version
+                 (cons (vector #\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a) (fizzbuzz (sub1 n)))]
+                [(and (zero? (mod n 3)) (zero? (mod n 5)))
+                 (cons (vector #\f #\i #\z #\z #\b #\u #\z #\z) (fizzbuzz (sub1 n)))]
+                [(zero? (mod n 3))
+                 (cons (vector #\f #\i #\z #\z) (fizzbuzz (sub1 n)))]
+                [(zero? (mod n 5))
+                 (cons (vector #\b #\u #\z #\z) (fizzbuzz (sub1 n)))]
+                [else (cons n (fizzbuzz (sub1 n)))]))
+
+            (let ([fizzbuzz (lambda (x) (reverse (fizzbuzz x)))]) (fizzbuzz 10)))))
 
      ))
 
@@ -402,23 +618,22 @@
 
    (append
     (for/list ([suite tests])
-      (test-suite
-       "a11 public test suite"
-       (test-suite
-        (car suite)
-        (for ([case (cdr suite)]
-              [i (in-naturals 1)])
-          (test-case (format "Test ~a" i)
-            (with-check-info (['expected (car case)]
-                              ['actual-expr (cdr case)])
-              (let ([e (engine (lambda (_) (apply execute (cdr case))))])
-                (if (engine-run (current-test-timeout) e)
-                    (with-check-info (['actual (engine-result e)])
-                      (check-pred (flat-contract-predicate (car case)) (engine-result e)))
-                    (fail "Test timed out")
-                    ;; TODO: Test suites broken
-                    #;(raise (exn:fail:timeout "Test timed out"
-                                               (current-continuation-marks)))))))))))
+      (make-test-suite
+       (car suite)
+       (for/list ([case (cdr suite)]
+                  [i (in-naturals 1)])
+         (test-suite (format "Test ~a" i)
+           (with-check-info (['expected (car case)]
+                             ['actual-expr (cdr case)])
+             (let ([e (engine (lambda (_) (apply execute (cdr case))))])
+               (if (engine-run (current-test-timeout) e)
+                   (with-check-info (['actual (engine-result e)])
+                     (check-pred (flat-contract-predicate (car case)) (engine-result e)))
+                   (with-check-info (['engine-result (engine-result e)])
+                     (fail "Test timed out"))
+                   ;; TODO: Test suites broken
+                   #;(raise (exn:fail:timeout "Test timed out"
+                                              (current-continuation-marks))))))))))
 
     (list
      (test-suite
