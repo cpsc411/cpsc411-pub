@@ -35,7 +35,7 @@
                  e]
                 [`(or ,e ,es ...)
                  (let ([x (fresh)])
-                   `(let ([,x ,e]) (if ,x x (or ,@es))))])))
+                   `(let ([,x ,e]) (if ,x ,x (or ,@es))))])))
      (let* . ,(lambda (x)
                 (match x
                   [`(let* () ,e)
