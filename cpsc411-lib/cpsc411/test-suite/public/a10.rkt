@@ -461,7 +461,50 @@
            (,(min-int 61) (+ 1 ,(max-int 61)))
            (,(max-int 61) (- ,(min-int 61) 1)))))
 
-     ("Closures"
+     ("Stack/Calling Convention Tests"
+      ,@(valid-p
+         (apply + (build-list 16 values))
+         `(module
+            (define F
+              (lambda (a b c d e f g)
+                (+ 14 (G a b c d e f g 7))))
+            (define G
+              (lambda (a b c d e f g h)
+                (+ 13 (H a b c d e f g h 8))))
+            (define H
+              (lambda (a b c d e f g h j)
+                (+ 12 (J a b c d e f g h j 9))))
+            (define J
+              (lambda (a b c d e f g h j k)
+                (+ 11 (K a b c d e f g h j k 10))))
+            (define K
+              (lambda (a b c d e f g h j k l)
+                (+ a (+ b (+ c (+ d (+ e (+ f (+ g (+ h (+ j (+ k l))))))))))))
+            (+ 15 (F 0 1 2 3 4 5 6))))
+
+      ,@(valid-p
+         (apply + (build-list 16 values))
+         `(module
+            (define F
+              (lambda (who a b c d e f g)
+                (+ 14 ((car who) (cdr who) a b c d e f g 7))))
+            (define G
+              (lambda (who a b c d e f g h)
+                (+ 13 ((car who) (cdr who) a b c d e f g h 8))))
+            (define H
+              (lambda (who a b c d e f g h j)
+                (+ 12 ((car who) (cdr who) a b c d e f g h j 9))))
+            (define J
+              (lambda (who a b c d e f g h j k)
+                (+ 11 ((car who) a b c d e f g h j k 10))))
+            (define K
+              (lambda (a b c d e f g h j k l)
+                (+ a (+ b (+ c (+ d (+ e (+ f (+ g (+ h (+ j (+ k l))))))))))))
+
+            (let ([who (cons F (cons G (cons H (cons J (cons K '())))))])
+              (+ 15 ((car who) (cdr who) 0 1 2 3 4 5 6))))))
+
+     ("Closure Tests"
       ,@(make-valid-expr-tests
          `((5 (let ([x 5]) ((lambda (y) x) 2)))
            (,(+ 5 6 7)
