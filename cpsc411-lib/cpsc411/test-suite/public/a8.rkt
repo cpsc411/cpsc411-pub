@@ -31,12 +31,12 @@
      `(module (call car (call cons 7 empty))))
     7)
 
-   (test-equal?
+   (test-pred
     ""
+    (and/c integer? (not/c zero?))
     (execute
      `(module (call car 7))
-     nasm-run/exit-code)
-    11)
+     nasm-run/exit-code))
 
    (test-equal?
     ""
@@ -66,10 +66,10 @@
           x.1)))
     #(0 0))
 
-   (test-equal?
+   (test-pred
     ""
-    (execute `(module (call make-vector #\x)) nasm-run/exit-code)
-    7)
+    (and/c integer? (not/c zero?))
+    (execute `(module (call make-vector #\x)) nasm-run/exit-code))
 
    (test-equal?
     ""
@@ -103,8 +103,9 @@
                 x.1))))))
     #(1 2))
 
-   (test-equal?
+   (test-pred
     ""
+    (and/c integer? (not/c zero?))
     (execute
      `(module
         (let ([x.1 (call make-vector 2)])
@@ -112,8 +113,7 @@
             (let ([x.3 (call vector-set! x.1 1 2)])
               (let ([x.4 (call vector-set! x.1 2 3)])
                 x.4)))))
-     nasm-run/exit-code)
-    10)))
+     nasm-run/exit-code))))
 
 (define (a8-public-test-suite
          passes
