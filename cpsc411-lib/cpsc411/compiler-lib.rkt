@@ -283,8 +283,8 @@
 ; A string representing additional ld flags for this operating system.
 (define (ld-flags [type (system-type)])
   (match type
-    ['macosx "-macosx_version_min 10.6 -e start"]
-    [_ "-e start"]))
+    ['macosx (list "-macosx_version_min" "10.6" "-e" "start")]
+    [_ (list "-e" "start")]))
 
 ; String
 ; The name of the label that the linker expects as the starting block.
@@ -379,6 +379,17 @@
 ; The runner takes a path to the executable, and should return some Racket value
 ; representing the output of the executable.
 ; Expects nasm and ld to be in the path.
+(define NASM_PATH (find-executable-path "nasm"))
+(define LD_PATH (find-executable-path "ld"))
+
+#|
+(define shell (find-executable-path "sh"))
+(define-values (subp-out subp-in subp-id subp-err)
+  (apply values (process shell)))
+(fprintf subp-in @~a{@|NASM_PATH| -f @(bin-format) @|p| -o @|o| || echo $?} with-output-to-port )
+(fprintf subp-in @~a{@|LD_PATH| @(ld-flags) -o @|exe| @|o| || echo $?} with-output-to-port )
+|#
+
 (define ((nasm-run/observe runner) str)
   (define p (path->string (make-temporary-file "rkt~a.s")))
   (define o (string-replace p ".s" ".o"))
@@ -388,11 +399,16 @@
 
   ;; TODO: Should probably clean up temporary files on error.
   ;; but I use them for debugging.
-  (unless (zero? (system/exit-code @~a{nasm -f @(bin-format) @|p| -o @|o|}))
+  (unless (zero? (system*/exit-code NASM_PATH "-f" (bin-format) p "-o" o))
     (with-input-from-file p (thunk (displayln (port->string))))
     (error 'execute "Failed to compile"))
 
-  (unless (zero? (system/exit-code @~a{ld @|(ld-flags)| -o @|exe| @|o|}))
+  (unless (zero? (apply
+                  system*/exit-code
+                  LD_PATH
+                  (append
+                   (ld-flags)
+                   (list "-o" exe o))))
     (error 'execute "Failed to link"))
 
   (define res (runner exe))
@@ -409,24 +425,24 @@
   (nasm-run/observe (lambda (x)
                       (parameterize ([current-output-port (open-output-nowhere)]
                                      [current-error-port (open-output-nowhere)])
-                        (system/exit-code x)))))
+                        (system*/exit-code x)))))
 
 ; x64 String -> String
 ; Returns the string output resulting from assembling, linking, and natively executing the x64 input.
 (define nasm-run/print-string
-  (nasm-run/observe (lambda (x) (with-output-to-string (thunk (system x))))))
+  (nasm-run/observe (lambda (x) (with-output-to-string (thunk (system* x))))))
 
 ; x64 String -> Integer
 ; Returns the integer printed by the program resulting from assembling, linking,
 ; and natively executing the x64 input.
 (define nasm-run/print-number
-  (nasm-run/observe (lambda (x) (string->number (with-output-to-string (thunk (system x)))))))
+  (nasm-run/observe (lambda (x) (string->number (with-output-to-string (thunk (system* x)))))))
 
 ; x64 String -> Any
 ; Returns the read-able Racket datum printed by the program resulting from assembling, linking,
 ; and natively executing the x64 input.
 (define nasm-run/read
-  (nasm-run/observe (lambda (x) (with-input-from-string (with-output-to-string (thunk (system x)))
+  (nasm-run/observe (lambda (x) (with-input-from-string (with-output-to-string (thunk (system* x)))
                                   read))))
 (define (nasm-run/input-read n)
   (nasm-run/observe
@@ -444,14 +460,14 @@
   (nasm-run/observe (lambda (x)
                       (define op (open-output-string))
                       (parameterize ([current-error-port op])
-                        (system x)
+                        (system* x)
                         (get-output-string op)))))
 
 (define nasm-run/error-string+code
   (nasm-run/observe (lambda (x)
                       (define op (open-output-string))
                       (parameterize ([current-error-port op])
-                        (let ([code (system/exit-code x)])
+                        (let ([code (system*/exit-code x)])
                           (cons code (get-output-string op)))))))
 
 ; L? -> (x64 String -> Any) -> Any
