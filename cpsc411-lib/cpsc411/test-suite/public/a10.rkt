@@ -685,18 +685,21 @@
         (let ([stack-limit (current-omega-stack-limit)]
               [str (compile '(module ((lambda (x) (x x))
                                       (lambda (x) (x x)))))])
-          (let ([e (engine (lambda _ ((nasm-run/observe (lambda (x)
-                                                          (system/exit-code
-                                                           (format "ulimit -Ss ~a -Hs ~a; ~a"
-                                                                   stack-limit stack-limit
-                                                                   x))))
-                                      str)))])
-            (if (engine-run (current-omega-timeout) e)
-                (if (eq? 0 (engine-result e))
-                    (fail "Omega terminated normally")
-                    (with-check-info (['ulimit-exit (engine-result e)])
-                      (fail "Omega ate too much memory")))
-                (void)))))
+          (let-values ([(out in pid err control-f)
+                        (apply
+                         values
+                         ((nasm-run/observe
+                           #:block? #f
+                           (lambda (x)
+                             (process (format "ulimit -Ss ~a -Hs ~a; ~a" stack-limit stack-limit x))))
+                         str))])
+            (let ([e (engine (lambda (_) (control-f 'wait) (control-f 'exit-code)))])
+              (if (engine-run (current-omega-timeout) e)
+                  (if (eq? 0 (engine-result e))
+                      (fail "Omega terminated normally")
+                      (with-check-info (['ulimit-exit (engine-result e)])
+                        (fail "Omega ate too much memory")))
+                  (control-f 'kill))))))
 
       (test-case "Big Fact"
         (let ([stack-limit (current-big-fact-stack-limit)]
