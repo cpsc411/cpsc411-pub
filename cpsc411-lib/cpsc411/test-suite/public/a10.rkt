@@ -665,18 +665,19 @@
        (car suite)
        (for/list ([case (cdr suite)]
                   [i (in-naturals 1)])
-         (test-suite (format "Test ~a" i)
-           (with-check-info (['expected (car case)]
-                             ['actual-expr (cdr case)])
-             (let ([e (engine (lambda (_) (apply execute (cdr case))))])
-               (if (engine-run (current-test-timeout) e)
-                   (with-check-info (['actual (engine-result e)])
-                     (check-pred (flat-contract-predicate (car case)) (engine-result e)))
-                   (with-check-info (['engine-result (engine-result e)])
-                     (fail "Test timed out"))
-                   ;; TODO: Test suites broken
-                   #;(raise (exn:fail:timeout "Test timed out"
-                                              (current-continuation-marks))))))))))
+         (test-suite
+          (format "Test ~a" i)
+          (with-check-info (['expected (car case)]
+                            ['actual-expr (cdr case)])
+            (let ([e (engine (lambda (_) (apply execute (cdr case))))])
+              (if (engine-run (current-test-timeout) e)
+                  (with-check-info (['actual (engine-result e)])
+                    (check-pred (flat-contract-predicate (car case)) (engine-result e)))
+                  (with-check-info (['engine-result (engine-result e)])
+                    (fail "Test timed out"))
+                  ;; TODO: Test suites broken
+                  #;(raise (exn:fail:timeout "Test timed out"
+                                             (current-continuation-marks))))))))))
 
     (list
      (test-suite
@@ -692,7 +693,7 @@
                            #:block? #f
                            (lambda (x)
                              (process (format "ulimit -Ss ~a -Hs ~a; ~a" stack-limit stack-limit x))))
-                         str))])
+                          str))])
             (let ([e (engine (lambda (_) (control-f 'wait) (control-f 'exit-code)))])
               (if (engine-run (current-omega-timeout) e)
                   (if (eq? 0 (engine-result e))
@@ -704,11 +705,11 @@
       (test-case "Big Fact"
         (let ([stack-limit (current-big-fact-stack-limit)]
               [str (compile '(module
-                               (define* (fact n acc)
-                                 (if (eq? n 0)
-                                     acc
-                                     (fact (- n 1) (* n acc))))
-                               (fact 19 1)))])
+                                 (define* (fact n acc)
+                                   (if (eq? n 0)
+                                       acc
+                                       (fact (- n 1) (* n acc))))
+                                 (fact 19 1)))])
           (check-equal?
            ((nasm-run/observe (lambda (x)
                                 (with-input-from-string
