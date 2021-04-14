@@ -17,7 +17,7 @@
 (provide (all-defined-out))
 
 (define current-test-timeout (make-parameter 2000))
-
+(define current-omega-timeout (make-parameter 5000))
 (define current-omega-stack-limit (make-parameter 16))
 (define current-big-fact-stack-limit (make-parameter 32))
 
@@ -691,7 +691,7 @@
                                                                    stack-limit stack-limit
                                                                    x))))
                                       str)))])
-            (if (engine-run (* 60 1000) e)
+            (if (engine-run (current-omega-timeout) e)
                 (if (eq? 0 (engine-result e))
                     (fail "Omega terminated normally")
                     (with-check-info (['ulimit-exit (engine-result e)])
