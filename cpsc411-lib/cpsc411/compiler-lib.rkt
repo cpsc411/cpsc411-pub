@@ -390,7 +390,7 @@
 (fprintf subp-in @~a{@|LD_PATH| @(ld-flags) -o @|exe| @|o| || echo $?} with-output-to-port )
 |#
 
-(define ((nasm-run/observe runner) str)
+(define ((nasm-run/observe runner #:block? [block? #t]) str)
   (define p (path->string (make-temporary-file "rkt~a.s")))
   (define o (string-replace p ".s" ".o"))
   (define exe (string-replace p ".s" ".exe"))
@@ -411,10 +411,12 @@
                    (list "-o" exe o))))
     (error 'execute "Failed to link"))
 
-  (define res (runner exe))
+  (define res
+    (parameterize ([current-subprocess-custodian-mode 'kill])
+      (runner exe)))
 
   ; delete temporary files
-  (for ([f (list p o exe)])
+  (for ([f (list* p o (if block? (list exe) '()))])
     (and (file-exists? f) (delete-file f)))
 
   res)
