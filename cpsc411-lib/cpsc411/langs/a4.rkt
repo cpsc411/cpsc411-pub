@@ -50,7 +50,11 @@
    (for-syntax
     racket/base
     syntax/parse)
-   (only-in racket/base [module+ r:module+] [define r:define] [begin r:begin]))
+   (only-in racket/base
+            [module+ r:module+]
+            [define r:define]
+            [begin r:begin]
+            [lambda r:lambda]))
   (provide
    (all-from-out (submod ".." block-langs))
    (all-defined-out))
@@ -83,7 +87,7 @@
         [((with-label l s) ss ...)
          (let-values ([(defs e) (labelify-begin defs #`(s ss ...))])
            (values
-            (cons #`(l (lambda () #,e)) defs)
+            (cons #`(l (r:lambda () #,e)) defs)
             #`(r:begin (l))))]
         [(s ss ...)
          (if (null? (attribute ss))
@@ -103,7 +107,7 @@
         #`(r:begin
            (let/ec done
              (letrec (#,@defs
-                      [halt (lambda (v) (set! rax v) (done))])
+                      [halt (r:lambda (v) (set! rax v) (done))])
                (r:begin
                 #,e
                 (done))))
@@ -114,7 +118,7 @@
     (define-namespace-anchor a)
     (r:define interp-para-asm-lang-v4
       (let ([ns (namespace-anchor->namespace a)])
-        (lambda (x)
+        (r:lambda (x)
           (eval x ns))))))
 
 (require (submod 'label-langs interp))
