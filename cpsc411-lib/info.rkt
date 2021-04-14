@@ -2,6 +2,7 @@
 (define collection 'multi)
 (define deps
   '("rackunit-lib"
+    "memoize" ; TODO pulls in Scribble !!
     ("base" #:version "7.3")))
 (define build-deps
   '("at-exp-lib"

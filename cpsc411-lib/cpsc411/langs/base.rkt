@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require
+ memoize
  cpsc411/machine-ints
  racket/local
  racket/list
@@ -132,7 +133,8 @@
 (define unsafe-fx>= >=)
 (define unsafe-fx< <)
 (define unsafe-fx> >)
-(define (error n) `(error ,n))
+(define/memo (error n)
+  `(error ,n))
 (define (error? n) (and (list? n) (eq? (car n) 'error) (int64? (second n))))
 (define (arithmetic-shift-right x y) (arithmetic-shift x (- 0 y)))
 (define (ascii-char? x)
@@ -240,3 +242,7 @@
     (syntax-parse stx
       [_:id
        ]))
+
+(module+ test
+  (require rackunit)
+  (check-eq? (error 5) (error 5)))
