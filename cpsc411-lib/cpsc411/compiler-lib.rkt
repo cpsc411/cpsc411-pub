@@ -1,6 +1,7 @@
 #lang at-exp racket
 
 (require
+ memoize
  racket/syntax
  "info-lib.rkt"
  "machine-ints.rkt")
@@ -357,9 +358,9 @@
 
 (define current-pass-list
   (make-parameter
-   '()
+   #f
    (lambda (ls)
-     (unless (map procedure? ls)
+     (unless (or (false? ls) (map procedure? ls))
        (error 'current-pass-list "Expected a list of compiler passes (functions); did you remember to initialize current-pass-list?" ls))
      ls)))
 
@@ -367,11 +368,14 @@
 ; Where L1 is the input to the first function in (current-pass-list) and L2 is
 ; the output language of the last function in (current-pass-list).
 ; NOTE: Conflicts Racket's compile. Could cause problems.
-(define (compile e)
-  (when (null? (current-pass-list))
+(define/memo* (compile/cached e passls)
+  (unless passls
     (error 'compile "Did you remember to initialize current-pass-list?"))
 
-  ((apply compose (reverse (current-pass-list))) e))
+  ((apply compose (reverse passls)) e))
+
+(define (compile e)
+  (compile/cached e (current-pass-list)))
 
 ; (Path -> any) -> x64 String -> any
 ; Assembles and links the x64 program represented by the string str using nasm,
@@ -390,7 +394,8 @@
 (fprintf subp-in @~a{@|LD_PATH| @(ld-flags) -o @|exe| @|o| || echo $?} with-output-to-port )
 |#
 
-(define ((nasm-run/observe runner #:block? [block? #t]) str)
+;; TODO: memoize library doesn't work as expected with internal defines
+(define (nasm-run/internal runner block? str)
   (define p (path->string (make-temporary-file "rkt~a.s")))
   (define o (string-replace p ".s" ".o"))
   (define exe (string-replace p ".s" ".exe"))
@@ -420,6 +425,14 @@
     (and (file-exists? f) (delete-file f)))
 
   res)
+
+(define/memo* (nasm-run/cache runner str)
+  (nasm-run/internal runner #t str))
+
+(define ((nasm-run/observe runner #:block? [block? #t]) str)
+  (if block?
+      (nasm-run/cache runner str)
+      (nasm-run/internal runner #f str)))
 
 ; x64 String -> Integer
 ; Returns the exit code resulting from assembling, linking, and natively executing the x64 input.
