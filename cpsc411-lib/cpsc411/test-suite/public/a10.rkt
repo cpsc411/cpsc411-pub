@@ -461,7 +461,59 @@
            (,(min-int 61) (+ 1 ,(max-int 61)))
            (,(max-int 61) (- ,(min-int 61) 1)))))
 
+     ("Binding Tests"
+      ,@(valid-p
+         #f
+         `(module
+            (define odd?
+              (lambda (x)
+                (if (eq? x 0)
+                    #f
+                    (let ([y (+ x -1)])
+                      (even? y)))))
+            (define even?
+              (lambda (x)
+                (if (eq? x 0)
+                    #t
+                    (let ([y (+ x -1)])
+                      (odd? y)))))
+            (even? 5)))
+
+      ,@(make-valid-expr-tests
+         `((42 (let ([lambda 42]) lambda))
+           (42 (let ([define 42]) define))
+           (42 (let ([module 42]) module))
+           (42 (let ([let 42]) let))
+           ("#<procedure>" ((lambda (lambda) (lambda lambda)) (lambda (lambda) lambda))
+                           ,nasm-run/print-string)))
+
+      ,@(apply
+         append
+         (for/list ([bind '(call
+                            ; void error ;; TODO these aren't handled right
+                            ; because applify needs to come after uniquify
+                            * + - eq? < <= >
+                            >= fixnum? boolean? empty? void? ascii-char? error? not
+                            procedure? vector? pair? cons car cdr make-vector
+                            vector-length vector-set! vector-ref
+                            procedure-arity)])
+           (valid-p
+            42
+            `(module
+               (define ,bind (lambda (,bind) (let ([,bind ,bind]) ,bind)))
+               (,bind 42))))))
+
      ("Stack/Calling Convention Tests"
+      ,@(valid-p
+         2
+         `(module
+            (define swap
+              (lambda (x y)
+                (if (< y x)
+                    x
+                    (swap y x))))
+            (swap 1 2)))
+
       ,@(valid-p
          (apply + (build-list 16 values))
          `(module
