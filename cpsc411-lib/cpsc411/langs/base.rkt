@@ -206,9 +206,9 @@
   (unsafe-vector-ref (unsafe-procedure-env p) i))
 (define (unsafe-procedure-set! p i v)
   (unsafe-vector-set! (unsafe-procedure-env p) i v))
+(define (unsafe-procedure-arity x) (- (procedure-arity x) 1))
 
 (define unsafe-procedure-call call)
-(define unsafe-procedure-arity procedure-arity)
 (define closure-call call)
 (define closure-ref unsafe-procedure-ref)
 
@@ -228,8 +228,6 @@
                     (fill-env aloc es ...)
                     tail)))]
     [(_ () tail) #'tail]))
-
-(define (unsafe-procedure-arity x) (- (procedure-arity x) 1))
 
 (module+ interp
   (provide interp-base)
