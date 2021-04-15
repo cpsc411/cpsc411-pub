@@ -219,13 +219,17 @@
 
 (define-syntax (cletrec stx)
   (syntax-parse stx
-    [(_ ([aloc ((~literal make-closure) label es ...)] oths ...) tail)
+    [(_ ([aloc ((~literal make-closure) label arity es ...)] oths ...) tail)
      #`(let ([aloc (make-procedure label #,(length (syntax->datum #'(es ...))))])
          (cletrec (oths ...)
-           (begin
-             (fill-env aloc es ...)
-             tail)))]
+                  (begin
+                    (unless (equal? arity (unsafe-procedure-arity label))
+                      (error 'make-closure "arity argument doesn't match label"))
+                    (fill-env aloc es ...)
+                    tail)))]
     [(_ () tail) #'tail]))
+
+(define (unsafe-procedure-arity x) (- (procedure-arity x) 1))
 
 (module+ interp
   (provide interp-base)
