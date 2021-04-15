@@ -721,15 +721,16 @@
           (format "Test ~a" i)
           (with-check-info (['expected (car case)]
                             ['actual-expr (cdr case)])
-            (let ([e (engine (lambda (_) (apply execute (cdr case))))])
-              (if (engine-run (current-test-timeout) e)
-                  (with-check-info (['actual (engine-result e)])
-                    (check-pred (flat-contract-predicate (car case)) (engine-result e)))
-                  (with-check-info (['engine-result (engine-result e)])
-                    (fail "Test timed out"))
-                  ;; TODO: Test suites broken
-                  #;(raise (exn:fail:timeout "Test timed out"
-                                             (current-continuation-marks))))))))))
+            (test-begin
+              (let ([e (engine (lambda (_) (apply execute (cdr case))))])
+                (if (engine-run (current-test-timeout) e)
+                    (with-check-info (['actual (engine-result e)])
+                      (check-pred (flat-contract-predicate (car case)) (engine-result e)))
+                    (with-check-info (['engine-result (engine-result e)])
+                      (fail "Test timed out"))
+                    ;; TODO: Test suites broken
+                    #;(raise (exn:fail:timeout "Test timed out"
+                                               (current-continuation-marks)))))))))))
 
     (list
      (test-suite
