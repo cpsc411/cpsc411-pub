@@ -10,7 +10,7 @@
   racket/dict
   racket/syntax
   syntax/parse)
- (only-in racket/base [define r:define] [error r:error])
+ (only-in racket/base [define r:define] [error r:error] [set! r:set!])
  (only-in racket/list empty))
 
 (provide
@@ -86,10 +86,13 @@
     [(module (~and (~var defs) ((~datum define) _ ...)) ... tail)
      #`(module () defs ... tail)]
     [(module info defs ... tail)
-     #`(begin
-         (init-heap)
-         (compile-allow-set!-undefined #t)
-         (bind-fvars 1000 (bind-regs #,(bind-info #'info #`(local [defs ...] tail)))))]))
+     #`(let/cc k
+         (begin
+           (init-heap)
+           (compile-allow-set!-undefined #t)
+           (bind-fvars 1000 (bind-regs #,(bind-info #'info #`(local [defs ...]
+                                                               (let ([#,(syntax-local-introduce (format-id #f "done")) (lambda () (k rax))])
+                                                                 tail)))))))]))
 
 (define-syntax-rule (jump l rest ...)
   (l))
@@ -120,6 +123,17 @@
 (define - x64-sub)
 (define * x64-mul)
 (define halt values)
+
+(define-syntax (set! stx)
+  (syntax-parse stx
+    [(_ (base (~datum +) offset) value)
+     #`(mset! base offset value)]
+    [(_ (base (~datum -) offset) value)
+     #`(mset! base (* -1 offset) value)]
+    [(_ loc (base (~datum +) offset))
+     #`(r:set! loc (mref base offset))]
+    [(_ loc value)
+     #`(r:set! loc value)]))
 
 (define (true) #t)
 (define (false) #f)
@@ -154,6 +168,9 @@
 (define ALIGN 8)
 (define memory (make-vector 10000 'un-aloced))
 (define hbp (* ALIGN 2))
+
+(define (unsafe-mset! base offset value)
+  (vector-set! memory (/ (+ base offset) ALIGN) value))
 
 (define (mset! base offset value)
   (let ([loc (/ (+ base offset) ALIGN)])
