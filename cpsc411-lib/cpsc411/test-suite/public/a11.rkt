@@ -14,7 +14,12 @@
  "a11-front-end.rkt"
  #;"a8.rkt")
 
-(provide (all-defined-out))
+(provide
+ (all-defined-out)
+ current-test-timeout
+ current-omega-timeout
+ current-omega-stack-limit
+ current-big-fact-stack-limit)
 
 (define (a11-public-test-suite)
 
