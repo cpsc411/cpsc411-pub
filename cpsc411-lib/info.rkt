@@ -2,7 +2,7 @@
 (define collection 'multi)
 (define deps
   '("rackunit-lib"
-    "https://github.com/wilbowma/memoize?path=memoize-lib"
+    "https://github.com/wilbowma/memoize.git?path=memoize-lib"
     ("base" #:version "7.3")))
 (define build-deps
   '("at-exp-lib"
