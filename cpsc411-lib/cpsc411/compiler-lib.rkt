@@ -284,7 +284,8 @@
 ; A string representing additional ld flags for this operating system.
 (define (ld-flags [type (system-type)])
   (match type
-    ['macosx (list "-macosx_version_min" "10.6" "-e" "start")]
+    ;; -no_pie needed until we switch from mov to lea for static pointers
+    ['macosx (list "-no_pie" "-macosx_version_min" "10.6" "-e" "start")]
     [_ (list "-e" "start")]))
 
 ; String
