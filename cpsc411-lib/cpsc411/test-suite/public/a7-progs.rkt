@@ -18,7 +18,7 @@
    remove-complex-opera*-source-progs
    sequentialize-let-source-progs
    impose-calling-conventions-source-progs
-   canonicalize-bind-source-progs
+   normalize-bind-source-progs
    select-instructions-source-progs
    uncover-locals-source-progs
    undead-analysis-source-progs

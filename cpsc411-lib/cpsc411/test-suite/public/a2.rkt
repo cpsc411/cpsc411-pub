@@ -306,46 +306,46 @@
 
      (test-from sequentialize-let passes x 20))))
 
-(define (a2-canonicalize-bind-test-suite passes canonicalize-bind)
-  (define-syntax-rule (test-canonicalize-bind-correct actual source)
+(define (a2-normalize-bind-test-suite passes canonicalize-bind)
+  (define-syntax-rule (test-normalize-bind-correct actual source)
     (test-correct interp-mf-lang-v3 interp-cmf-lang-v3 source actual))
 
   (test-suite
-   "a2 canonicalize-bind tests"
+   "a2 normalize-bind tests"
 
    (let ([x `(module 5)])
-     (test-match (canonicalize-bind x)
+     (test-match (normalize-bind x)
                   `(module 5))
 
-     (test-canonicalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (canonicalize-bind x) x)
 
-     (test-from canonicalize-bind passes x 5))
+     (test-from normalize-bind passes x 5))
 
    (let ([x `(module (begin (set! x.1 (+ 5 6))
                             (set! y.1 (+ 1 x.1))
                             y.1))])
      (fragile-test-case
-       (check-match (canonicalize-bind x)
+       (check-match (normalize-bind x)
                     `(module (begin (set! x.1 (+ 5 6))
                                     (set! y.1 (+ 1 x.1))
                                     y.1))))
 
-     (test-canonicalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (canonicalize-bind x) x)
 
-     (test-from canonicalize-bind passes x 12))
+     (test-from normalize-bind passes x 12))
 
    (let ([x `(module (begin (set! x.1 (begin (set! y.1 1)
                                              y.1))
                             x.1))])
      (fragile-test-case
-       (check-match (canonicalize-bind x)
+       (check-match (normalize-bind x)
                     `(module (begin (begin (set! y.1 1)
                                            (set! x.1 y.1))
                                     x.1))))
 
-     (test-canonicalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (canonicalize-bind x) x)
 
-     (test-from canonicalize-bind passes x 1))
+     (test-from normalize-bind passes x 1))
 
    (let ([x `(module
                  (begin
@@ -354,7 +354,7 @@
                                     y.4))
                    x.3))])
      (fragile-test-case
-       (check-match (canonicalize-bind x)
+       (check-match (normalize-bind x)
                     `(module
                          (begin
                            (begin
@@ -364,9 +364,9 @@
                              (set! x.3 y.4))
                            x.3))))
 
-     (test-canonicalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (canonicalize-bind x) x)
 
-     (test-from canonicalize-bind passes x 9))
+     (test-from normalize-bind passes x 9))
 
    (let ([x `(module
                  (begin
@@ -379,7 +379,7 @@
                              (set! x.4 2) x.4))
                      2)))])
      (fragile-test-case
-       (check-match (canonicalize-bind x)
+       (check-match (normalize-bind x)
                     `(module
                          (begin
                            (set! x.6 2)
@@ -391,9 +391,9 @@
                                (set! x.6 x.4))
                              2)))))
 
-     (test-canonicalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (canonicalize-bind x) x)
 
-     (test-from canonicalize-bind passes x 2))
+     (test-from normalize-bind passes x 2))
 
    (let ([x `(module
                  (begin
@@ -403,7 +403,7 @@
                      (set! y.2 5)
                      x.6)))])
      (fragile-test-case
-      (check-match (canonicalize-bind x)
+      (check-match (normalize-bind x)
                   `(module
                        (begin
                          (set! x.6 (+ 2 3))
@@ -412,9 +412,9 @@
                            (set! y.2 5)
                            x.6)))))
 
-     (test-canonicalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (canonicalize-bind x) x)
 
-     (test-from canonicalize-bind passes x 5))
+     (test-from normalize-bind passes x 5))
 
    (let ([x `(module
                  (begin
@@ -427,7 +427,7 @@
                                     y.4))
                    x.3))])
      (fragile-test-case
-       (check-match (canonicalize-bind x)
+       (check-match (normalize-bind x)
                     `(module
                          (begin
                            (begin
@@ -438,9 +438,9 @@
                              (set! x.3 y.4))
                            x.3))))
 
-     (test-canonicalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (canonicalize-bind x) x)
 
-     (test-from canonicalize-bind passes x 9))))
+     (test-from normalize-bind passes x 9))))
 
 (define (a2-select-instructions-test-suite passes select-instructions)
   (test-suite
@@ -1313,7 +1313,7 @@
      check-values-lang
      uniquify
      sequentialize-let
-     canonicalize-bind
+     normalize-bind
      select-instructions
      assign-homes
      flatten-begins
@@ -1329,7 +1329,7 @@
      check-values-lang
      uniquify
      sequentialize-let
-     canonicalize-bind
+     normalize-bind
      select-instructions
      uncover-locals
      assign-fvars
@@ -1380,7 +1380,7 @@
    (a2-uncover-locals-test-suite passes uncover-locals)
    (a2-select-instructions-test-suite passes select-instructions)
    (a2-assign-homes-test-suite passes assign-homes)
-   (a2-canonicalize-bind-test-suite passes canonicalize-bind)
+   (a2-normalize-bind-test-suite passes canonicalize-bind)
    (a2-sequentialize-let-test-suite passes sequentialize-let)
    (a2-uniquify-test-suite passes uniquify)
    (a2-check-values-lang-test-suite pass-ls check-values-lang)

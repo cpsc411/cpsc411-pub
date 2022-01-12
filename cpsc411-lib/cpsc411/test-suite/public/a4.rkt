@@ -680,7 +680,7 @@ mov rax, rdx")
 
          uniquify
          sequentialize-let
-         canonicalize-bind
+         normalize-bind
          select-instructions
          uncover-locals
          undead-analysis
@@ -727,7 +727,7 @@ mov rax, rdx")
     (a2-select-instructions-test-suite passes select-instructions)
     #;(a2-assign-homes-test-suite passes assign-homes-opt)
     #;(a2-assign-homes-test-suite passes assign-homes)
-    (a2-canonicalize-bind-test-suite passes canonicalize-bind)
+    (a2-normalize-bind-test-suite passes canonicalize-bind)
     (a2-sequentialize-let-test-suite passes sequentialize-let)
     (a2-uniquify-test-suite passes uniquify)
     #;(a2-check-values-lang-test-suite passes check-values-lang)

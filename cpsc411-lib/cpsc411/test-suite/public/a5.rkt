@@ -69,7 +69,7 @@
          uniquify
          sequentialize-let
          impose-calling-conventions
-         canonicalize-bind
+         normalize-bind
          select-instructions
          uncover-locals
          undead-analysis
@@ -114,7 +114,7 @@
     (a2-select-instructions-test-suite passes select-instructions)
     #;(a2-assign-homes-test-suite passes assign-homes-opt)
     #;(a2-assign-homes-test-suite passes assign-homes)
-    (a2-canonicalize-bind-test-suite passes canonicalize-bind)
+    (a2-normalize-bind-test-suite passes canonicalize-bind)
     (a2-sequentialize-let-test-suite passes sequentialize-let)
     (a2-uniquify-test-suite passes uniquify)
     (a2-check-values-lang-test-suite passes check-values-lang)
@@ -138,7 +138,7 @@
      (list
       sequentialize-let-source-progs
       impose-calling-conventions-source-progs
-      canonicalize-bind-source-progs
+      normalize-bind-source-progs
       select-instructions-source-progs
       uncover-locals-source-progs
       undead-analysis-source-progs
@@ -169,7 +169,7 @@
     undead-analysis
     uncover-locals
     select-instructions
-    canonicalize-bind
+    normalize-bind
     impose-calling-conventions
     sequentialize-let)
 

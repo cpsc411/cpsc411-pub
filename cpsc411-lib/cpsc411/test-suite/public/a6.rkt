@@ -80,7 +80,7 @@
          uniquify
          sequentialize-let
          impose-calling-conventions
-         canonicalize-bind
+         normalize-bind
          select-instructions
          uncover-locals
          undead-analysis
@@ -121,7 +121,7 @@
      (list
       sequentialize-let-source-progs
       impose-calling-conventions-source-progs
-      canonicalize-bind-source-progs
+      normalize-bind-source-progs
       select-instructions-source-progs
       uncover-locals-source-progs
       undead-analysis-source-progs
@@ -158,7 +158,7 @@
     undead-analysis
     uncover-locals
     select-instructions
-    canonicalize-bind
+    normalize-bind
     impose-calling-conventions
     sequentialize-let)
 

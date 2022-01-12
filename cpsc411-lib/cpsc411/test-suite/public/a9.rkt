@@ -44,7 +44,7 @@
          remove-complex-opera*
          sequentialize-let
          impose-calling-conventions
-         canonicalize-bind
+         normalize-bind
          select-instructions
          expose-allocation-pointer
          uncover-locals
@@ -132,7 +132,7 @@
       undead-analysis
       uncover-locals
       select-instructions
-      canonicalize-bind
+      normalize-bind
       impose-calling-conventions
       sequentialize-let
       remove-complex-opera*
