@@ -5,4 +5,5 @@
 
 (require (submod "base.rkt" interp))
 
-(define interp-paren-x64-v1 interp-base)
+(define (interp-paren-x64-v1 x)
+  (modulo (interp-base `(module () (begin ,x rax))) 256))
