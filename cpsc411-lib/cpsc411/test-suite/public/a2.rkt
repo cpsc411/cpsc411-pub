@@ -306,7 +306,7 @@
 
      (test-from sequentialize-let passes x 20))))
 
-(define (a2-normalize-bind-test-suite passes canonicalize-bind)
+(define (a2-normalize-bind-test-suite passes normalize-bind)
   (define-syntax-rule (test-normalize-bind-correct actual source)
     (test-correct interp-mf-lang-v3 interp-cmf-lang-v3 source actual))
 
@@ -317,7 +317,7 @@
      (test-match (normalize-bind x)
                   `(module 5))
 
-     (test-normalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (normalize-bind x) x)
 
      (test-from normalize-bind passes x 5))
 
@@ -330,7 +330,7 @@
                                     (set! y.1 (+ 1 x.1))
                                     y.1))))
 
-     (test-normalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (normalize-bind x) x)
 
      (test-from normalize-bind passes x 12))
 
@@ -343,7 +343,7 @@
                                            (set! x.1 y.1))
                                     x.1))))
 
-     (test-normalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (normalize-bind x) x)
 
      (test-from normalize-bind passes x 1))
 
@@ -364,7 +364,7 @@
                              (set! x.3 y.4))
                            x.3))))
 
-     (test-normalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (normalize-bind x) x)
 
      (test-from normalize-bind passes x 9))
 
@@ -391,7 +391,7 @@
                                (set! x.6 x.4))
                              2)))))
 
-     (test-normalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (normalize-bind x) x)
 
      (test-from normalize-bind passes x 2))
 
@@ -412,7 +412,7 @@
                            (set! y.2 5)
                            x.6)))))
 
-     (test-normalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (normalize-bind x) x)
 
      (test-from normalize-bind passes x 5))
 
@@ -438,7 +438,7 @@
                              (set! x.3 y.4))
                            x.3))))
 
-     (test-normalize-bind-correct (canonicalize-bind x) x)
+     (test-normalize-bind-correct (normalize-bind x) x)
 
      (test-from normalize-bind passes x 9))))
 
@@ -1380,7 +1380,7 @@
    (a2-uncover-locals-test-suite passes uncover-locals)
    (a2-select-instructions-test-suite passes select-instructions)
    (a2-assign-homes-test-suite passes assign-homes)
-   (a2-normalize-bind-test-suite passes canonicalize-bind)
+   (a2-normalize-bind-test-suite passes normalize-bind)
    (a2-sequentialize-let-test-suite passes sequentialize-let)
    (a2-uniquify-test-suite passes uniquify)
    (a2-check-values-lang-test-suite pass-ls check-values-lang)
