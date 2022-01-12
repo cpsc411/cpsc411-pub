@@ -13,7 +13,7 @@ invalid programs.
 Validators will reject invalid programs, but not necessarily provide useful errors.
 
 @section{v1 Languages}
-@defmodule[cpsc411/langs/v1]
+@defmodule[cpsc411/langs/m1]
 @(define egv1 (make-base-eval '(require cpsc411/compiler-lib cpsc411/langs/m1)))
 
 @defproc[(interp-paren-x64-v1 [v paren-x64-v1?]) (in-range/c 0 256)]{
