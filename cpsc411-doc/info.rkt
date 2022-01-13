@@ -2,7 +2,9 @@
 (define collection 'multi)
 (define deps '(("base" #:version "7.3")))
 (define build-deps
-  '(("base" #:version "7.3")
+  '("at-exp-lib"
+    "scribble-bettergrammar-lib"
+    ("base" #:version "7.3")
     "scribble-lib"
     "racket-doc"
     "rackunit-doc"
