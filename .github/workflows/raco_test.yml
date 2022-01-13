@@ -21,18 +21,11 @@ jobs:
       run: |
         sudo apt-get install nasm
     - name: Install Racket
-      uses: Bogdanp/setup-racket@v0.12
+      uses: Bogdanp/setup-racket@v1.7
       with:
         architecture: 'x64'
-        distribution: 'minimal'
+        distribution: 'full'
         version: ${{ matrix.racket }}
-    - name: Do minimal Racket setup
-      run: |
-        raco pkg install --batch --auto compiler-lib
-    - name: Workaround race condition in raco pkg install
-      run: |
-        raco pkg install --batch --auto at-exp-lib scribble-bettergrammar-lib
-        raco setup
     - name: Checkout
       uses: actions/checkout@main
       with:
