@@ -8,7 +8,9 @@
  (for-label cpsc411/compiler-lib)
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
- "../utils/redex-gen.rkt")
+ "redex-gen.rkt"
+ "v1.rkt"
+ (submod "base.rkt" interp))
 
 (provide (all-defined-out))
 
@@ -28,6 +30,8 @@
   [int64 int64?]
 ]
 
+(define interp-asm-lang-v2 interp-base)
+
 @define-grammar/pred[asm-lang-v2/locals
   #:literals (int64? aloc? any info/c)
   #:datum-literals (module locals begin halt set! * +)
@@ -45,6 +49,8 @@
   [aloc  aloc?]
   [int64 int64?]
 ]
+
+(define interp-asm-lang-v2/locals interp-base)
 
 @define-grammar/pred[asm-lang-v2/assignments
   #:literals (int64? aloc? any fvar? info/c)
@@ -73,6 +79,8 @@
   [fvar fvar?]
 ]
 
+(define interp-asm-lang-v2/assignments interp-base)
+
 @define-grammar/pred[nested-asm-lang-v2
   #:literals (int64? fvar?)
   #:datum-literals (module set! begin rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10
@@ -91,6 +99,8 @@
   [fvar  fvar?]
 ]
 
+(define interp-nested-asm-lang-v2 interp-base)
+
 @define-grammar/pred[para-asm-lang-v2
   #:literals (int64? fvar?)
   #:datum-literals (module set! begin rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10
@@ -105,6 +115,8 @@
   [int64 int64?]
   [fvar  fvar?]
 ]
+
+(define interp-para-asm-lang-v2 interp-paren-x64-v1)
 
 @define-grammar/pred[paren-x64-fvars-v2
   #:literals (int64? int32? fvar?)
@@ -125,6 +137,8 @@
   [int32 int32?]
   [fvar fvar?]
 ]
+
+(define interp-paren-x64-fvars-v2 interp-paren-x64-v1)
 
 @define-grammar/pred[paren-x64-v2
   #:literals (int64? int32? dispoffset? frame-base-pointer-register?)
@@ -147,3 +161,5 @@
   [int32 int32?]
   [dispoffset dispoffset?]
 ]
+
+(define interp-paren-x64-v2 interp-paren-x64-v1)

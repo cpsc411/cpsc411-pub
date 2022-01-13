@@ -8,7 +8,8 @@
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
  (for-label cpsc411/compiler-lib)
- "../utils/redex-gen.rkt")
+ "redex-gen.rkt"
+ "v2.rkt")
 
 (provide (all-defined-out))
 
@@ -34,6 +35,8 @@
   [int64 int64?]
 ]
 
+(define interp-asm-lang-v2/undead interp-asm-lang-v2)
+
 @define-grammar/pred[asm-lang-v2/conflicts
   #:literals (int64? aloc?)
   #:datum-literals (module begin locals conflicts undead-out set! * + halt)
@@ -55,3 +58,5 @@
   [aloc  aloc?]
   [int64 int64?]
 ]
+
+(define interp-asm-lang-v2/conflicts interp-asm-lang-v2)

@@ -9,7 +9,7 @@
  cpsc411/test-suite/utils
  cpsc411/compiler-lib
  cpsc411/2c-run-time
- "../../langs/a5.rkt"
+ "../../langs/v5.rkt"
  "a2.rkt"
  "a3.rkt"
  "a4.rkt")

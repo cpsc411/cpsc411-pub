@@ -5,7 +5,8 @@
   rackunit
   cpsc411/test-suite/utils
   cpsc411/compiler-lib
-  "../../langs/a2.rkt"
+  "../../langs/v2.rkt"
+  "../../langs/v3.rkt"
   "a1.rkt")
 
 (provide

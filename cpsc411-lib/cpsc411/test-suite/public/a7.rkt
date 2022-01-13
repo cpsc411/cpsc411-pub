@@ -9,8 +9,7 @@
  cpsc411/test-suite/utils
  cpsc411/compiler-lib
  cpsc411/ptr-run-time
- "../../langs/a7.rkt"
- )
+ "../../langs/v7.rkt")
 
 (provide (all-defined-out))
 

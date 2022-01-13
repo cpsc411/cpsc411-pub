@@ -5,7 +5,7 @@
   racket/function
   rackunit
   "../utils.rkt"
-  "../../langs/m1.rkt"
+  "../../langs/v1.rkt"
   cpsc411/compiler-lib)
 
 (provide

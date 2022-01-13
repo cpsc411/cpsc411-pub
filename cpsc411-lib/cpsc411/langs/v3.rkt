@@ -8,7 +8,8 @@
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
  (for-label cpsc411/compiler-lib)
- "../utils/redex-gen.rkt")
+ "redex-gen.rkt"
+ (submod "base.rkt" interp))
 
 (provide (all-defined-out))
 
@@ -26,6 +27,8 @@
   [int64 int64?]
 ]
 
+(define interp-values-lang-v3 interp-base)
+
 @define-grammar/pred[values-unique-lang-v3
   #:literals (int64? aloc?)
   #:datum-literals (module let * +)
@@ -39,6 +42,8 @@
   [aloc aloc?]
   [int64 int64?]
 ]
+
+(define interp-values-lang-unique-v3 interp-base)
 
 @define-grammar/pred[imp-mf-lang-v3
   #:literals (int64? aloc?)
@@ -57,6 +62,8 @@
   [int64 int64?]
 ]
 
+(define interp-mf-lang-v3 interp-base)
+
 @define-grammar/pred[imp-cmf-lang-v3
   #:literals (int64? aloc?)
   #:datum-literals (module set! begin * +)
@@ -72,3 +79,5 @@
   [aloc   aloc?]
   [int64 int64?]
 ]
+
+(define interp-cmf-lang-v3 interp-base)

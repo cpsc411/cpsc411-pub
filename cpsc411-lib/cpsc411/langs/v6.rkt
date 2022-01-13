@@ -8,7 +8,8 @@
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
  (for-label cpsc411/compiler-lib)
- "../utils/redex-gen.rkt")
+ "redex-gen.rkt"
+ "v5.rkt")
 
 (provide (all-defined-out))
 
@@ -39,6 +40,8 @@
   [relop < <= = >= > !=]
   [int64 int64?]
 ]
+
+(define interp-values-lang-v6 interp-values-lang-v5)
 
 @define-grammar/pred[values-unique-lang-v6
   #:literals (name? int64? label? aloc?)

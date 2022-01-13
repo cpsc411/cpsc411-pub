@@ -8,7 +8,8 @@
  (for-label cpsc411/compiler-lib)
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
- "../utils/redex-gen.rkt")
+ "redex-gen.rkt"
+ (submod "base.rkt" interp))
 
 (provide (all-defined-out))
 
@@ -25,3 +26,6 @@
   [int64 int64?]
   [int32 int32?]
 ]
+
+(define (interp-paren-x64-v1 x)
+  (interp-base `(begin ,x (halt rax))))

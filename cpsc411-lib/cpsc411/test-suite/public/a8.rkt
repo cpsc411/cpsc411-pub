@@ -9,7 +9,7 @@
  cpsc411/test-suite/utils
  cpsc411/compiler-lib
  cpsc411/ptr-run-time
- ;"../../langs/a8.rkt"
+ ;"../../langs/v8.rkt"
  "a7.rkt"
  )
 
