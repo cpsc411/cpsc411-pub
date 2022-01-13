@@ -18,5 +18,5 @@
                          [interp (syntax->list #'(interps ...))])
                 #`(begin
                     (defthing #:kind "" #,lang grammar? (bettergrammar* #,lang))
-                    (defproc (#,pred? [a any/c]) boolean? @elem{Decides whether @racket[a] is a valid program in the } @racket[#,lang] " grammar, represented as a @racket[quote]d datum. The first non-terminal in the grammar defines valid programs.")
+                    (defproc (#,pred? [a any/c]) boolean? @elem{Decides whether @racket[a] is a valid program in the } @racket[#,lang] " grammar, represented as a " @racket[quote] "d datum. The first non-terminal in the grammar defines valid programs.")
                     (defproc (#,interp [a #,pred?]) any/c @elem{Evaluates a } @racket[#,lang] " program to a value.")))))]))
