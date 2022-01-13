@@ -84,7 +84,7 @@
 @define-grammar/pred[nested-asm-lang-v2
   #:literals (int64? fvar?)
   #:datum-literals (module set! begin rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10
-                           r11 r12 r13 r14 r15 * +)
+                           r11 r12 r13 r14 r15 * + halt)
   [p     tail]
   [tail  (halt triv)
          (begin effect ... tail)]
@@ -104,7 +104,7 @@
 @define-grammar/pred[para-asm-lang-v2
   #:literals (int64? fvar?)
   #:datum-literals (module set! begin rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10
-  r11 r12 r13 r14 r15 * +)
+  r11 r12 r13 r14 r15 * + halt)
   [p     (begin effect ... (halt triv))]
   [effect (set! loc triv)
           (set! loc_1 (binop loc_1 triv))]
