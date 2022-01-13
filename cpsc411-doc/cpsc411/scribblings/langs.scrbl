@@ -2,13 +2,13 @@
 
 @(require scribble/example)
 
-@title[#:style 'toc #:tag "ref-langs"]{Intermediate Language Reference Implementations}
+@title[#:style 'toc #:tag "ref-langs"]{Language Reference Implementations}
 
-This library provides reference implementations of each intermediate language,
-including interpreters and validators.
+This library provides reference implementations of each language, including
+interpreters and validators.
 Valid programs should run correctly in the interpreters, although so will some
 invalid programs.
-Validators will reject invalid programs, but not necessarily provide useful errors.
+Validators will reject invalid programs, but don't necessarily provide useful errors.
 
 @include-section{langs/v1.scrbl}
 @include-section{langs/v2.scrbl}
