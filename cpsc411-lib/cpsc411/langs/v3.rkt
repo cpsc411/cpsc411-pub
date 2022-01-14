@@ -81,3 +81,23 @@
 ]
 
 (define interp-cmf-lang-v3 interp-base)
+
+@define-grammar/pred[imp-cmf-lang-v3/locals
+  #:literals (int64? aloc?)
+  #:datum-literals (module set! begin * +)
+  [p      (module info tail)]
+  [info  #:with-contract
+         (info/c (locals (aloc ...)))
+         (info/c (locals (aloc? ...)))]
+  [tail   value
+          (begin effect ... tail)]
+  [value  triv
+          (binop triv triv)]
+  [effect (set! aloc value)
+          (begin effect ... effect)]
+  [triv   int64 aloc]
+  [binop  * +]
+  [aloc   aloc?]
+  [int64 int64?]
+]
+(define interp-cmf-lang-v3/locals interp-base)
