@@ -67,7 +67,7 @@
 
 (define (a2-uniquify-test-suite passes uniquify)
   (define-syntax-rule (test-uniquify-correct actual source)
-    (test-correct interp-values-lang-v3 interp-values-lang-unique-v3 source actual))
+    (test-correct interp-values-lang-v3 interp-values-unique-lang-v3 source actual))
 
   (test-suite
    "a2 uniquify tests"
@@ -227,7 +227,7 @@
 
 (define (a2-sequentialize-let-test-suite passes sequentialize-let)
   (define-syntax-rule (test-seqlet-correct actual source)
-    (test-correct interp-values-lang-unique-v3 interp-mf-lang-v3 source actual))
+    (test-correct interp-values-unique-lang-v3 interp-imp-mf-lang-v3 source actual))
 
   (test-suite
    "a2 sequentialize-let tests"
@@ -309,7 +309,7 @@
 
 (define (a2-normalize-bind-test-suite passes normalize-bind)
   (define-syntax-rule (test-normalize-bind-correct actual source)
-    (test-correct interp-mf-lang-v3 interp-cmf-lang-v3 source actual))
+    (test-correct interp-imp-mf-lang-v3 interp-imp-cmf-lang-v3 source actual))
 
   (test-suite
    "a2 normalize-bind tests"
