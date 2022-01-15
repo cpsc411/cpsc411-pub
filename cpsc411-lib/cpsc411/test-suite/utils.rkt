@@ -7,7 +7,10 @@
  racket/list
  racket/set
  rackunit
- cpsc411/compiler-lib)
+ cpsc411/compiler-lib
+ "../langs/v1.rkt"
+ "../langs/v2.rkt"
+ "../langs/v3.rkt")
 
 (provide
  (all-defined-out))
@@ -17,6 +20,24 @@
 ;; the mutable set is a set of pairs of names a test programs for that language.
 (define test-prog-dict
   (make-hasheq))
+
+;; map from interpreters to validates for the source language
+(define validator-dict
+  (hasheq
+   interp-paren-x64-v1 paren-x64-v1?
+
+   interp-asm-lang-v2 asm-lang-v2?
+   interp-asm-lang-v2/locals asm-lang-v2/locals?
+   interp-asm-lang-v2/assignments asm-lang-v2/assignments?
+   interp-nested-asm-lang-v2 nested-asm-lang-v2?
+   interp-para-asm-lang-v2 para-asm-lang-v2?
+   interp-paren-x64-fvars-v2 paren-x64-fvars-v2?
+   interp-paren-x64-v2 paren-x64-v2?
+
+   interp-values-lang-v3 values-lang-v3?
+   interp-values-unique-lang-v3 values-unique-lang-v3?
+   interp-imp-mf-lang-v3 imp-mf-lang-v3?
+   interp-imp-cmf-lang-v3 imp-cmf-lang-v3?))
 
 (define (static-compose f1 f2)
   (cond
@@ -43,6 +64,7 @@
 ;; - look up list of programs by source-interp
 ;; - for each test-prog
 ;;   - compile, compare output with interpreters
+;;   - validate output by validator
 ;;   - if passes, add output to list of programs for target-interp
 
 (define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)])
@@ -79,13 +101,18 @@
         (define src-interp (first interp-ls))
         (define target-interp (second interp-ls))
         (define target-interp-progs (hash-ref test-prog-dict target-interp (mutable-set)))
+        (define src-validator (hash-ref validator-dict src-interp #f))
+        (define trg-validator (hash-ref validator-dict target-interp #f))
         (for ([test-prog-entry (hash-ref test-prog-dict src-interp '())])
           (define name (first test-prog-entry))
           (define test-prog (second test-prog-entry))
           (test-begin
             (define output (pass test-prog))
-            (test-case (format "~a with ~a" (object-name pass) name)
+            (test-case (format "~a preserves functionality, test ~a" (object-name pass) name)
               (check-equal? (src-interp test-prog) (target-interp output)))
+            (when trg-validator
+              (test-case (format "~a well-formed output, test ~a"  (object-name pass) name)
+              (check-true (trg-validator output))))
             (set-add! target-interp-progs `(,name ,output))))
         (loop (rest pass-ls) (rest interp-ls))]))))
 
