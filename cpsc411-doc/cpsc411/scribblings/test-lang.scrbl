@@ -9,6 +9,9 @@
    (except-in cpsc411/compiler-lib compile)
    (except-in racket/base read read-syntax)
    cpsc411/test-suite/public/a1
+   cpsc411/langs/v1
+   cpsc411/langs/v2
+   cpsc411/langs/v3
    racket/contract)
   scribble/examples)
 
@@ -17,6 +20,98 @@
 @section{Test Suites}
 This section describes the public tests suites provided by the library.
 See @racket[test-suite], @racketmodname[rackunit], @racket[run-tests], and @racketmodname[rackunit/text-ui].
+
+There are currently two versions of test suites:
+@itemlist[
+@item{Largely syntactic unit tests for each milestone.
+These are based on the milestones, not the chapter, and are fragile.
+They make assumptions about the structures of pass list, and can break if
+students use a different structures.
+They are deprecrated and exist for backwards compatibility.}
+@item{Property-based test suites for each chapter.
+These are based on the language versions and are much more robust, as they test
+via the language interpreters and validators.
+These make no assumptions about the structure of the pass list.
+They are strongly recommended.
+
+The suites work best when the compiler is designed and implementated top-down,
+and may not test intermediate passes until earlier passes are complete, as the
+testing framework generates tests for later passes from earlier passes that pass
+their own tests.
+}
+]
+
+@(local-table-of-contents #:style 'immediate-only)
+
+@subsection{Version 1 Test Suites}
+@defmodule[cpsc411/test-suite/public/v1]
+
+@defproc[(v1-public-test-suite [pass-list (listof (-> any/c any/c))]
+                               [interp-list (listof (or/c #f (-> any/c any/c)))]
+                               [check-paren-x64 (-> any/c paren-x64-v1?)]
+                               [interp-paren-x64 (-> paren-x64-v1? (in-range 0 255))])
+         test-suite?]{
+The test suite for the v1 compiler passes.
+
+@racket[pass-list] is expected to be a list of passes that compile from
+@racket[paren-x64-v1?] to x64, compatible with @racket[current-pass-list].
+
+@racket[interp-list] must be the same length as @racket[pass-list], and should
+be a list of interpreters for the source language of the corresponding pass in
+@racket[pass-list], or @racket[#f] to indicate this pass has no interpreter and
+cannot be independently tested.
+Such passes will be composed together and tested against the next available
+interpreter.
+The test suite uses @racket[execute] with an empty pass list as the final target
+language interpreter.
+
+For example, given a pass list @racket[(list check-paren-x64 generate-x64
+wrap-x64-run-time wrap-x64-boilerplate)] and interpreter list
+@racket[(list interp-paren-x64 interp-paren-x64 #f #f)],
+@racket[check-paren-x64] will be tested by interpretering both the input and
+output with @racket[interp-paren-x64].
+The passes @racket[generate-x64], @racket[wrap-x64-run-time], and
+@racket[wrap-x64-boilerplate] are composed together, and tested by interpreting
+source programs with @racket[interp-paren-x64], and target programs through
+execution.
+}
+
+@subsection{Version 2 Test Suites}
+@defmodule[cpsc411/test-suite/public/v2]
+
+@defproc[(v2-public-test-suite [pass-list (listof (-> any/c any/c))]
+                               [interp-list (listof (or/c #f (-> any/c any/c)))])
+         test-suite?]{
+
+The test suite for the v2 compiler passes.
+
+Reuses all test suites from @racket[v1-public-test-suite] where possible.
+
+@racket[pass-list] is expected to be a list of passes that compile from
+@racket[asm-lang-v2?] to x64, compatible with @racket[current-pass-list].
+
+See @racket[v1-public-test-suite] for details about the interpretation of
+@racket[pass-list] and @racket[interp-list].
+}
+
+
+
+@subsection{Version 3 Test Suites}
+@defmodule[cpsc411/test-suite/public/v3]
+
+@defproc[(v3-public-test-suite [pass-list (listof (-> any/c any/c))]
+                               [interp-list (listof (or/c #f (-> any/c any/c)))])
+         test-suite?]{
+The test suite for the v3 compiler passes.
+Reuses all test suites from @racket[v2-public-test-suite] where possible.
+
+@racket[pass-list] is expected to be a list of passes that compile from
+@racket[values-lang-v3?] to x64, compatible with @racket[current-pass-list].
+
+See @racket[v1-public-test-suite] for details about the interpretation of
+@racket[pass-list] and @racket[interp-list].
+}
+
 
 @subsection{Milestone 1 Test Suites}
 @defmodule[cpsc411/test-suite/public/a1]

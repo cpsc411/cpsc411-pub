@@ -5,11 +5,142 @@
  racket/function
  racket/match
  racket/list
+ racket/set
  rackunit
- cpsc411/compiler-lib)
+ cpsc411/compiler-lib
+ "../langs/v1.rkt"
+ "../langs/v2.rkt"
+ "../langs/v3.rkt")
 
 (provide
  (all-defined-out))
+
+;; dictionary of function pointers to mutable sets of (list string? Program)
+;; function pointer is an interpreter from cpsc411/langs, identifies the language the programs longs to.
+;; the mutable set is a set of pairs of names a test programs for that language.
+(define test-prog-dict
+  (make-hasheq))
+
+;; map from interpreters to validates for the source language
+(define validator-dict
+  (hasheq
+   interp-paren-x64-v1 paren-x64-v1?
+
+   interp-asm-lang-v2 asm-lang-v2?
+   interp-asm-lang-v2/locals asm-lang-v2/locals?
+   interp-asm-lang-v2/assignments asm-lang-v2/assignments?
+   interp-nested-asm-lang-v2 nested-asm-lang-v2?
+   interp-para-asm-lang-v2 para-asm-lang-v2?
+   interp-paren-x64-fvars-v2 paren-x64-fvars-v2?
+   interp-paren-x64-v2 paren-x64-v2?
+
+   interp-values-lang-v3 values-lang-v3?
+   interp-values-unique-lang-v3 values-unique-lang-v3?
+   interp-imp-mf-lang-v3 imp-mf-lang-v3?
+   interp-imp-cmf-lang-v3 imp-cmf-lang-v3?))
+
+(define (static-compose f1 f2)
+  (cond
+    [(eq? f1 values)
+     f2]
+    [(eq? f2 values)
+     f1]
+    [else (compose f1 f2)]))
+
+;; public test suite:
+;; non-adversarial; can assume interpreter list is valid
+
+;; Prepass:
+;; 1. Start from source of each chapter
+;; 2. Take list of passes (abstract), list of matching (Maybe interpreter): equal length
+;; 3. Append final interpreter, which is (lambda (x) (parameterize ([current-pass-list (list values)]) (execute x)))
+;;    now, always 1 more interpreter than pass
+;; 4. Compose all passes whose target language has a #f interpreter
+
+;; Maintain mutable dictionary of interpret -> progs
+;;
+;; Testing process
+;; For each pass, source-interp, target-interp
+;; - look up list of programs by source-interp
+;; - for each test-prog
+;;   - compile, compare output with interpreters
+;;   - validate output by validator
+;;   - if passes, add output to list of programs for target-interp
+
+(define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)])
+  (unless (eq? (length _pass-ls) (length _interp-ls))
+    (error "Compiler Testomatic expects the pass list to be the same length as the interpreter list."
+           _pass-ls
+           _interp-ls))
+
+  (define-values (pass-ls interp-ls _)
+    (for/foldr ([pass-ls '()]
+               [interp-ls (list (lambda (x)
+                                  (parameterize ([current-pass-list (list values)])
+                                    (execute x run/read))))]
+               [pass-so-far values])
+              ([pass _pass-ls]
+               [interp _interp-ls])
+      (if interp
+          (values (cons (static-compose pass-so-far pass) pass-ls)
+                  (cons interp interp-ls)
+                  values)
+          (values pass-ls
+                  interp-ls
+                  (static-compose pass-so-far pass)))))
+
+  (test-suite
+   ""
+   (let loop ([pass-ls pass-ls]
+              [interp-ls interp-ls])
+     (cond
+       [(empty? pass-ls)
+        (void)]
+       [else
+        (define pass (first pass-ls))
+        (define src-interp (first interp-ls))
+        (define target-interp (second interp-ls))
+        (define target-interp-progs (hash-ref test-prog-dict target-interp (mutable-set)))
+        (define src-validator (hash-ref validator-dict src-interp #f))
+        (define trg-validator (hash-ref validator-dict target-interp #f))
+        (for ([test-prog-entry (hash-ref test-prog-dict src-interp '())]
+              [i (in-naturals)])
+          (with-check-info (['test-program (second test-prog-entry)]
+                            ['src-interp (object-name src-interp)]
+                            ['trg-interp (object-name target-interp)])
+            (define name (first test-prog-entry))
+            (define test-prog (second test-prog-entry))
+            (test-begin
+              (test-case (format "~a works, test~a~a"
+                                 (object-name pass)
+                                 i
+                                 (if (not (equal? name ""))
+                                     (format ", name ~a" name)
+                                     ""))
+                (check-not-exn (thunk (pass test-prog))))
+              (define output (pass test-prog))
+              (with-check-info (['output-program output])
+                (test-case (format "~a preserves functionality, test ~a~a"
+                                   (object-name pass)
+                                   i
+                                   (if (not (equal? name ""))
+                                       (format ", name ~a" name)
+                                       ""))
+                  (check-equal? (src-interp test-prog) (target-interp output)))
+                (when trg-validator
+                  (test-case (format "~a well-formed output, test ~a~a"
+                                     (object-name target-interp)
+                                     i
+                                     (if (not (equal? name ""))
+                                         (format ", name ~a" name)
+                                         ""))
+                    (check-true (trg-validator output))))
+                (set-add! target-interp-progs `(,name ,output))))))
+        (loop (rest pass-ls) (rest interp-ls))]))))
+
+
+;; OLD INFRASTRUCTURE
+;; ------------------------------------------------------------------------
 
 (define current-input-encoder (make-parameter (lambda (x) x)))
 (define current-actual-decoder (make-parameter (lambda (x) x)))
