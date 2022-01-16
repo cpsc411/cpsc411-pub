@@ -318,3 +318,19 @@
 
 (hash-set! test-prog-dict interp-paren-x64-v2
            (list->mutable-set paren-x64-v2-progs))
+
+(define (v2-public-test-sutie pass-ls interp-ls)
+  (define run/read (current-run/read))
+
+  (test-suite
+   "v2 public test suite"
+   #:before
+   (thunk
+    (current-run/read nasm-run/print-number))
+   #:after
+   (thunk
+    (current-run/read run/read))
+
+   (test-suite
+    "compiler testomatic test suite"
+    (compiler-testomatic pass-ls interp-ls))))
