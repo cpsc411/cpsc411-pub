@@ -7,6 +7,8 @@ This package contains the CPSC 411 project infrastructure, including testing
 tools and test suites, compiler implementation support and parameters, and
 run-time system.
 
+@(local-table-of-contents #:style 'immediate-only)
+
 @include-section{scribblings/langs.scrbl}
 @include-section{scribblings/compiler-lib.scrbl}
 @include-section{scribblings/2c-run-time.scrbl}
