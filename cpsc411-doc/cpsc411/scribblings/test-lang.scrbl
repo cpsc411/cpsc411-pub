@@ -9,6 +9,9 @@
    (except-in cpsc411/compiler-lib compile)
    (except-in racket/base read read-syntax)
    cpsc411/test-suite/public/a1
+   cpsc411/langs/v1
+   cpsc411/langs/v2
+   cpsc411/langs/v3
    racket/contract)
   scribble/examples)
 
@@ -59,15 +62,18 @@ be a list of interpreters for the source language of the corresponding pass in
 cannot be independently tested.
 Such passes will be composed together and tested against the next available
 interpreter.
-The test suite uses execution with the @racket[current-run/read] as the final
-interpreter.
+The test suite uses @racket[execute] with an empty pass list as the final target
+language interpreter.
 
 For example, given a pass list @racket[(list check-paren-x64 generate-x64
 wrap-x64-run-time wrap-x64-boilerplate)] and interpreter list
-@racket[interp-paren-x64 interp-paren-x64 #f #f], @racket[check-paren-x64] will
-be tested by interpretering both the input and output with
-@racket[interp-paren-x64].
-The passes @racket[generate-x64], @racket[wrap-x64-run-time], and @racket[wrap-x64-boilerplate] are composed together, and tested by interpreting source programs with @racket[interp-paren-x64], and target programs through execution.
+@racket[(list interp-paren-x64 interp-paren-x64 #f #f)],
+@racket[check-paren-x64] will be tested by interpretering both the input and
+output with @racket[interp-paren-x64].
+The passes @racket[generate-x64], @racket[wrap-x64-run-time], and
+@racket[wrap-x64-boilerplate] are composed together, and tested by interpreting
+source programs with @racket[interp-paren-x64], and target programs through
+execution.
 }
 
 @subsection{Version 2 Test Suites}
