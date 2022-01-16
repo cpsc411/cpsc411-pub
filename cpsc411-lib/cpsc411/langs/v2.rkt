@@ -30,7 +30,7 @@
   [int64 int64?]
 ]
 
-(define interp-asm-lang-v2 interp-base)
+(define (interp-asm-lang-v2 x) (interp-base x))
 
 @define-grammar/pred[asm-lang-v2/locals
   #:literals (int64? aloc? any info/c)
@@ -50,7 +50,7 @@
   [int64 int64?]
 ]
 
-(define interp-asm-lang-v2/locals interp-base)
+(define (interp-asm-lang-v2/locals x) (interp-base x))
 
 @define-grammar/pred[asm-lang-v2/assignments
   #:literals (int64? aloc? any fvar? info/c)
@@ -79,7 +79,7 @@
   [fvar fvar?]
 ]
 
-(define interp-asm-lang-v2/assignments interp-base)
+(define (interp-asm-lang-v2/assignments x) (interp-base x))
 
 @define-grammar/pred[nested-asm-lang-v2
   #:literals (int64? fvar?)
@@ -99,7 +99,7 @@
   [fvar  fvar?]
 ]
 
-(define interp-nested-asm-lang-v2 interp-base)
+(define (interp-nested-asm-lang-v2 x) (interp-base x))
 
 @define-grammar/pred[para-asm-lang-v2
   #:literals (int64? fvar?)
@@ -116,7 +116,7 @@
   [fvar  fvar?]
 ]
 
-(define interp-para-asm-lang-v2 interp-paren-x64-v1)
+(define (interp-para-asm-lang-v2 x) (interp-base x))
 
 @define-grammar/pred[paren-x64-fvars-v2
   #:literals (int64? int32? fvar?)
@@ -138,7 +138,7 @@
   [fvar fvar?]
 ]
 
-(define interp-paren-x64-fvars-v2 interp-paren-x64-v1)
+(define (interp-paren-x64-fvars-v2 x) (interp-paren-x64-v2 x))
 
 @define-grammar/pred[paren-x64-v2
   #:literals (int64? int32? dispoffset? frame-base-pointer-register?)
@@ -162,4 +162,4 @@
   [dispoffset dispoffset?]
 ]
 
-(define interp-paren-x64-v2 interp-paren-x64-v1)
+(define (interp-paren-x64-v2 x) (interp-base `(module () (begin ,x (halt rax)))))
