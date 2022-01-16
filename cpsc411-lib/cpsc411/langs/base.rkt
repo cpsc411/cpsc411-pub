@@ -36,6 +36,15 @@
 
 (compile-allow-set!-undefined #t)
 
+(define stack (make-vector 1000 'unalloc))
+(define fbp (box (sub1 (vector-length stack))))
+(define-syntax (rbp stx)
+  (syntax-parse stx
+    [:id
+     #'(unbox fbp)]
+    [(base (~datum -) offset)
+     #`(vector-ref stack (- (unbox fbp) offset))]))
+
 (begin-for-syntax
   (define (infostx->dict stx)
     (map (compose (lambda (p)
@@ -59,9 +68,9 @@
      #:with (regs ...)
      (map
       (lambda (x) (syntax-local-introduce (format-id #f "~a" x)))
-      '(rsp rbp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15))
+      '(rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15))
      #:with (vals ...)
-     #'((void) (void) (void) (void) (void) (void) (void) (void) (void)
+     #'((void) (void) (void) (void) (void) (void) (void) (void)
                (void) (void) (alloc 5000) (void) (void)
                (lambda () rax))
      #`(let ([rax (void)])
@@ -126,13 +135,21 @@
 
 (define-syntax (set! stx)
   (syntax-parse stx
-    [(_ (base (~datum +) offset) value)
-     #`(mset! base offset value)]
-    [(_ (base (~datum -) offset) value)
-     #`(mset! base (* -1 offset) value)]
-    [(_ loc (base (~datum +) offset))
+    [(_ (~literal rbp) v2)
+     #`(set-box! fbp v2)]
+    [(_ v1:id v2)
+     #`(r:set! v1 v2)]
+    [(_ ((~literal rbp) - offset) v2)
+     #`(vector-set! stack (- (unbox fbp) offset) v2)]
+    #;[(_ (base (~datum +) offset) value)
+     #`(vector-set! base offset value)]
+    #;[(_ (base (~datum -) offset) value)
+     #`(vector-set! base (* -1 offset) value)]
+    #;[(_ loc (base (~datum +) offset))
      #`(r:set! loc (mref base offset))]
-    [(_ loc value)
+    #;[(_ loc (base (~datum -) offset))
+     #`(r:set! loc (mref base (* -1 offset)))]
+    #;[(_ loc value)
      #`(r:set! loc value)]))
 
 (define (true) #t)
