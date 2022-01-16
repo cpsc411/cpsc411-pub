@@ -18,7 +18,7 @@
 This section describes the public tests suites provided by the library.
 See @racket[test-suite], @racketmodname[rackunit], @racket[run-tests], and @racketmodname[rackunit/text-ui].
 
-There are currently two version of test suites:
+There are currently two versions of test suites:
 @itemlist[
 @item{Largely syntactic unit tests for each milestone.
 These are based on the milestones, not the chapter, and are fragile.
@@ -29,10 +29,12 @@ They are deprecrated and exist for backwards compatibility.}
 These are based on the language versions and are much more robust, as they test
 via the language interpreters and validators.
 These make no assumptions about the structure of the pass list.
-They are strongly recommended and much more robust.
+They are strongly recommended.
+
 The suites work best when the compiler is designed and implementated top-down,
 and may not test intermediate passes until earlier passes are complete, as the
-testing framework generates tests for later passes from earlier passes.
+testing framework generates tests for later passes from earlier passes that pass
+their own tests.
 }
 ]
 
