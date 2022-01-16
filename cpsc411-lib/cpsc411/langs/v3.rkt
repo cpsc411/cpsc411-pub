@@ -27,7 +27,7 @@
   [int64 int64?]
 ]
 
-(define interp-values-lang-v3 interp-base)
+(define (interp-values-lang-v3 x) (interp-base x))
 
 @define-grammar/pred[values-unique-lang-v3
   #:literals (int64? aloc?)
@@ -43,7 +43,7 @@
   [int64 int64?]
 ]
 
-(define interp-values-unique-lang-v3 interp-base)
+(define (interp-values-unique-lang-v3 x) (interp-base x))
 
 @define-grammar/pred[imp-mf-lang-v3
   #:literals (int64? aloc?)
@@ -62,7 +62,7 @@
   [int64 int64?]
 ]
 
-(define interp-imp-mf-lang-v3 interp-base)
+(define (interp-imp-mf-lang-v3 x) (interp-base x))
 
 @define-grammar/pred[imp-cmf-lang-v3
   #:literals (int64? aloc?)
@@ -80,4 +80,4 @@
   [int64 int64?]
 ]
 
-(define interp-imp-cmf-lang-v3 interp-base)
+(define (interp-imp-cmf-lang-v3 x) (interp-base x))
