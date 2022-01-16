@@ -103,17 +103,38 @@
         (define target-interp-progs (hash-ref test-prog-dict target-interp (mutable-set)))
         (define src-validator (hash-ref validator-dict src-interp #f))
         (define trg-validator (hash-ref validator-dict target-interp #f))
-        (for ([test-prog-entry (hash-ref test-prog-dict src-interp '())])
-          (define name (first test-prog-entry))
-          (define test-prog (second test-prog-entry))
-          (test-begin
+        (for ([test-prog-entry (hash-ref test-prog-dict src-interp '())]
+              [i (in-naturals)])
+          (with-check-info (['test-program (second test-prog-entry)]
+                            ['src-interp (object-name src-interp)]
+                            ['trg-interp (object-name target-interp)])
+            (define name (first test-prog-entry))
+            (define test-prog (second test-prog-entry))
+            (test-case (format "~a works, test~a~a"
+                               (object-name pass)
+                               i
+                               (if (not (equal? name ""))
+                                   (format ", name ~a" name)
+                                   ""))
+              (check-not-exn (thunk (pass test-prog))))
             (define output (pass test-prog))
-            (test-case (format "~a preserves functionality, test ~a" (object-name pass) name)
-              (check-equal? (src-interp test-prog) (target-interp output)))
-            (when trg-validator
-              (test-case (format "~a well-formed output, test ~a"  (object-name pass) name)
-              (check-true (trg-validator output))))
-            (set-add! target-interp-progs `(,name ,output))))
+            (with-check-info (['output-program output])
+              (test-case (format "~a preserves functionality, test ~a~a"
+                                 (object-name pass)
+                                 i
+                                 (if (not (equal? name ""))
+                                     (format ", name ~a" name)
+                                     ""))
+                (check-equal? (src-interp test-prog) (target-interp output)))
+              (when trg-validator
+                (test-case (format "~a well-formed output, test ~a~a"
+                                   (object-name target-interp)
+                                   i
+                                   (if (not (equal? name ""))
+                                       (format ", name ~a" name)
+                                       ""))
+                  (check-true (trg-validator output))))
+              (set-add! target-interp-progs `(,name ,output)))))
         (loop (rest pass-ls) (rest interp-ls))]))))
 
 
