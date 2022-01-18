@@ -15,6 +15,7 @@
 
 (provide
  (rename-out [new-define define])
+ (rename-out [new-begin begin])
  (except-out (all-defined-out) new-define)
  bitwise-and
  fixnum?
@@ -38,6 +39,7 @@
 
 (define stack (make-vector 1000 'unalloc))
 (define fbp (box (sub1 (vector-length stack))))
+
 (define-syntax (rbp stx)
   (syntax-parse stx
     [:id
@@ -45,7 +47,14 @@
     [(base (~datum -) offset)
      #`(vector-ref stack (- (unbox fbp) offset))]))
 
+(define (init-stack)
+  (begin
+    (set-box! fbp (sub1 (vector-length stack)))
+    (set! stack (make-vector 1000 'unalloc))))
+
 (begin-for-syntax
+  (define current-fvars (make-parameter 1000))
+
   (define (infostx->dict stx)
     (map (compose (lambda (p)
                     `(,(syntax->datum (car p))
@@ -59,32 +68,28 @@
                                 (syntax->list (dict-ref info 'locals #'()))
                                 (map syntax->list (syntax->list (dict-ref info 'new-frames #'()))))])
                  #`[#,loc (void)])
-          #,e))))
+          #,e)))
 
-(define-syntax (bind-regs stx)
-  (syntax-parse stx
-    [(_ tail)
-     #:with rax (syntax-local-introduce (format-id #f "~a" 'rax))
-     #:with (regs ...)
-     (map
-      (lambda (x) (syntax-local-introduce (format-id #f "~a" x)))
-      '(rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15))
-     #:with (vals ...)
-     #'((void) (void) (void) (void) (void) (void) (void) (void)
-               (void) (void) (alloc 5000) (void) (void)
-               (lambda () rax))
-     #`(let ([rax (void)])
-         (let ([regs vals] ...)
-           tail))]))
+  (define (bind-regs tail)
+    (with-syntax* ([rax (syntax-local-introduce (format-id #f "~a" 'rax))]
+                   [(regs ...)
+                    (map
+                     (lambda (x) (syntax-local-introduce (format-id #f "~a" x)))
+                     '(rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15))]
+                   [(vals ...)
+                    #'((void) (void) (void) (void) (void) (void) (void) (void)
+                              (void) (void) (alloc 5000) (void) (void)
+                              (lambda () rax))])
+      #`(let ([rax (void)])
+          (let ([regs vals] ...)
+            #,tail))))
 
-(define-syntax (bind-fvars stx)
-  (syntax-parse stx
-    [(_ n:nat tail)
-     #:with (fvars ...)
-     (for/list ([i (in-range 0 (syntax->datum #'n))])
-       (syntax-local-introduce (format-id #f "fv~a" i)))
-     #`(let ([fvars (void)] ...)
-         tail)]))
+  (define (bind-fvars n tail)
+    (with-syntax ([(fvars ...)
+                   (for/list ([i (in-range 0 n)])
+                     (syntax-local-introduce (format-id #f "fv~a" i)))])
+      #`(let ([fvars (void)] ...)
+          #,tail))))
 
 ;; TODO: Use of ~datum is bad should be ~literal
 (define-syntax (module stx)
@@ -95,16 +100,74 @@
     [(module (~and (~var defs) ((~datum define) _ ...)) ... tail)
      #`(module () defs ... tail)]
     [(module info defs ... tail)
-     #`(let/cc k
+     #`(let/ec k
          (begin
            (init-heap)
+           (init-stack)
            (compile-allow-set!-undefined #t)
-           (bind-fvars 1000 (bind-regs #,(bind-info #'info #`(local [defs ...]
-                                                               (let ([#,(syntax-local-introduce (format-id #f "done")) (lambda () (k rax))])
-                                                                 tail)))))))]))
+           #,(bind-fvars
+              (current-fvars)
+              (bind-regs
+               (bind-info
+                #'info
+                #`(local [defs ...
+                           (define #,(syntax-local-introduce (format-id #f "done"))
+                             (lambda () (k rax)))
+                           (define #,(syntax-local-introduce (format-id #f "halt"))
+                             (lambda (x)
+                               (begin
+                                 (set! rax x)
+                                 (k rax))))]
+                    tail))))))]))
+
+(define (!= e1 e2) (not (= e1 e2)))
+
+(define
+ flags
+ (make-hash
+  (list
+   (cons != #f)
+   (cons = #f)
+   (cons < #f)
+   (cons <= #f)
+   (cons > #f)
+   (cons >= #f))))
+
+(define-syntax-rule (compare v1 v2)
+  (for-each (lambda (cmp)
+              (hash-set! flags cmp (cmp v1 v2)))
+            (list != = < <= > >=)))
+
+(define-syntax-rule (jump-if flag d)
+  (when (hash-ref flags flag)
+    (d)))
 
 (define-syntax-rule (jump l rest ...)
   (l))
+
+(begin-for-syntax
+  (define (labelify-begin defs ss)
+    (syntax-parse ss
+      #:datum-literals (with-label)
+      [((with-label l s) ss ...)
+       (let-values ([(defs e) (labelify-begin defs #`(s ss ...))])
+         (values
+          (cons #`(l (lambda () #,e)) defs)
+          #`(begin (l))))]
+      [(s ss ...)
+       (if (null? (attribute ss))
+           (values
+            defs
+            #`(begin s))
+           (let-values ([(defs e) (labelify-begin defs (attribute ss))])
+             (values
+              defs
+              #`(begin s #,e))))])))
+
+(define-syntax (new-begin stx)
+  (let-values ([(defs e) (labelify-begin '() (cdr (syntax->list stx)))])
+    #`(letrec (#,@defs)
+        #,e)))
 
 (define-syntax (new-define stx)
   (syntax-parse stx
@@ -131,7 +194,6 @@
 (define + x64-add)
 (define - x64-sub)
 (define * x64-mul)
-(define halt values)
 
 (define-syntax (set! stx)
   (syntax-parse stx
@@ -154,7 +216,6 @@
 
 (define (true) #t)
 (define (false) #f)
-(define (!= e1 e2) (not (= e1 e2)))
 (define (nop) (void))
 
 (define (unsafe-fx+ x y) (twos-complement-add 61 x y))
@@ -267,17 +328,13 @@
   (provide interp-base)
   (require (only-in racket (define r:define)))
   (define-syntax-rule (define e ...) (new-define e ...))
+  (define-syntax-rule (begin e ...) (new-begin e ...))
 
   (define-namespace-anchor a)
   (r:define interp-base
     (let ([ns (namespace-anchor->namespace a)])
       (lambda (x)
         (eval x ns)))))
-
-#;(define-syntax (rbp stx)
-    (syntax-parse stx
-      [_:id
-       ]))
 
 (module+ test
   (require rackunit)

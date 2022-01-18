@@ -28,4 +28,4 @@
 ]
 
 (define (interp-paren-x64-v1 x)
-  (modulo (interp-base `(begin ,x (halt rax))) 256))
+  (modulo (interp-base `(module (begin ,x (halt rax)))) 256))
