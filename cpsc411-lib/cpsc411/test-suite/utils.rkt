@@ -75,12 +75,12 @@
 
   (define-values (pass-ls interp-ls _)
     (for/foldr ([pass-ls '()]
-               [interp-ls (list (lambda (x)
-                                  (parameterize ([current-pass-list (list values)])
-                                    (execute x run/read))))]
-               [pass-so-far values])
-              ([pass _pass-ls]
-               [interp _interp-ls])
+                [interp-ls (list (lambda (x)
+                                   (parameterize ([current-pass-list (list values)])
+                                     (execute x run/read))))]
+                [pass-so-far values])
+        ([pass _pass-ls]
+         [interp _interp-ls])
       (if interp
           (values (cons (static-compose pass-so-far pass) pass-ls)
                   (cons interp interp-ls)
@@ -107,7 +107,8 @@
               [i (in-naturals)])
           (with-check-info (['test-program (second test-prog-entry)]
                             ['src-interp (object-name src-interp)]
-                            ['trg-interp (object-name target-interp)])
+                            ['trg-interp (object-name target-interp)]
+                            ['pass (object-name pass)])
             (define name (first test-prog-entry))
             (define test-prog (second test-prog-entry))
             (test-begin
