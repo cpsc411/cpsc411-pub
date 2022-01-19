@@ -322,15 +322,18 @@
 
 (define (v2-public-test-sutie pass-ls interp-ls)
   (define run/read (current-run/read))
+  (define old-pass-ls (current-pass-list))
 
   (test-suite
    "v2 public test suite"
    #:before
    (thunk
-    (current-run/read nasm-run/print-number))
+    (current-run/read nasm-run/print-number)
+    (current-pass-list pass-ls))
    #:after
    (thunk
-    (current-run/read run/read))
+    (current-run/read run/read)
+    (current-pass-list old-pass-ls))
 
    (test-suite
     "compiler testomatic test suite"
