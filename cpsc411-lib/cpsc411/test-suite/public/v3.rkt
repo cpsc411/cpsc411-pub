@@ -16,7 +16,7 @@
 (provide
  (all-defined-out))
 
-(define values-lang-v3
+(define values-lang-v3-progs
   ;; string? x values-lang-v3?
   ;; a name and a test program
   `((""
@@ -95,7 +95,8 @@
                            (let ([z (+ z t)])
                              z)))))))))))))))
 
-(hash-set! test-prog-dict interp-values-lang-v3 (list->mutable-set values-lang-v3))
+(hash-set! test-prog-dict interp-values-lang-v3
+           (list->mutable-set values-lang-v3-progs))
 
 (define values-unique-lang-v3-progs
   `((""
