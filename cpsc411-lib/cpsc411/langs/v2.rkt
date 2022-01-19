@@ -99,7 +99,8 @@
   [fvar  fvar?]
 ]
 
-(define (interp-nested-asm-lang-v2 x) (interp-base x))
+(define (interp-nested-asm-lang-v2 x)
+  (interp-base `(module ,x)))
 
 @define-grammar/pred[para-asm-lang-v2
   #:literals (int64? fvar?)
@@ -116,7 +117,8 @@
   [fvar  fvar?]
 ]
 
-(define (interp-para-asm-lang-v2 x) (interp-base x))
+(define (interp-para-asm-lang-v2 x)
+  (interp-base `(module ,x)))
 
 @define-grammar/pred[paren-x64-fvars-v2
   #:literals (int64? int32? fvar?)
