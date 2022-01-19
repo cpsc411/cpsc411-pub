@@ -21,6 +21,16 @@
 (define test-prog-dict
   (make-hasheq))
 
+(define (register-test-programs! interp progs)
+  (hash-update!
+   test-prog-dict
+   interp
+   (lambda (u)
+     (begin
+       (set-union! u (list->mutable-set progs))
+       u))
+   (mutable-set)))
+
 ;; map from interpreters to validates for the source language
 (define validator-dict
   (hasheq
