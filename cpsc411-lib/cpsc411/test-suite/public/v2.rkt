@@ -111,7 +111,7 @@
               (set! z.1 y.1)
               (set! z.1 (+ z.1 1))
               (halt z.1))))
-    (""
+    #;(""
      (module
        ((locals (x.1 undefined.1 undefined.2))
         (assignment ((x.1 fv0) (undefined.1 fv1) (undefined.2 fv2))))
@@ -124,6 +124,7 @@
        (begin
          (set! x.1 0)
          (set! y.1 x.1)
+         (set! w.1 0)
          (set! w.1 (+ w.1 x.1))
          (set! w.1 (+ w.1 y.1))
          (halt w.1))))))
