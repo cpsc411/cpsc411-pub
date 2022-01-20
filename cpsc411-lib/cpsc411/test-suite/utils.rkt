@@ -122,7 +122,7 @@
                             ['pass (object-name pass)])
             (define test-prog (second test-prog-entry))
             (test-begin
-              (test-not-exn (object-name pass) (thunk (pass test-prog)))
+              (test-not-exn (symbol->string (object-name pass)) (thunk (pass test-prog)))
               (define output (pass test-prog))
               (with-check-info (['output-program output])
                 (test-not-exn "test output interprets"
