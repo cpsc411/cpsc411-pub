@@ -133,7 +133,7 @@
                 (with-check-info (['expected expected])
                   (check-equal? (src-interp test-prog) expected))
                 (when trg-validator
-                  (check-validator trg-validator output))
+                  (check-true (trg-validator output)))
                 (set-add! target-interp-progs `(,name ,output))))))
         (loop (rest pass-ls) (rest interp-ls))]))))
 
