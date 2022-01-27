@@ -94,6 +94,12 @@
 ;; TODO: Use of ~datum is bad should be ~literal
 (define-syntax (module stx)
   (syntax-parse stx
+    #:literals (module)
+    ;; NB: Work around an issue that can happen when interpreters are called
+    ;; incorrectly, e.g., from stubs.
+    ;; Really, should put contracts on the individual interpreters.
+    [(module (module r ...))
+     #`(module r ...)]
     [(module (~and (~var defs) ((~datum define) _ ...)) ...)
      #:with ((define label tail) rdefs ...) (attribute defs)
      #`(module () rdefs ... tail)]
