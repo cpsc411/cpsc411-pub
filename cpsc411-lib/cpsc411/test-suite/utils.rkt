@@ -122,18 +122,23 @@
                             ['pass (object-name pass)])
             (define test-prog (second test-prog-entry))
             (test-begin
-              (test-not-exn (symbol->string (object-name pass)) (thunk (pass test-prog)))
+              (with-check-info (['test-type "Checking test-program compilers without error"])
+                (test-not-exn (symbol->string (object-name pass)) (thunk (pass test-prog))))
               (define output (pass test-prog))
               (with-check-info (['output-program output])
-                (test-not-exn "test output interprets"
-                              (thunk (target-interp output)))
-                (test-not-exn "self-test source interprets"
-                              (thunk (src-interp test-prog)))
+                (with-check-info (['test-type "Checking output is interpretable"])
+                  (test-not-exn "test output interprets"
+                                (thunk (target-interp output))))
+                (with-check-info (['test-type "Checking source program is interpretable (failure indicates bug in reference implementation)"])
+                  (test-not-exn "self-test source interprets"
+                              (thunk (src-interp test-prog))))
                 (define expected (target-interp output))
-                (with-check-info (['expected expected])
+                (with-check-info (['expected expected]
+                                  ['test-type "Checking that output produces correct value"])
                   (check-equal? (src-interp test-prog) expected))
-                (when trg-validator
-                  (check-true (trg-validator output)))
+                (with-check-info (['type-type "Checking that output is syntactically correct"])
+                  (when trg-validator
+                  (check-true (trg-validator output))))
                 (set-add! target-interp-progs `(,name ,output))))))
         (loop (rest pass-ls) (rest interp-ls))]))))
 
