@@ -139,7 +139,8 @@
                 (with-check-info (['type-type "Checking that output is syntactically correct"])
                   (when trg-validator
                   (check-true (trg-validator output))))
-                (set-add! target-interp-progs `(,name ,output))))))
+                (set-add! target-interp-progs `(,(format "~a Transformed by ~a"
+                                                         name (object-name pass)) ,output))))))
         (loop (rest pass-ls) (rest interp-ls))]))))
 
 

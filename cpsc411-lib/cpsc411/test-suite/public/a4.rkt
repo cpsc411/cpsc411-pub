@@ -89,136 +89,29 @@
   (test-suite
    "a4 interp-paren-x64 test suite"
 
-   (let ([e `(begin
-               (set! rdi L.label.1)
-               (set! rax 1)
-               (jump rdi)
-               (set! rax 10)
-               (with-label L.label.1
-                 (set! rax (+ rax 100))))])
-     (test-case "Simple single label case with jump"
+   (let ([e `])
+     (test-case 
        (check-equal? (interp-paren-x64 e) 101)))
 
-   (let ([e `(begin
-               (set! rbx 4)
-               (compare rbx 4)
-               (jump-if < L.testing.1)
-               (set! rbx -66)
-               (jump L.end.1)
-               (with-label L.testing.1 (set! rbx 11))
-               (with-label L.end.1 (set! rax rbx))
-               (set! rax rax))])
-     (test-case "Moderate single label case with jump"
+   (let ([e `])
+     (test-case 
        (check-equal? (interp-paren-x64 e) -66)))
 
-   (test-case "Moderate single label case with jump"
+   (test-case 
      (check-equal?
       (interp-paren-x64
-       `(begin
-          (set! (rbp - 16) -1)
-          (set! r10 0)
-          (set! rax 10)
-          (with-label L.x.1 (set! rax (+ rax (rbp - 16))))
-          (compare rax r10)
-          (jump-if > L.x.1)))
+       `)
       0))
 
-   (let ([e '(begin
-               (with-label L.cs411main.1
-                 (set! r11 7))
-               (with-label L.fib.1
-                 (set! r9 0))
-               (set! r10 1)
-               (set! r12 r11)
-               (with-label L.fib_iter.1
-                 (compare r12 0))
-               (jump-if = L.fib_done.1)
-               (with-label L.fib_not_done_yet.1
-                 (set! r13 r10))
-               (set! r10 (+ r10 r9))
-               (set! r9 r13)
-               (set! r12 (+ r12 -1))
-               (jump L.fib_iter.1)
-               (with-label L.fib_done.1
-                 (set! rdi r10))
-               (set! rax rdi))])
-     (test-case "Complex case"
+   (let ([e '])
+     (test-case 
        (check-equal? (interp-paren-x64 e) 21)))))
 
 (define (a4-generate-x64-test-suite passes interp-paren-x64 generate-x64)
   (test-suite
    "a4 generate-x64 test suite"
 
-   (let ([x '(begin
-               (set! rdx 4)
-               (with-label L.x.1 (set! rdx (+ rdx -111)))
-               (set! rax rdx))])
-     (test-eq-normal
-      "Simple label case"
-      generate-x64
-      x
-      "mov rdx, 4
- L.x.1:
- add rdx, -111
- mov rax, rdx")
-
-     (test-begin (check-equal? (interp-paren-x64 x) -107))
-
-     (test-from generate-x64 passes x -107))
-
-   (let ([x '(begin
-               (set! (rbp - 0) 21)
-               (set! rax 0)
-               (set! rsp 1)
-               (with-label L.test.1 (set! (rbp - 8) 2))
-               (compare rax rsp)
-               (jump-if = L.test.1)
-               (set! rax (rbp - 0))
-               (set! rax (* rax (rbp - 8))))])
-
-     (test-eq-normal
-      "Moderate label case"
-      generate-x64
-      x
-      "mov QWORD [rbp - 0], 21
-       mov rax, 0
-       mov rsp, 1
-  L.test.1:
-  mov QWORD [rbp - 8], 2
-  cmp rax, rsp
-  je L.test.1
-  mov rax, QWORD [rbp - 0]
-  imul rax, QWORD [rbp - 8]")
-
-     (test-begin (check-equal? (interp-paren-x64 x) 42))
-
-     (test-from generate-x64 passes x 42))
-
-   (let ([x '(begin
-               (set! rdx 4)
-               (set! rcx L.testing.4)
-               (with-label L.testing.1 (jump L.testing.3))
-               (with-label L.testing.2 (jump L.testing.1))
-               (with-label L.testing.3 (jump rcx))
-               (with-label L.testing.4 (set! rax rdx)))])
-     (test-eq-normal
-      "Complex case"
-      generate-x64
-      x
-      "mov rdx, 4
-       mov rcx, L.testing.4
-L.testing.1:
-jmp L.testing.3
-L.testing.2:
-jmp L.testing.1
-L.testing.3:
-jmp rcx
-L.testing.4:
-mov rax, rdx")
-
-     (test-begin (check-equal? (interp-paren-x64 x) 4))
-
-     (test-from generate-x64 passes x 4))))
+   ))
 
 (define (a4-patch-instructions-test-suite passes patch-instructions)
   (define-check (test-patch-instructions x)
