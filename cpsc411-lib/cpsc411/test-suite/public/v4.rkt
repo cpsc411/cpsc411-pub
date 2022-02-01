@@ -267,6 +267,7 @@
        (assignment ((w.1 fv0) (y.1 fv8) (x.1 fv16))))
       (begin
         (set! x.1 0)
+        (set! w.1 0)
         (set! y.1 x.1)
         (set! w.1 (+ w.1 x.1))
         (set! w.1 (+ w.1 y.1))
@@ -277,6 +278,8 @@
  '((""
     (module
       (begin
+        (set! r8 0)
+        (set! r9 0)
         (if (not (if (true)
                      (> r8 5)
                      (< r9 6)))
@@ -333,6 +336,7 @@
       (set! fv1 7)
       (set! r8 5)
       (set! r12 fv1)
+      (set! fv2 0)
       (set! r12 (+ r12 r8))
       (set! fv2 (+ fv2 4))
       (halt fv2)))
@@ -363,7 +367,11 @@
       (with-label L.foo.1 (halt 1))))
 
    (""
-    (begin (compare rax fv0) (halt 12)))))
+    (begin
+      (set! rax 0)
+      (set! fv0 1)
+      (compare rax fv0)
+      (halt 12)))))
 
 (register-test-programs!
  interp-paren-x64-fvars-v4
