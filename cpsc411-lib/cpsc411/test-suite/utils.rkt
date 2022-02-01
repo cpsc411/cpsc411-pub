@@ -10,7 +10,8 @@
  cpsc411/compiler-lib
  "../langs/v1.rkt"
  "../langs/v2.rkt"
- "../langs/v3.rkt")
+ "../langs/v3.rkt"
+ "../langs/v4.rkt")
 
 (provide
  (all-defined-out))
@@ -47,7 +48,23 @@
    interp-values-lang-v3 values-lang-v3?
    interp-values-unique-lang-v3 values-unique-lang-v3?
    interp-imp-mf-lang-v3 imp-mf-lang-v3?
-   interp-imp-cmf-lang-v3 imp-cmf-lang-v3?))
+   interp-imp-cmf-lang-v3 imp-cmf-lang-v3?
+
+   interp-values-lang-v4 values-lang-v4?
+   interp-values-unique-lang-v4 values-unique-lang-v4?
+   interp-imp-mf-lang-v4 imp-mf-lang-v4?
+   interp-imp-cmf-lang-v4 imp-cmf-lang-v4?
+   interp-asm-pred-lang-v4 asm-pred-lang-v4?
+   interp-asm-pred-lang-v4/locals asm-pred-lang-v4/locals?
+   interp-asm-pred-lang-v4/undead asm-pred-lang-v4/undead?
+   interp-asm-pred-lang-v4/conflicts asm-pred-lang-v4/conflicts?
+   interp-asm-pred-lang-v4/assignments asm-pred-lang-v4/assignments?
+   interp-nested-asm-lang-v4 nested-asm-lang-v4?
+   interp-block-pred-lang-v4 block-pred-lang-v4?
+   interp-block-asm-lang-v4 block-asm-lang-v4?
+   interp-para-asm-lang-v4 para-asm-lang-v4?
+   interp-paren-x64-fvars-v4 paren-x64-fvars-v4?
+   interp-paren-x64-v4 paren-x64-v4?))
 
 (define (static-compose f1 f2)
   (cond
