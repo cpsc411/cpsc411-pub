@@ -227,6 +227,7 @@
     (module ()
             (begin
               (set! x.1 0)
+              (set! w.1 0)
               (set! y.1 x.1)
               (set! w.1 (+ w.1 x.1))
               (set! w.1 (+ w.1 y.1))
