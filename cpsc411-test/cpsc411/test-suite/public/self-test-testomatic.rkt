@@ -1,6 +1,8 @@
 #lang racket/base
 
 (require
+ racket/function
+ racket/engine
  racket/dict
  rackunit
  cpsc411/test-suite/utils
@@ -14,12 +16,21 @@
  cpsc411/test-suite/public/v3
  cpsc411/test-suite/public/v4)
 
+;; Expects to be used with check-not-exn or check-exn.
+(define (check-with-timeout timeout proc)
+  (let* ([e (engine proc)]
+         [res (engine-run timeout e)])
+    (unless res
+      (fail "Test timed out"))
+    (engine-result e)))
+
 (for ([(interp tests) (in-dict test-prog-dict)])
   (for ([test tests])
     (with-check-info (['test-name (car test)]
                       ['test-prog (cadr test)]
                       ['interp (object-name interp)])
-      (test-not-exn "Test test valid"
-                    (lambda () ((dict-ref validator-dict interp) (cadr test))))
-      (test-not-exn "Test test interps"
-                    (lambda () (interp (cadr test)))))))
+      (check-not-exn
+       (thunk
+        (check-with-timeout 1000 (lambda (_) ((dict-ref validator-dict interp) (cadr test))))))
+      (check-not-exn
+       (thunk (check-with-timeout 1000 (lambda (_) (interp (cadr test)))))))))
