@@ -34,3 +34,21 @@
         (check-with-timeout 1000 (lambda (_) ((dict-ref validator-dict interp) (cadr test))))))
       (check-not-exn
        (thunk (check-with-timeout 1000 (lambda (_) (interp (cadr test)))))))))
+
+;; better timeout
+(check-exn
+ exn:fail?
+ (thunk
+  (check-with-timeout
+  1000
+  (thunk (interp-block-asm-lang-v4
+          '(module
+             (define L.x.1
+               (begin
+                 (set! rcx rcx)
+                 (jump L.x.2)))
+
+             (define L.x.2
+               (begin
+                 (set! rcx rcx)
+                 (halt 0)))))))))

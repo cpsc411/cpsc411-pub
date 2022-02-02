@@ -454,7 +454,7 @@
 ]
 
 (define (interp-paren-x64-fvars-v4 x)
-  (interp-base `(module (begin ,x rax))))
+  (interp-base `(module ,(append x (list '(halt rax))))))
 
 @define-grammar/pred[paren-x64-rt-v4
   #:literals (int64? aloc? info? any fvar? label? int32?
@@ -521,7 +521,7 @@
 ]
 
 (define (interp-paren-x64-v4 x)
-  (interp-base `(module (begin ,x (halt rax)))))
+  (interp-base `(module ,(append x '((halt rax))))))
 
 @(module+ test
    (paren-x64-v4?

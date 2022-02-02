@@ -17,6 +17,17 @@
  (rename-out [new-define define])
  (rename-out [new-begin begin])
  (except-out (all-defined-out) new-define)
+ #;(rename-out [new-module-begin #%module-begin])
+ #;#%top-interaction
+ #;#%datum
+ #;#%app
+
+ =
+ >
+ <
+ <=
+ >=
+
  bitwise-and
  fixnum?
  boolean?
@@ -91,6 +102,10 @@
       #`(let ([fvars (void)] ...)
           #,tail))))
 
+(define-syntax-rule (new-module-begin stx ...)
+  (#%module-begin
+   (module stx ...)))
+
 ;; TODO: Use of ~datum is bad should be ~literal
 (define-syntax (module stx)
   (syntax-parse stx
@@ -102,7 +117,7 @@
      #`(module r ...)]
     [(module (~and (~var defs) ((~datum define) _ ...)) ...)
      #:with ((define label tail) rdefs ...) (attribute defs)
-     #`(module () rdefs ... tail)]
+     #`(module () defs ... (label))]
     [(module (~and (~var defs) ((~datum define) _ ...)) ... tail)
      #`(module () defs ... tail)]
     [(module info defs ... tail)
@@ -139,17 +154,21 @@
    (cons > #f)
    (cons >= #f))))
 
-(define-syntax-rule (compare v1 v2)
+(define (compare v1 v2)
   (for-each (lambda (cmp)
               (hash-set! flags cmp (cmp v1 v2)))
             (list != = < <= > >=)))
 
-(define-syntax-rule (jump-if flag d)
+;; NOTE: Assumes halt is always called when jumps are used.
+;; Some way to forces these to be escape continuations?
+(define (jump-if flag d)
   (when (hash-ref flags flag)
-    (d)))
+    (d)
+    (r:error "Shouldn't have returned!")))
 
-(define-syntax-rule (jump l rest ...)
-  (l))
+(define (jump l . rest)
+  (l)
+  (r:error "Shouldn't have returned!"))
 
 (begin-for-syntax
   (define (labelify-begin defs ss)
@@ -158,22 +177,23 @@
       [((with-label l s) ss ...)
        (let-values ([(defs e) (labelify-begin defs #`(s ss ...))])
          (values
-          (cons #`(l (lambda () #,e)) defs)
-          #`(begin (l))))]
+          (cons #`(l (lambda () (begin #,@e))) defs)
+          #`((l))))]
       [(s ss ...)
        (if (null? (attribute ss))
            (values
             defs
-            #`(begin s))
+            #`(s))
            (let-values ([(defs e) (labelify-begin defs (attribute ss))])
              (values
               defs
-              #`(begin s #,e))))])))
+              #`(s #,@e))))])))
 
+;; NOTE: Assumes no nested begins, I think.
 (define-syntax (new-begin stx)
   (let-values ([(defs e) (labelify-begin '() (cdr (syntax->list stx)))])
     #`(letrec (#,@defs)
-        #,e)))
+        (begin #,@e))))
 
 (define-syntax (new-define stx)
   (syntax-parse stx
