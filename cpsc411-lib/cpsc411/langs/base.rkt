@@ -117,7 +117,7 @@
      #`(module r ...)]
     [(module (~and (~var defs) ((~datum define) _ ...)) ...)
      #:with ((define label tail) rdefs ...) (attribute defs)
-     #`(module () rdefs ... tail)]
+     #`(module () defs ... (label))]
     [(module (~and (~var defs) ((~datum define) _ ...)) ... tail)
      #`(module () defs ... tail)]
     [(module info defs ... tail)
