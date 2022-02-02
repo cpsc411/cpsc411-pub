@@ -277,6 +277,35 @@
 (register-test-programs!
  interp-nested-asm-lang-v4
  '((""
+    (module (begin (halt 5))))
+
+   (""
+    (module (begin (begin (halt 5)))))
+
+   (""
+    (module
+      (begin (begin (set! fv0 1)
+                    (set! fv1 2))
+             (set! fv0 (+ fv0 fv1))
+             (halt fv0))))
+
+   (""
+    (module
+      (begin (begin (set! fv0 1)
+                    (set! fv1 2))
+             (begin (begin (set! fv0 (+ fv0 fv1))))
+             (halt fv0))))
+
+   (""
+    (module (begin (set! rbx 1)
+                   (set! rcx 2)
+                   (if (< rbx rcx)
+                       (begin (set! rdx 4)
+                              (halt rdx))
+                       (begin (set! rdx 8)
+                              (halt rdx))))))
+
+   (""
     (module
       (begin
         (set! r8 0)
@@ -309,9 +338,71 @@
       (begin
         (set! fv1 12)
         (set! fv2 12)
-        (halt fv3))))
+        (halt fv3))))))
 
-   ))
+(register-test-programs!
+ interp-block-asm-lang-v4
+ '(("Simple case"
+    (module
+      (define L.x.1
+        (halt 123))))
+
+   ("Simple case with jump"
+    (module
+      (define L.x.0
+        (begin
+          (set! rsi 123)
+          (set! rsi (+ rsi 1))
+          (jump L.x.1)))
+      (define L.x.1
+        (halt rsi))))
+
+   ("Simple case with two blocks"
+    (module
+      (define L.x.1
+        (begin
+          (set! rcx rcx)
+          (jump L.x.2)))
+
+      (define L.x.2
+        (begin
+          (set! rcx rcx)
+          (halt 0)))))
+
+   (""
+    (module
+      (define L.tmp.1
+        (begin
+          (set! rdx 42)
+          (begin
+            (set! rdx 20)
+            (begin
+              (set! rdx (+ rdx rdx))
+              (jump L.tmp.2)))))
+      (define L.tmp.2
+        (begin
+          (halt rdx)))))
+
+   (""
+    (module
+      (define
+        L.tmp.1
+        (begin
+          (set! rdx 42)
+          (if (> rdx 43) (jump L.tmp.2) (jump L.tmp.3))))
+      (define
+        L.tmp.2
+        (begin
+          (set! rdx 30)
+          (jump L.tmp.4)))
+      (define
+        L.tmp.3
+        (begin
+          (set! rdx 0)
+          (jump L.tmp.4)))
+      (define
+        L.tmp.4
+        (halt rdx))))))
 
 (register-test-programs!
  interp-block-pred-lang-v4
@@ -328,7 +419,48 @@
                (halt rdx)))
       (define L.t.2
         (begin (set! rdx 8)
-               (halt rdx)))))))
+               (halt rdx)))))
+
+   (""
+    (module
+      (define L.main.1
+        (begin (set! rbx 1)
+               (set! rcx 2)
+               (if (false)
+                   (jump L.t.1)
+                   (jump L.t.2))))
+      (define L.t.1
+        (begin (set! rdx 4)
+               (halt rdx)))
+      (define L.t.2
+        (begin (set! rdx 8)
+               (halt rdx)))))
+
+   (""
+    (module
+      (define L.main.1
+        (begin (set! rbx 1)
+               (set! rcx 2)
+               (if (not (< rbx rcx))
+                   (jump L.t.1)
+                   (jump L.t.2))))
+      (define L.t.1
+        (begin (set! rdx 4)
+               (halt rdx)))
+      (define L.t.2
+        (begin (set! rdx 8)
+               (halt rdx)))))
+
+   (""
+    (module
+      (define L.start.1
+        (if (not (false))
+            (jump L.start.2)
+            (jump L.start.3)))
+      (define L.start.2
+        (halt 0))
+      (define L.start.3
+        (halt 120))))))
 
 (register-test-programs!
  interp-para-asm-lang-v4
@@ -372,7 +504,45 @@
       (set! rax 0)
       (set! fv0 1)
       (compare rax fv0)
-      (halt 12)))))
+      (halt 12)))
+
+   ("Simple label case without jump"
+    (begin
+      (set! rsi L.label.1)
+      (with-label L.label.1
+        (set! rbx 18))
+      (halt rbx)))
+
+   ("Simple label case with jump"
+    (begin
+      (set! rcx L.label.1)
+      (jump rcx)
+      (with-label L.label.1
+        (set! rcx 42))
+      (halt rcx)))
+
+   ("Moderate single label case"
+    (begin
+      (set! rdx 9)
+      (set! rcx 18)
+      (set! rsi L.label.1)
+      (compare rdx rcx)
+      (jump-if < L.label.1)
+      (with-label L.label.1
+        (set! rdx 27))
+      (halt rdx)))
+
+   ("Complex multiple label case"
+    (begin
+      (with-label L.main.51 (set! r14 1))
+      (set! r15 5)
+      (with-label L.fact_loop.50 (compare r15 0))
+      (jump-if = L.nested.54)
+      (set! r13 r15)
+      (set! r15 (+ r15 -1))
+      (set! r14 (* r14 r13))
+      (jump L.fact_loop.50)
+      (with-label L.nested.54 (halt r14))))))
 
 (register-test-programs!
  interp-paren-x64-fvars-v4
@@ -512,10 +682,7 @@
       (jump L.fib_iter.1)
       (with-label L.fib_done.1
         (set! rdi r10))
-      (set! rax rdi)))
-
-
-   ))
+      (set! rax rdi)))))
 
 (define (v4-public-test-suite pass-ls interp-ls
                               #;link-paren-x64
