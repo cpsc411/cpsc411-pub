@@ -17,6 +17,17 @@
  (rename-out [new-define define])
  (rename-out [new-begin begin])
  (except-out (all-defined-out) new-define)
+ (rename-out [new-module-begin #%module-begin])
+ #%top-interaction
+ #%datum
+ #%app
+
+ =
+ >
+ <
+ <=
+ >=
+
  bitwise-and
  fixnum?
  boolean?
@@ -90,6 +101,10 @@
                      (syntax-local-introduce (format-id #f "fv~a" i)))])
       #`(let ([fvars (void)] ...)
           #,tail))))
+
+(define-syntax-rule (new-module-begin stx ...)
+  (#%module-begin
+   (module stx ...)))
 
 ;; TODO: Use of ~datum is bad should be ~literal
 (define-syntax (module stx)
