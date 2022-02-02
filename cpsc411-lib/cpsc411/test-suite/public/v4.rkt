@@ -684,11 +684,138 @@
         (set! rdi r10))
       (set! rax rdi)))))
 
+(define (v4-link-paren-x64-test-suite link-paren-x64)
+  (test-suite
+   "v4 link-paren-x64 test suite"
+
+   (test-case "Single label case"
+     (test-match
+      (link-paren-x64
+       '(begin
+          (with-label L.test.1 (set! (rbp - 0) 8))
+          (set! (rbp - 8) 0)
+          (set! rax (rbp - 0))
+          (set! rax (* rax (rbp - 0)))))
+      '(begin
+         (set! (rbp - 0) 8)
+         (set! (rbp - 8) 0)
+         (set! rax (rbp - 0))
+         (set! rax (* rax (rbp - 0))))))
+
+   (test-case "Single label case with jump"
+     (test-match
+      (link-paren-x64
+       '(begin
+          (with-label L.test.1 (set! r9 7))
+          (jump L.test.1)))
+      '(begin
+         (set! r9 7)
+         (jump 0))))
+
+   (test-case "Multiple label case with jumps"
+     (test-match
+      (link-paren-x64
+       '(begin
+          (set! rsp 1)
+          (with-label L.test.1 (set! rax 1))
+          (set! rbx 2)
+          (jump L.test.2)
+          (set! rdi 2)
+          (with-label L.test.2 (set! rsi 2))
+          (jump L.test.1)))
+      '(begin
+         (set! rsp 1)
+         (set! rax 1)
+         (set! rbx 2)
+         (jump 5)
+         (set! rdi 2)
+         (set! rsi 2)
+         (jump 1))))
+
+   (test-case "Complex nested label case"
+     (test-match
+      (link-paren-x64
+       '(begin
+          (set! rax L.link.1)
+          (with-label L.link.1
+            (jump L.link.2))
+          (with-label L.link.2
+            (compare rbx 3))
+          (with-label L.link.3
+            (jump-if = L.link.4))
+          (with-label L.link.4
+            (set! rax L.link.2))
+          (jump L.link.1)))
+      '(begin
+         (set! rax 1)
+         (jump 2)
+         (compare rbx 3)
+         (jump-if = 4)
+         (set! rax 2)
+         (jump 1))))))
+
+(define (v4-interp-values-lang-test-suite interp-values-lang)
+  (test-suite
+   "v4 interp-values-lang public test sutie"
+   (for ([test (dict-ref test-prog-dict interp-values-lang-v4)])
+     (with-check-info (['test-program (cadr test)])
+       (check-equal?
+        (interp-values-lang (cadr test))
+        (interp-values-lang-v4 (cadr test)))))))
+
+(define (v4-interp-paren-x64-test-suite interp-paren-x64)
+  (test-suite
+   "v4 interp-paren-x64 public test sutie"
+   (for ([test (dict-ref test-prog-dict interp-paren-x64-v4)])
+     (with-check-info (['test-program (cadr test)])
+       (check-equal?
+        (interp-paren-x64 (cadr test))
+        (interp-paren-x64-v4 (cadr test)))))))
+
+(define (v4-check-values-lang check-values-lang)
+  (test-suite
+   "v4 check-values-lang public test sutie"
+   (for ([test (dict-ref test-prog-dict interp-values-lang-v4)])
+     (with-check-info (['test-program (cadr test)])
+       (check-equal?
+        (check-values-lang (cadr test))
+        (cadr test))))
+
+   (test-exn
+    "bad parallel bindings"
+    exn:fail?
+    (thunk (check-values-lang '(module (let ([x 6] [x 7]) x)))))
+
+   (test-exn
+    "pred in tail"
+    exn:fail?
+    (thunk (check-values-lang '(module (true)))))
+
+   (test-exn
+    "pred as value"
+    exn:fail?
+    (thunk (check-values-lang '(module (let ([x true]) x)))))
+
+   (test-exn
+    "pred as value"
+    exn:fail?
+    (thunk (check-values-lang '(module (let ([x (true)]) x)))))
+
+   (test-exn
+    "pred as value"
+    exn:fail?
+    (thunk (check-values-lang '(module (let ([x (false)]) x)))))
+
+   (test-exn
+    "pred as value"
+    exn:fail?
+    (thunk (check-values-lang '(module (not 5)))))))
+
 (define (v4-public-test-suite pass-ls interp-ls
-                              #;link-paren-x64
-                              #;interp-paren-x64
-                              #;interp-values-lang
-                              #;check-values-lang)
+                              link-paren-x64
+                              interp-paren-x64
+                              interp-values-lang
+                              check-values-lang)
   (define run/read (current-run/read))
   (define passes (current-pass-list))
 
@@ -705,4 +832,9 @@
 
    (test-suite
     "compiler testomatic test suite"
-    (compiler-testomatic pass-ls interp-ls))))
+    (compiler-testomatic pass-ls interp-ls))
+
+   (v4-link-paren-x64-test-suite link-paren-x64)
+   (v4-interp-values-lang-test-suite link-paren-x64)
+   (v4-interp-paren-x64-test-suite link-paren-x64)
+   (v4-check-values-lang check-values-lang)))
