@@ -313,7 +313,7 @@
         (if (not (if (true)
                      (> r8 5)
                      (< r9 6)))
-            (set! r9 15)
+            (set! r12 15)
             (set! r12 90))
         (halt r12))))
 
@@ -338,6 +338,7 @@
       (begin
         (set! fv1 12)
         (set! fv2 12)
+        (set! fv3 0)
         (halt fv3))))))
 
 (register-test-programs!
@@ -361,7 +362,7 @@
     (module
       (define L.x.1
         (begin
-          (set! rcx rcx)
+          (set! rcx 0)
           (jump L.x.2)))
 
       (define L.x.2
@@ -835,6 +836,6 @@
     (compiler-testomatic pass-ls interp-ls))
 
    (v4-link-paren-x64-test-suite link-paren-x64)
-   (v4-interp-values-lang-test-suite link-paren-x64)
-   (v4-interp-paren-x64-test-suite link-paren-x64)
+   (v4-interp-values-lang-test-suite interp-values-lang)
+   (v4-interp-paren-x64-test-suite interp-paren-x64)
    (v4-check-values-lang check-values-lang)))
