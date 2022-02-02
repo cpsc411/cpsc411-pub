@@ -16,38 +16,6 @@
  cpsc411/test-suite/public/v3
  cpsc411/test-suite/public/v4)
 
-#|
-not running:
-Guess it has something to do with compare?
-(letrec ((L.cs411main.1
-          (lambda ()
-            (set! r11 7)
-            (L.fib.1)))
-         (L.fib.1
-          (lambda ()
-            (set! r9 0)
-            (set! r10 1)
-            (set! r12 r11)
-            (L.fib_iter.1)))
-         (L.fib_iter.1
-          (lambda ()
-            (compare r12 0)
-            (jump-if = L.fib_done.1)
-            (L.fib_not_done_yet.1)))
-         (L.fib_not_done_yet.1
-          (lambda ()
-            (set! r13 r10)
-            (set! r10 (+ r10 r9))
-            (set! r9 r13)
-            (set! r12 (+ r12 -1))
-            (jump L.fib_iter.1)
-            (L.fib_done.1)))
-         (L.fib_done.1
-          (lambda ()
-            (set! rdi r10)
-            (set! rax rdi))))
-  (L.cs411main.1))
-|#
 ;; Expects to be used with check-not-exn or check-exn.
 (define (check-with-timeout timeout proc)
   (let* ([e (engine proc)]
