@@ -17,10 +17,10 @@
  (rename-out [new-define define])
  (rename-out [new-begin begin])
  (except-out (all-defined-out) new-define)
- (rename-out [new-module-begin #%module-begin])
- #%top-interaction
- #%datum
- #%app
+ #;(rename-out [new-module-begin #%module-begin])
+ #;#%top-interaction
+ #;#%datum
+ #;#%app
 
  =
  >
