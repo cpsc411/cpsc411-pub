@@ -369,14 +369,20 @@
 ; Where L1 is the input to the first function in (current-pass-list) and L2 is
 ; the output language of the last function in (current-pass-list).
 ; NOTE: Conflicts Racket's compile. Could cause problems.
-(define/memo* (compile/cached e passls)
+(define/memo* (compile/cached e passls
+                              assignable-registers
+                              aux-registers)
   (unless passls
     (error 'compile "Did you remember to initialize current-pass-list?"))
 
-  ((apply compose (reverse passls)) e))
+  (parameterize ([current-assignable-registers assignable-registers]
+                 [current-auxiliary-registers aux-registers])
+    ((apply compose (reverse passls)) e)))
 
 (define (compile e)
-  (compile/cached e (current-pass-list)))
+  (compile/cached e (current-pass-list)
+                  (current-assignable-registers)
+                  (current-auxiliary-registers)))
 
 ; (Path -> any) -> x64 String -> any
 ; Assembles and links the x64 program represented by the string str using nasm,
