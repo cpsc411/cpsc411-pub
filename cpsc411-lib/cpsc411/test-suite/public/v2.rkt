@@ -73,11 +73,6 @@
               (halt z.1))))
     (""
      (module
-       ((locals (x.1 undefined.1 undefined.2)))
-       (begin (set! x.1 undefined.1)
-              (halt undefined.2))))
-    (""
-     (module
        ((locals (w.1 y.1 x.1)))
        (begin
          (set! x.1 0)
@@ -123,8 +118,8 @@
         (assignment ((w.1 fv0) (y.1 fv1) (x.1 fv2))))
        (begin
          (set! x.1 0)
-         (set! y.1 x.1)
          (set! w.1 0)
+         (set! y.1 x.1)
          (set! w.1 (+ w.1 x.1))
          (set! w.1 (+ w.1 y.1))
          (halt w.1))))))
