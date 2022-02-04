@@ -35,7 +35,8 @@
   [int64 int64?]
 ]
 
-(define interp-asm-lang-v2/undead interp-asm-lang-v2)
+(define (interp-asm-lang-v2/undead e)
+  (interp-asm-lang-v2 e))
 
 @define-grammar/pred[asm-lang-v2/conflicts
   #:literals (int64? aloc?)
@@ -59,4 +60,5 @@
   [int64 int64?]
 ]
 
-(define interp-asm-lang-v2/conflicts interp-asm-lang-v2)
+(define (interp-asm-lang-v2/conflicts e)
+  (interp-asm-lang-v2 e))
