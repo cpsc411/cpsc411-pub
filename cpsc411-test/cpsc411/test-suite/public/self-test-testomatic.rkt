@@ -8,11 +8,13 @@
  cpsc411/test-suite/utils
  cpsc411/langs/v1
  cpsc411/langs/v2
+ cpsc411/langs/v2-reg-alloc
  cpsc411/langs/v3
  cpsc411/langs/v4
 
  cpsc411/test-suite/public/v1
  cpsc411/test-suite/public/v2
+ cpsc411/test-suite/public/v2-reg-alloc
  cpsc411/test-suite/public/v3
  cpsc411/test-suite/public/v4)
 
@@ -52,3 +54,52 @@
                (begin
                  (set! rcx rcx)
                  (halt 0)))))))))
+
+(check-false
+ (validate-assignments
+  '(x.1 y.2 z.3 x.4)
+  '((x.1 (z.3)) (y.2 (z.3 x.4)) (z.3 (y.2 x.1 x.4)) (x.4 (z.3 y.2)))
+  '((z.3 r8) (x.4 fv0) (y.2 fv0) (x.1 fv0))
+  '(r8)))
+
+(check-true
+ (validate-assignments
+  '(x.1)
+  '((x.1 ()))
+  '((x.1 r8))))
+
+(check-false
+ (validate-assignments
+  '(x.1 y.2)
+  '((x.1 ())
+    (y.2 ()))
+  '((x.1 r8))))
+
+(check-true
+ (validate-assignments
+  '(x.1 y.2)
+  '((x.1 ())
+    (y.2 ()))
+  '((x.1 r8) (y.2 r9))))
+
+(check-false
+ (validate-assignments
+  '(x.1 y.2)
+  '((x.1 ())
+    (y.2 ()))
+  '((x.1 fv0) (y.2 fv0))))
+
+(check-true
+ (validate-assignments
+  '(x.1 y.2)
+  '((x.1 ())
+    (y.2 ()))
+  '((x.1 r8) (y.2 fv0))
+  '(r8)))
+
+(check-true
+ (validate-assignments
+  '(x.1 x.2 x.3)
+  '((x.3 (x.1)) (x.1 (x.2 x.3)) (x.2 (x.1)))
+  '((x.1 rsi) (x.3 rcx) (x.2 rcx))
+  '(rcx rsi)))

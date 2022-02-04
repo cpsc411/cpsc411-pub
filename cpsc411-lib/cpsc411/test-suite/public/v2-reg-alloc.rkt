@@ -18,25 +18,21 @@
 
 ; validates register assignments in assign-registers
 (define (validate-assignments locals conflicts assigns [regs (current-assignable-registers)])
-  (let* ([a-hash (make-hash assigns)]
-         [a-values (hash-values a-hash)]
-         [f (lambda (e acc) (+ acc (cond [(set-member? a-values (list e)) 1]
-                                         [else 0])))])
-    (and
-     ; all locals are assigned
-     (equal? (length assigns) (length locals))
-     (foldr (lambda (e acc) (and acc (hash-has-key? a-hash e))) #t locals)
-     ; no conflicts
-     (foldr
-      (lambda (p acc)
-        (let* ([v-names (cons (car p) (car (cdr p)))]
-               [v-values (foldr (lambda (v acc) (cons (hash-ref a-hash v) acc)) '() v-names)])
-          (and acc (equal? (length v-names) (length v-values)))))
-      '()
-      conflicts)
-     ; should not spill early
-     ;(begin (println a-values) (println (foldr f 0 regs))
-     (<= (foldr f 0 regs) (length locals)))))
+  (and
+   ; all locals are assigned
+   (set=? (dict-keys assigns) locals)
+
+   ; should not spill early
+   (>= (count register? (map car (dict-values assigns)))
+       (min (length locals) (length regs)))
+
+   ; should not assign to conflicts
+   (let ([resolved-conflicts
+          (for/list ([als conflicts])
+            `(,(first als) ,(for/list ([aloc (second als)])
+                              (car (dict-ref assigns aloc aloc)))))])
+     (for/and ([(aloc ploc) (in-dict assigns)])
+       (not (set-member? (car (dict-ref resolved-conflicts aloc)) (car ploc)))))))
 
 ; validates conflicts match expected
 (define (validate-conflicts locals conflicts expected)
