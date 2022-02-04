@@ -16,6 +16,148 @@
 (provide
  (all-defined-out))
 
+(register-test-programs!
+ interp-asm-lang-v2
+ '((""
+    (module
+      ()
+      (begin
+        (set! x.1 5)
+        (halt x.1))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 5)
+        (set! x.2 10)
+        (halt x.1))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 5)
+        (set! x.2 10)
+        (set! x.1 (+ x.1 x.2))
+        (halt x.2))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 5)
+        (set! x.2 10)
+        (set! x.3 x.2)
+        (set! x.3 (* x.3 x.1))
+        (halt x.2))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 5)
+        (set! x.3 15)
+        (set! x.2 x.1)
+        (set! x.1 (* x.1 x.3))
+        (halt x.1))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 5)
+        (set! x.2 10)
+        (set! x.1 (+ x.1 x.1))
+        (set! x.3 15)
+        (set! x.1 x.2)
+        (set! x.1 (* x.1 x.3))
+        (set! x.3 5)
+        (halt x.3))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! v.1 1)
+        (set! w.2 46)
+        (set! x.3 v.1)
+        (set! t.7 7)
+        (set! x.3 (+ x.3 t.7))
+        (set! y.4 x.3)
+        (set! t.8 4)
+        (set! y.4 (+ y.4 t.8))
+        (set! z.5 x.3)
+        (set! z.5 (+ z.5 w.2))
+        (set! t.6 y.4)
+        (set! t.9 -1)
+        (set! t.6 (* t.6 t.9))
+        (set! z.5 (+ z.5 t.6))
+        (halt z.5))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 1)
+        (set! x.2 2)
+        (set! x.3 3)
+        (set! x.3 (+ x.3 x.2))
+        (set! x.3 (+ x.3 x.1))
+        (halt x.3))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 10)
+        (set! x.2 15)
+        (set! x.1 (+ x.1 x.2))
+        (set! x.3 5)
+        (set! x.2 (+ x.2 x.1))
+        (set! x.2 (+ x.2 x.3))
+        (halt x.1))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! v.1 1)
+        (set! w.2 46)
+        (set! x.3 v.1)
+        (set! x.3 (+ x.3 7))
+        (set! y.4 x.3)
+        (set! y.4 (+ y.4 4))
+        (set! z.5 x.3)
+        (set! z.5 (+ z.5 w.2))
+        (set! t.6 y.4)
+        (set! t.6 (* t.6 -1))
+        (set! z.5 (+ z.5 t.6))
+        (halt z.5))))
+
+   (""
+    (module
+     ()
+     (begin
+       (set! x.1 10)
+       (halt x.1))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 10)
+        (set! x.2 5)
+        (halt x.1))))
+
+   (""
+    (module
+      ()
+      (begin
+        (set! x.1 5)
+        (set! x.2 10)
+        (halt x.1))))))
+
 ; validates register assignments in assign-registers
 (define (validate-assignments locals conflicts assigns [regs (current-assignable-registers)])
   (and
