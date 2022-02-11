@@ -2,6 +2,7 @@
 
 (require
  (for-syntax racket/base)
+ racket/engine
  racket/function
  racket/match
  racket/list
@@ -74,6 +75,24 @@
      f1]
     [else (compose f1 f2)]))
 
+;; milliseconds
+(define current-test-case-timeout (make-parameter 5000))
+
+;; Milliseconds (() -> any_1) (() -> any_2) -> any_1 or any_2
+;; Runs proc in an engine, returning its result, or calling the failure
+;; continuation of proc fails to finish before timeout-ms milliseconds.
+(define (run-test-with-timeout proc
+                          [timeout-ms (current-test-case-timeout)]
+                          [fail-k (lambda () (fail-check "Timed out"))])
+  (let* ([e (engine proc)]
+         [res (engine-run timeout-ms e)])
+    (unless res
+      (fail-k))
+    (engine-result e)))
+
+(define-syntax-rule (with-timeout stx ...)
+  (run-test-with-timeout (lambda (_) stx ...)))
+
 ;; public test suite:
 ;; non-adversarial; can assume interpreter list is valid
 
@@ -140,22 +159,24 @@
             (define test-prog (second test-prog-entry))
             (test-begin
               (with-check-info (['test-type "Checking test-program compilers without error"])
-                (test-not-exn (symbol->string (object-name pass)) (thunk (pass test-prog))))
+                (test-not-exn (symbol->string (object-name pass)) (thunk
+                                                                   (with-timeout
+                                                                     (pass test-prog)))))
               (define output (pass test-prog))
               (with-check-info (['output-program output])
                 (with-check-info (['test-type "Checking output is interpretable"])
                   (test-not-exn "test output interprets"
-                                (thunk (target-interp output))))
+                                (thunk (with-timeout (target-interp output)))))
                 (with-check-info (['test-type "Checking source program is interpretable (failure indicates bug in reference implementation)"])
                   (test-not-exn "self-test source interprets"
-                              (thunk (src-interp test-prog))))
+                                (thunk (with-timeout (src-interp test-prog)))))
                 (define expected (target-interp output))
                 (with-check-info (['expected expected]
                                   ['test-type "Checking that output produces correct value"])
                   (check-equal? (src-interp test-prog) expected))
                 (with-check-info (['type-type "Checking that output is syntactically correct"])
                   (when trg-validator
-                  (check-true (trg-validator output))))
+                    (check-true (trg-validator output))))
                 (set-add! target-interp-progs `(,name ,output))))))
         (loop (rest pass-ls) (rest interp-ls))]))))
 
