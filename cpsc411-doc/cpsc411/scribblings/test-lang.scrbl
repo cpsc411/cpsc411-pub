@@ -12,6 +12,7 @@
    cpsc411/langs/v1
    cpsc411/langs/v2
    cpsc411/langs/v3
+   cpsc411/langs/v4
    racket/contract)
   scribble/examples)
 
@@ -135,6 +136,28 @@ See @racket[v1-public-test-suite] for details about the interpretation of
 @racket[pass-list] and @racket[interp-list].
 }
 
+@subsection{Version 4 Test Suites}
+@defmodule[cpsc411/test-suite/public/v4]
+
+@defproc[(v4-public-test-suite [pass-list (listof (-> any/c any/c))]
+                               [interp-list (listof (or/c #f (-> any/c any/c)))]
+                               [link-paren-x64 (-> paren-x64-v4 paren-x64-rt-v4?)]
+                               [interp-paren-x64 (-> paren-x64-v4? int64?)]
+                               [interp-values-lang (-> values-lang-v4? int64?)]
+                               [check-values-lang (-> any/c values-lang-v4?)])
+         test-suite?]{
+The test suite for the v4 compiler passes.
+Reuses all test suites from @racket[v4-public-test-suite] where possible.
+
+@racket[pass-list] is expected to be a list of passes that compile from
+@racket[values-lang-v4?] to x64, compatible with @racket[current-pass-list].
+
+See @racket[v1-public-test-suite] for details about the interpretation of
+@racket[pass-list] and @racket[interp-list].
+
+Expects 4 functions not directly part of compilation separate, and performs
+various kinds of property-based testing on them.
+}
 
 @subsection{Milestone 1 Test Suites}
 @defmodule[cpsc411/test-suite/public/a1]
