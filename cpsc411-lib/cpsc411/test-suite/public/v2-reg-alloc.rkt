@@ -182,6 +182,21 @@
         [e-hash (make-hash expected)])
     (foldr (lambda (e acc) (and acc (set=? (car (hash-ref c-hash e)) (car (hash-ref e-hash e))))) #t locals)))
 
+
+(define (ust-equal? ust1 ust2)
+  (match (cons ust1 ust1)
+    [(cons set1 set2)
+     #:when (and
+             (generic-set? set1)
+             (andmap aloc? set1)
+             (generic-set? set2)
+             (andmap aloc? set2))
+     (set=? set1 set2)]
+    [(cons
+      `(,usts1 ...)
+      `(,usts2 ...))
+     (andmap ust-equal? usts1 usts2)]))
+
 ; validates undead sets
 (define (validate-undead undead expected)
   (let ([f (map (lambda (u e) (equal? (list->set u) (list->set e))) undead expected)])
