@@ -123,6 +123,12 @@
 ;;   - validate output by validator
 ;;   - if passes, add output to list of programs for target-interp
 
+(define (find-passes-by-interp interp-src pass-ls interp-ls)
+  (for/list ([pass pass-ls]
+             [interp interp-ls]
+             #:when (eq? interp interp-src))
+    pass))
+
 (define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)])
   (unless (eq? (length _pass-ls) (length _interp-ls))
     (error "Compiler Testomatic expects the pass list to be the same length as the interpreter list."
