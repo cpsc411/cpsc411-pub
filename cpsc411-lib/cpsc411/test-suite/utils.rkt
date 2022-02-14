@@ -86,9 +86,9 @@
                           [fail-k (lambda () (fail-check "Timed out"))])
   (let* ([e (engine proc)]
          [res (engine-run timeout-ms e)])
-    (unless res
-      (fail-k))
-    (engine-result e)))
+    (if res
+        (engine-result e)
+        (fail-k))))
 
 (define-syntax-rule (with-timeout stx ...)
   (run-test-with-timeout (lambda (_) stx ...)))
