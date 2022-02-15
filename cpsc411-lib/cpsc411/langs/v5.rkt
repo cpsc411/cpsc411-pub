@@ -79,7 +79,8 @@
   #:literals (int64? label? aloc? register? fvar? info?)
   #:datum-literals (define lambda module begin jump set! true false not if
    * + < <= = >= > !=)
-  [p      (module (define label tail) ... tail)]
+  [p      (module (define label (lambda (aloc ...) tail)) ...
+                  tail)]
   [pred   (relop opand opand)
           (true)
           (false)
@@ -87,7 +88,7 @@
           (begin effect ... pred)
           (if pred pred pred)]
   [tail   value
-          (jump trg loc ...)
+          (call triv opand ...)
           (begin effect ... tail)
           (if pred tail tail)]
   [value  triv
