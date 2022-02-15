@@ -137,8 +137,8 @@
     (reverse
      (list
       sequentialize-let-source-progs
-      impose-calling-conventions-source-progs
       normalize-bind-source-progs
+      impose-calling-conventions-source-progs
       select-instructions-source-progs
       uncover-locals-source-progs
       undead-analysis-source-progs
@@ -169,8 +169,8 @@
     undead-analysis
     uncover-locals
     select-instructions
-    normalize-bind
     impose-calling-conventions
+    normalize-bind
     sequentialize-let)
 
    (a5-end-to-end-test-suite passes)))
