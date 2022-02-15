@@ -61,8 +61,8 @@
   [triv int64 aloc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64 int64?]
   [aloc aloc?]
+  [int64 int64?]
 ]
 
 (define (interp-values-unique-lang-v4 x)
@@ -92,8 +92,8 @@
   [triv   int64 aloc]
   [binop  * +]
   [relop  < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
+  [int64  int64?]
 ]
 
 (define (interp-imp-mf-lang-v4 x)
@@ -121,8 +121,8 @@
   [triv   int64 aloc]
   [binop  * +]
   [relop  < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
+  [int64  int64?]
 ]
 
 (define (interp-imp-cmf-lang-v4 x)
@@ -150,8 +150,8 @@
   [triv int64 aloc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64  int64?]
   [aloc aloc?]
+  [int64  int64?]
 ]
 
 (define (interp-asm-pred-lang-v4 x)
@@ -162,7 +162,9 @@
   #:datum-literals (module locals true false not begin if set! * + < <= = >= >
                            != halt)
   [p    (module info tail)]
-  [info ((locals (aloc ...)) any ...)]
+  [info  #:with-contract
+         (info/c (locals (aloc ...)))
+         (info/c (locals (aloc? ...)))]
   [pred (relop aloc triv)
         (true)
         (false)
@@ -179,8 +181,8 @@
   [triv int64 aloc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
+  [int64  int64?]
 ]
 
 (define (interp-asm-pred-lang-v4/locals x)
@@ -214,8 +216,8 @@
   [triv int64 aloc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64  int64?]
   [aloc aloc?]
+  [int64  int64?]
 ]
 
 (define (interp-asm-pred-lang-v4/undead x)
@@ -249,8 +251,8 @@
   [triv int64 aloc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64 int64?]
   [aloc  aloc?]
+  [int64 int64?]
 ]
 
 (define (interp-asm-pred-lang-v4/conflicts x)
@@ -288,9 +290,9 @@
   [reg   rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14 r15]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64 int64?]
   [aloc aloc?]
   [fvar fvar?]
+  [int64 int64?]
 ]
 
 (define (interp-asm-pred-lang-v4/assignments x)
@@ -320,9 +322,9 @@
   [reg   rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14 r15]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64 int64?]
   [aloc aloc?]
   [fvar fvar?]
+  [int64 int64?]
 ]
 
 (define (interp-nested-asm-lang-v4 x)
@@ -343,10 +345,10 @@
          (not pred)]
   [tail  (halt opand)
          (jump trg)
-         (begin s ... tail)
+         (begin effect ... tail)
          (if pred (jump trg) (jump trg))]
-  [s     (set! loc triv)
-         (set! loc_1 (binop loc_1 opand))]
+  [effect (set! loc triv)
+          (set! loc_1 (binop loc_1 opand))]
   [triv  opand label]
   [opand int64 loc]
   [trg   label loc]
@@ -372,10 +374,10 @@
   [b     (define label tail)]
   [tail  (halt opand)
          (jump trg)
-         (begin s ... tail)
+         (begin effect ... tail)
          (if (relop loc opand) (jump trg) (jump trg))]
-  [s     (set! loc triv)
-         (set! loc_1 (binop loc_1 opand))]
+  [effect (set! loc triv)
+          (set! loc_1 (binop loc_1 opand))]
   [triv  opand label]
   [opand int64 loc]
   [trg   label loc]
