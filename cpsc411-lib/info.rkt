@@ -3,6 +3,7 @@
 (define deps
   '("rackunit-lib"
     "memoize-lib"
+    "static-rename-lib"
     "redex-lib"
     ("scribble-bettergrammar-lib" #:version "1.4.1")
     "scribble-lib"

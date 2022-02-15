@@ -1,17 +1,21 @@
 #lang at-exp racket/base
 
 (require
+ (for-syntax racket/base)
  cpsc411/compiler-lib
  cpsc411/info-lib
  scribble/bettergrammar
  racket/contract
+ static-rename
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
  (for-label cpsc411/compiler-lib)
  "redex-gen.rkt"
- "v4.rkt")
+ "v4.rkt"
+ (submod "base.rkt" interp))
 
-(provide (all-defined-out))
+(provide
+ (all-defined-out))
 
 @define-grammar/pred[values-lang-v5
   #:literals (name? int64?)
@@ -39,7 +43,8 @@
   [int64 int64?]
 ]
 
-(define interp-values-lang-v5 interp-values-lang-v4)
+(define (interp-values-lang-v5 x)
+  (interp-base x))
 
 @define-grammar/pred[values-unique-lang-v5
   #:literals (name? int64? label? aloc?)
@@ -135,6 +140,9 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-proc-imp-cmf-lang-v5 x)
+  (interp-base x))
+
 @define-grammar/pred[imp-cmf-lang-v5
   #:literals (int64? label? aloc? register? fvar? info?)
   #:datum-literals (define lambda module begin jump set! true false not if
@@ -167,6 +175,9 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-imp-cmf-lang-v5 x)
+  (interp-base x))
+
 @define-grammar/pred[asm-pred-lang-v5
   #:literals (int64? label? aloc? register? fvar? info?)
   #:datum-literals (define module begin set! jump true false not if * + < <= =
@@ -198,6 +209,9 @@
   [label  label?]
   [rloc   register? fvar?]
 ]
+
+(define (interp-asm-pred-lang-v5 x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v5/locals
   #:literals (int64? label? aloc? register? fvar? info? info/c)
@@ -234,6 +248,9 @@
   [label  label?]
   [rloc   register? fvar?]
 ]
+
+(define (interp-asm-pred-lang-v5/locals x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v5/undead
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree/rloc? info/c)
@@ -272,6 +289,9 @@
   [label  label?]
   [rloc   register? fvar?]
 ]
+
+(define (interp-asm-pred-lang-v5/undead x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v5/conflicts
   #:literals (int64? label? aloc? register? fvar? info? info/c)
@@ -312,6 +332,9 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-asm-pred-lang-v5/conflicts x)
+  (interp-base x))
+
 @define-grammar/pred[asm-pred-lang-v5/assignments
   #:literals (int64? label? aloc? register? fvar? info?)
   #:datum-literals (locals assignment define module begin set! true false not if
@@ -351,6 +374,9 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-asm-pred-lang-v5/assignments x)
+  (interp-base x))
+
 @define-grammar/pred[nested-asm-lang-v5
   #:literals (int64? register? label? aloc? info? fvar?)
   #:datum-literals (define module begin set! true false not if * + < <= = >= >
@@ -383,6 +409,9 @@
   [label label?]
 ]
 
+(define (interp-nested-asm-lang-v5 x)
+  (interp-base x))
+
 @define-grammar/pred[block-pred-lang-v5
   #:literals (int64? register? label? aloc? info? fvar?)
   #:datum-literals (define module begin set! true false not if * + < <= = >= >
@@ -411,3 +440,31 @@
   [fvar fvar?]
   [label label?]
 ]
+
+(define (interp-block-pred-lang-v5 x)
+  (interp-base x))
+
+(define-syntax block-asm-lang-v5 (syntax-local-value #'block-asm-lang-v4))
+
+(define-syntax para-asm-lang-v5 (syntax-local-value #'para-asm-lang-v4))
+
+(define-syntax paren-x64-fvars-v5 (syntax-local-value #'paren-x64-fvars-v4))
+
+(define-syntax paren-x64-v5 (syntax-local-value #'paren-x64-v4))
+
+(define-values (interp-block-asm-lang-v5 block-asm-lang-v5?
+                interp-para-asm-lang-v5 para-asm-lang-v5?
+                interp-paren-x64-fvars-v5 paren-x64-fvars-v5?
+                interp-paren-x64-v5 paren-x64-v5?)
+  (values
+   (static-rename interp-block-asm-lang-v5 interp-block-asm-lang-v4)
+   (static-rename block-asm-lang-v5? block-asm-lang-v4?)
+
+   (static-rename interp-para-asm-lang-v5 interp-para-asm-lang-v4)
+   (static-rename para-asm-lang-v5? para-asm-lang-v4?)
+
+   (static-rename interp-paren-x64-fvars-v5 interp-paren-x64-fvars-v4)
+   (static-rename paren-x64-fvars-v5? paren-x64-fvars-v4?)
+
+   (static-rename interp-paren-x64-v5 interp-paren-x64-v4)
+   (static-rename paren-x64-v5? paren-x64-v4?)))
