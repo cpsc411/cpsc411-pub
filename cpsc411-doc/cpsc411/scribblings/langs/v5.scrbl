@@ -12,8 +12,8 @@
 @deflangs[
 values-lang-v5
 values-unique-lang-v5
-proc-imp-cmf-lang-v5
 imp-mf-lang-v5
+proc-imp-cmf-lang-v5
 imp-cmf-lang-v5
 asm-pred-lang-v5
 asm-pred-lang-v5/locals

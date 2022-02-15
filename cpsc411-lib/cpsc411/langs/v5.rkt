@@ -1,6 +1,7 @@
 #lang at-exp racket/base
 
 (require
+ (for-syntax racket/base)
  cpsc411/compiler-lib
  cpsc411/info-lib
  scribble/bettergrammar
@@ -13,7 +14,8 @@
  "v4.rkt"
  (submod "base.rkt" interp))
 
-(provide (all-defined-out))
+(provide
+ (all-defined-out))
 
 @define-grammar/pred[values-lang-v5
   #:literals (name? int64?)
@@ -446,6 +448,14 @@
 
 (define (interp-block-pred-lang-v5 x)
   (interp-base x))
+
+(define-syntax block-asm-lang-v5 (syntax-local-value #'block-asm-lang-v4))
+
+(define-syntax para-asm-lang-v5 (syntax-local-value #'para-asm-lang-v4))
+
+(define-syntax paren-x64-fvars-v5 (syntax-local-value #'paren-x64-fvars-v4))
+
+(define-syntax paren-x64-v5 (syntax-local-value #'paren-x64-v4))
 
 (define-values (interp-block-asm-lang-v5 block-asm-lang-v5?
                 interp-para-asm-lang-v5 para-asm-lang-v5?
