@@ -168,7 +168,8 @@
 
 (define (jump l . rest)
   (l)
-  (r:error "Shouldn't have returned!"))
+  ;; Not true; once we add calls, jumps can return...
+  #;(r:error "Shouldn't have returned!"))
 
 (begin-for-syntax
   (define (labelify-begin defs ss)
