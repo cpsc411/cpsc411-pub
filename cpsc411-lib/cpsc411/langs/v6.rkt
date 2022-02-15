@@ -72,40 +72,6 @@
   [label label?]
 ]
 
-@define-grammar/pred[proc-imp-mf-lang-v6
-  #:literals (int64? label? aloc? info?)
-  #:datum-literals (define lambda module begin set! halt call true false not if
-   * + < <= = >= > !=)
-  [p      (module (define label (lambda (aloc ...) entry)) ...
-            entry)]
-  [entry  tail]
-  [pred   (relop opand opand)
-          (true)
-          (false)
-          (not pred)
-          (begin effect ... pred)
-          (if pred pred pred)]
-  [tail   value
-          (call triv opand ...)
-          (begin effect ... tail)
-          (if pred tail tail)]
-  [value  triv
-          (binop opand opand)
-          (begin effect ... value)
-          (if pred value value)
-          (call triv opand ...)]
-  [effect (set! aloc value)
-          (begin effect ... effect)
-          (if pred effect effect)]
-  [opand int64 aloc]
-  [triv  opand label]
-  [binop  * + -]
-  [relop  < <= = >= > !=]
-  [int64 int64?]
-  [aloc  aloc?]
-  [label  label?]
-]
-
 @define-grammar/pred[imp-mf-lang-v6
   #:literals (int64? label? aloc? register? fvar? info? any info/c)
   #:datum-literals (new-frames return-point define lambda module begin jump set! halt true false not if
@@ -149,6 +115,37 @@
   [rloc   register? fvar?]
 ]
 
+@define-grammar/pred[proc-imp-cmf-lang-v6
+  #:literals (int64? label? aloc? info?)
+  #:datum-literals (define lambda module begin set! halt call true false not if
+   * + < <= = >= > !=)
+  [p      (module (define label (lambda (aloc ...) entry)) ...
+            entry)]
+  [entry  tail]
+  [pred   (relop opand opand)
+          (true)
+          (false)
+          (not pred)
+          (begin effect ... pred)
+          (if pred pred pred)]
+  [tail   value
+          (call triv opand ...)
+          (begin effect ... tail)
+          (if pred tail tail)]
+  [value  triv
+          (binop opand opand)
+          (call triv opand ...)]
+  [effect (set! aloc value)
+          (begin effect ... effect)
+          (if pred effect effect)]
+  [opand int64 aloc]
+  [triv  opand label]
+  [binop  * + -]
+  [relop  < <= = >= > !=]
+  [int64 int64?]
+  [aloc  aloc?]
+  [label  label?]
+]
 
 @define-grammar/pred[imp-cmf-lang-v6
   #:literals (int64? label? aloc? register? fvar? info? info/c)

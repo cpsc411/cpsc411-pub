@@ -74,12 +74,15 @@
   [label label?]
 ]
 
-@define-grammar/pred[proc-imp-mf-lang-v5
-  #:literals (int64? label? aloc? info?)
-  #:datum-literals (define lambda module begin set! call true false not if
+(define (interp-values-unique-lang-v5 x)
+  (interp-base x))
+
+@define-grammar/pred[imp-mf-lang-v5
+  #:literals (int64? label? aloc? register? fvar? info?)
+  #:datum-literals (define lambda module begin jump set! true false not if
    * + < <= = >= > !=)
   [p      (module (define label (lambda (aloc ...) tail)) ...
-                       tail)]
+                  tail)]
   [pred   (relop opand opand)
           (true)
           (false)
@@ -88,37 +91,6 @@
           (if pred pred pred)]
   [tail   value
           (call triv opand ...)
-          (begin effect ... tail)
-          (if pred tail tail)]
-  [value  triv
-          (binop opand opand)
-          (begin effect ... value)
-          (if pred value value)]
-  [effect (set! aloc value)
-          (begin effect ... effect)
-          (if pred effect effect)]
-  [opand int64 aloc]
-  [triv  opand label]
-  [binop  * +]
-  [relop  < <= = >= > !=]
-  [int64 int64?]
-  [aloc  aloc?]
-  [label  label?]
-]
-
-@define-grammar/pred[imp-mf-lang-v5
-  #:literals (int64? label? aloc? register? fvar? info?)
-  #:datum-literals (define lambda module begin jump set! true false not if
-   * + < <= = >= > !=)
-  [p      (module (define label tail) ... tail)]
-  [pred   (relop opand opand)
-          (true)
-          (false)
-          (not pred)
-          (begin effect ... pred)
-          (if pred pred pred)]
-  [tail   value
-          (jump trg loc ...)
           (begin effect ... tail)
           (if pred tail tail)]
   [value  triv
@@ -138,6 +110,39 @@
   [aloc   aloc?]
   [label  label?]
   [rloc   register? fvar?]
+]
+
+(define (interp-imp-mf-lang-v5 x)
+  (interp-base x))
+
+@define-grammar/pred[proc-imp-cmf-lang-v5
+  #:literals (int64? label? aloc? info?)
+  #:datum-literals (define lambda module begin set! call true false not if
+                    * + < <= = >= > !=)
+  [p      (module (define label (lambda (aloc ...) tail)) ...
+                  tail)]
+  [pred   (relop opand opand)
+          (true)
+          (false)
+          (not pred)
+          (begin effect ... pred)
+          (if pred pred pred)]
+  [tail   value
+          (call triv opand ...)
+          (begin effect ... tail)
+          (if pred tail tail)]
+  [value  triv
+          (binop opand opand)]
+  [effect (set! aloc value)
+          (begin effect ... effect)
+          (if pred effect effect)]
+  [opand int64 aloc]
+  [triv  opand label]
+  [binop  * +]
+  [relop  < <= = >= > !=]
+  [int64 int64?]
+  [aloc  aloc?]
+  [label  label?]
 ]
 
 (define (interp-proc-imp-cmf-lang-v5 x)
