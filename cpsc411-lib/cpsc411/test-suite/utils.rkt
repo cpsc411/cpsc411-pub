@@ -65,7 +65,24 @@
    interp-block-asm-lang-v4 block-asm-lang-v4?
    interp-para-asm-lang-v4 para-asm-lang-v4?
    interp-paren-x64-fvars-v4 paren-x64-fvars-v4?
-   interp-paren-x64-v4 paren-x64-v4?))
+   interp-paren-x64-v4 paren-x64-v4?
+
+   interp-values-lang-v5 values-lang-v5?
+   interp-values-unique-lang-v5 values-unique-lang-v5?
+   interp-imp-mf-lang-v5 imp-mf-lang-v5?
+   interp-proc-imp-cmf-lang-v5 proc-imp-cmf-lang-v5?
+   interp-imp-cmf-lang-v5 imp-cmf-lang-v5?
+   interp-asm-pred-lang-v5 asm-pred-lang-v5?
+   interp-asm-pred-lang-v5/locals asm-pred-lang-v5/locals?
+   interp-asm-pred-lang-v5/undead asm-pred-lang-v5/undead?
+   interp-asm-pred-lang-v5/conflicts asm-pred-lang-v5/conflicts?
+   interp-asm-pred-lang-v5/assignments asm-pred-lang-v5/assignments?
+   interp-nested-asm-lang-v5 nested-asm-lang-v5?
+   interp-block-pred-lang-v5 block-pred-lang-v5?
+   interp-block-asm-lang-v5 block-asm-lang-v5?
+   interp-para-asm-lang-v5 para-asm-lang-v5?
+   interp-paren-x64-fvars-v5 paren-x64-fvars-v5?
+   interp-paren-x64-v5 paren-x64-v5?))
 
 (define (static-compose f1 f2)
   (cond
