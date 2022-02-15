@@ -12,7 +12,8 @@
  "../langs/v1.rkt"
  "../langs/v2.rkt"
  "../langs/v3.rkt"
- "../langs/v4.rkt")
+ "../langs/v4.rkt"
+ "../langs/v5.rkt")
 
 (provide
  (all-defined-out))
