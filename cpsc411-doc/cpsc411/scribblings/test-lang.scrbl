@@ -13,6 +13,7 @@
    cpsc411/langs/v2
    cpsc411/langs/v3
    cpsc411/langs/v4
+   cpsc411/langs/v5
    racket/contract)
   scribble/examples)
 
@@ -157,6 +158,26 @@ See @racket[v1-public-test-suite] for details about the interpretation of
 
 Expects 4 functions not directly part of compilation separate, and performs
 various kinds of property-based testing on them.
+}
+
+@subsection{Version 5 Test Suites}
+@defmodule[cpsc411/test-suite/public/v5]
+
+@defproc[(v5-public-test-suite [pass-list (listof (-> any/c any/c))]
+                               [interp-list (listof (or/c #f (-> any/c any/c)))]
+                               [check-values-lang (-> any/c values-lang-v5?)])
+         test-suite?]{
+The test suite for the v5 compiler passes.
+Reuses all test suites from @racket[v4-public-test-suite] where possible.
+
+@racket[pass-list] is expected to be a list of passes that compile from
+@racket[values-lang-v5?] to x64, compatible with @racket[current-pass-list].
+
+See @racket[v1-public-test-suite] for details about the interpretation of
+@racket[pass-list] and @racket[interp-list].
+
+Expects 1 function not directly part of compilation separate, and performs
+various kinds of property-based testing on it.
 }
 
 @subsection{Milestone 1 Test Suites}
