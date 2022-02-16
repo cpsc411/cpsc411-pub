@@ -8,7 +8,8 @@
    cpsc411/graph-lib
    (except-in cpsc411/compiler-lib compile)
    (except-in racket/base read read-syntax)
-   cpsc411/test-suite/public/a1
+   ;cpsc411/test-suite/public/a1
+   cpsc411/test-suite/public/v1
    cpsc411/langs/v1
    cpsc411/langs/v2
    cpsc411/langs/v3
@@ -148,7 +149,7 @@ See @racket[v1-public-test-suite] for details about the interpretation of
                                [check-values-lang (-> any/c values-lang-v4?)])
          test-suite?]{
 The test suite for the v4 compiler passes.
-Reuses all test suites from @racket[v4-public-test-suite] where possible.
+Reuses all test suites from @racket[v3-public-test-suite] where possible.
 
 @racket[pass-list] is expected to be a list of passes that compile from
 @racket[values-lang-v4?] to x64, compatible with @racket[current-pass-list].
