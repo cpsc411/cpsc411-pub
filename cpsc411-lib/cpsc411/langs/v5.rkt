@@ -97,19 +97,16 @@
           (binop opand opand)
           (begin effect ... value)
           (if pred value value)]
-  [effect (set! loc value)
+  [effect (set! aloc value)
           (begin effect ... effect)
           (if pred effect effect)]
-  [opand int64 loc]
+  [opand int64 aloc]
   [triv  opand label]
-  [loc    rloc aloc]
-  [trg    label loc]
   [binop  * +]
   [relop  < <= = >= > !=]
   [int64  int64?]
   [aloc   aloc?]
   [label  label?]
-  [rloc   register? fvar?]
 ]
 
 (define (interp-imp-mf-lang-v5 x)
