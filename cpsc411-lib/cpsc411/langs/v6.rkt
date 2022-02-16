@@ -76,43 +76,32 @@
   #:literals (int64? label? aloc? register? fvar? info? any info/c)
   #:datum-literals (new-frames return-point define lambda module begin jump set! halt true false not if
    * + < <= = >= > !=)
-  [p      (module info (define label info tail) ... tail)]
-
-  [info #:with-contract
-        (info/c
-         (new-frames (frame ...)))
-        (let ([frame? (listof aloc?)])
-          (info/c
-           (new-frames (frame? ...))))]
-  [frame  (aloc ...)]
+  [p      (module (define label (lambda (aloc ...) tail)) ... tail)]
   [pred   (relop opand opand)
           (true)
           (false)
           (not pred)
           (begin effect ... pred)
           (if pred pred pred)]
-  [tail   ;value
-          (jump trg loc ...)
+  [tail   value
+          (call triv opand ...)
           (begin effect ... tail)
           (if pred tail tail)]
   [value  triv
+          (call triv opand ...)
           (binop opand opand)
           (begin effect ... value)
-          (if pred value value)
-          (return-point label tail)]
-  [effect (set! loc value)
+          (if pred value value)]
+  [effect (set! aloc value)
           (begin effect ... effect)
           (if pred effect effect)]
-  [opand int64 loc]
+  [opand int64 aloc]
   [triv  opand label]
-  [loc    rloc aloc]
-  [trg    label loc]
   [binop  * + -]
   [relop  < <= = >= > !=]
   [int64  int64?]
   [aloc   aloc?]
   [label  label?]
-  [rloc   register? fvar?]
 ]
 
 @define-grammar/pred[proc-imp-cmf-lang-v6
