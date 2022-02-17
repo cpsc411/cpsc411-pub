@@ -69,9 +69,9 @@
   [triv  opand label]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64 int64?]
   [aloc aloc?]
   [label label?]
+  [int64 int64?]
 ]
 
 (define (interp-values-unique-lang-v5 x)
@@ -80,7 +80,7 @@
 @define-grammar/pred[imp-mf-lang-v5
   #:literals (int64? label? aloc? register? fvar? info?)
   #:datum-literals (define lambda module begin jump set! true false not if
-   * + < <= = >= > !=)
+   * + < <= = >= > != call)
   [p      (module (define label (lambda (aloc ...) tail)) ...
                   tail)]
   [pred   (relop opand opand)
@@ -104,9 +104,9 @@
   [triv  opand label]
   [binop  * +]
   [relop  < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
+  [int64  int64?]
 ]
 
 (define (interp-imp-mf-lang-v5 x)
@@ -137,9 +137,9 @@
   [triv  opand label]
   [binop  * +]
   [relop  < <= = >= > !=]
-  [int64 int64?]
   [aloc  aloc?]
   [label  label?]
+  [int64 int64?]
 ]
 
 (define (interp-proc-imp-cmf-lang-v5 x)
@@ -171,10 +171,10 @@
   [trg    label loc]
   [binop  * +]
   [relop  < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
   [rloc   register? fvar?]
+  [int64  int64?]
 ]
 
 (define (interp-imp-cmf-lang-v5 x)
@@ -206,10 +206,10 @@
   [trg    label loc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
   [rloc   register? fvar?]
+  [int64  int64?]
 ]
 
 (define (interp-asm-pred-lang-v5 x)
@@ -245,10 +245,10 @@
   [trg    label loc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
   [rloc   register? fvar?]
+  [int64  int64?]
 ]
 
 (define (interp-asm-pred-lang-v5/locals x)
@@ -400,8 +400,8 @@
           (if pred effect effect)]
   [opand int64 loc]
   [triv  opand label]
-  [trg   label loc]
   [loc   reg fvar]
+  [trg   label loc]
   [reg   rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14 r15]
   [binop * +]
   [relop < <= = >= > !=]
@@ -426,12 +426,12 @@
          (not pred)]
   [tail  (halt opand)
          (jump trg)
-         (begin s ... tail)
+         (begin effect ... tail)
          (if pred (jump trg) (jump trg))]
-  [s     (set! loc triv)
+  [effect     (set! loc triv)
          (set! loc_1 (binop loc_1 opand))]
-  [opand int64 loc]
   [triv  opand label]
+  [opand int64 loc]
   [trg   label loc]
   [loc   reg fvar]
   [reg   rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14 r15]
