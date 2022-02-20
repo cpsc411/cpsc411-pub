@@ -20,6 +20,85 @@
 
 @title{Testing}
 
+@section{Compiler Testomatic}
+@defmodule[cpsc411/test-suite/utils]
+This section describes the lower-level interface to the property-based test
+suites described in the next section.
+This interface is a little unstable but may prove useful for property-based unit
+testing.
+
+The compiler testomatic framework keeps a map from language interpreters to test
+programs.
+Each pass is associated with an source interpreter and a target interpreter.
+The pass is tested by running the source program in the source interpreter
+against the output program in the target interpreter.
+Any output program that is deemed valid is retained for testing later passes.
+
+The framework also keeps an auxiliary map from interpreters to validators, and
+will run validators before attempting to interpret output programs.
+
+@defproc[(test-compiler-pass [pass ('a -> 'b)]
+                             [src-interp ('a -> 'c)]
+                             [trg-interp ('b -> 'c)]
+                             [trg-validator ((or/c any/c 'b) -> boolean?)])
+                             void?]{
+@racket['a], @racket['b], and @racket['c] represent arbitrary non-necessarily
+distinct type variables.
+This assumes @racket['c] is some type with Racket values compared by @racket[equal?].
+
+Takes a compiler pass from some language @racket['a] to some language
+@racket['b], an interpeter for each language, and a validator that recognizes
+program in the language @racket['b].
+Run @racket[pass] on each test source program registered with the framework, and
+compares the results in the respective interpreters.
+
+@racket[test-compiler-pass] executes a sequence of @racket[test-case?], and so
+should be run inside a @racket[test-suite], or it will have no effect.
+
+@examples[
+(require
+ rackunit
+ rackunit/text-ui
+ cpsc411/test-suite/utils
+ cpsc411/reference/a4-solution
+ cpsc411/langs/v4)
+
+(test-compiler-pass uniquify interp-values-lang-v4 interp-values-lang-v4 values-unique-lang-v4?)
+
+(run-tests
+ (test-suite
+  ""
+  (test-compiler-pass uniquify interp-values-lang-v4 interp-values-unique-lang-v4 values-unique-lang-v4?)))
+
+(register-test-programs!
+ interp-values-lang-v4
+ '(("" (module 5))
+   ("" (module (let ([x 5]) x)))))
+
+(run-tests
+ (test-suite
+  ""
+  (test-compiler-pass uniquify interp-values-lang-v4 interp-values-unique-lang-v4 values-unique-lang-v4?)))
+
+(run-tests
+ (test-suite
+  ""
+  (test-compiler-pass values interp-values-lang-v4 interp-values-unique-lang-v4 values-unique-lang-v4?)))
+]
+}
+
+@defproc[(register-test-programs! [src-interp (any/c -> any/c)]
+                                  [test-progs (listof (list string? any/c))])
+                                  void?]{
+Expects an interpreter provided directly from @racketmodname[cpsc411/langs], and a
+list of test programs.
+The test programs are a proper-list whose @racket[first] is a string
+representing a name and whose @racket[second] is a valid test program in
+@racket[src-interp].
+
+The test programs are registered for later use in the testomatic framework.
+}
+
 @section{Test Suites}
 This section describes the public tests suites provided by the library.
 See @racket[test-suite], @racketmodname[rackunit], @racket[run-tests], and @racketmodname[rackunit/text-ui].

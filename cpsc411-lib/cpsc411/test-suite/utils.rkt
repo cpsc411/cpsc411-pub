@@ -147,6 +147,38 @@
              #:when (eq? interp interp-src))
     pass))
 
+(define (test-compiler-pass pass src-interp trg-interp trg-validator)
+  (define target-interp-progs (hash-ref test-prog-dict trg-interp (mutable-set)))
+  (for ([test-prog-entry (hash-ref test-prog-dict src-interp '())]
+        [i (in-naturals)])
+    (define name (first test-prog-entry))
+    (with-check-info (['test-program (second test-prog-entry)]
+                      ['src-interp (object-name src-interp)]
+                      ['trg-interp (object-name trg-interp)]
+                      ['pass (object-name pass)])
+      (define test-prog (second test-prog-entry))
+      (test-begin
+        (with-check-info (['test-type "Checking test-program compilers without error"])
+          (test-not-exn (symbol->string (object-name pass)) (thunk
+                                                             (with-timeout
+                                                               (pass test-prog)))))
+        (define output (pass test-prog))
+        (with-check-info (['output-program output])
+          (with-check-info (['test-type "Checking output is interpretable"])
+            (test-not-exn "test output interprets"
+                          (thunk (with-timeout (trg-interp output)))))
+          (with-check-info (['test-type "Checking source program is interpretable (failure indicates bug in reference implementation)"])
+            (test-not-exn "self-test source interprets"
+                          (thunk (with-timeout (src-interp test-prog)))))
+          (define expected (trg-interp output))
+          (with-check-info (['expected expected]
+                            ['test-type "Checking that output produces correct value"])
+            (check-equal? (src-interp test-prog) expected))
+          (with-check-info (['type-type "Checking that output is syntactically correct"])
+            (when trg-validator
+              (check-true (trg-validator output))))
+          (set-add! target-interp-progs `(,name ,output)))))))
+
 (define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)])
   (unless (eq? (length _pass-ls) (length _interp-ls))
     (error "Compiler Testomatic expects the pass list to be the same length as the interpreter list."
@@ -179,39 +211,10 @@
        [else
         (define pass (first pass-ls))
         (define src-interp (first interp-ls))
-        (define target-interp (second interp-ls))
-        (define target-interp-progs (hash-ref test-prog-dict target-interp (mutable-set)))
+        (define trg-interp (second interp-ls))
         (define src-validator (hash-ref validator-dict src-interp #f))
-        (define trg-validator (hash-ref validator-dict target-interp #f))
-        (for ([test-prog-entry (hash-ref test-prog-dict src-interp '())]
-              [i (in-naturals)])
-          (define name (first test-prog-entry))
-          (with-check-info (['test-program (second test-prog-entry)]
-                            ['src-interp (object-name src-interp)]
-                            ['trg-interp (object-name target-interp)]
-                            ['pass (object-name pass)])
-            (define test-prog (second test-prog-entry))
-            (test-begin
-              (with-check-info (['test-type "Checking test-program compilers without error"])
-                (test-not-exn (symbol->string (object-name pass)) (thunk
-                                                                   (with-timeout
-                                                                     (pass test-prog)))))
-              (define output (pass test-prog))
-              (with-check-info (['output-program output])
-                (with-check-info (['test-type "Checking output is interpretable"])
-                  (test-not-exn "test output interprets"
-                                (thunk (with-timeout (target-interp output)))))
-                (with-check-info (['test-type "Checking source program is interpretable (failure indicates bug in reference implementation)"])
-                  (test-not-exn "self-test source interprets"
-                                (thunk (with-timeout (src-interp test-prog)))))
-                (define expected (target-interp output))
-                (with-check-info (['expected expected]
-                                  ['test-type "Checking that output produces correct value"])
-                  (check-equal? (src-interp test-prog) expected))
-                (with-check-info (['type-type "Checking that output is syntactically correct"])
-                  (when trg-validator
-                    (check-true (trg-validator output))))
-                (set-add! target-interp-progs `(,name ,output))))))
+        (define trg-validator (hash-ref validator-dict trg-interp #f))
+        (test-compiler-pass pass src-interp trg-interp trg-validator)
         (loop (rest pass-ls) (rest interp-ls))]))))
 
 
