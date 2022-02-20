@@ -51,6 +51,8 @@ Takes a compiler pass from some language @racket['a] to some language
 program in the language @racket['b].
 Run @racket[pass] on each test source program registered with the framework, and
 compares the results in the respective interpreters.
+Note that all test suites documented in the next section implicitly register
+tests with the framework.
 
 @racket[test-compiler-pass] executes a sequence of @racket[test-case?], and so
 should be run inside a @racket[test-suite], or it will have no effect.
@@ -84,6 +86,12 @@ should be run inside a @racket[test-suite], or it will have no effect.
  (test-suite
   ""
   (test-compiler-pass values interp-values-lang-v4 interp-values-unique-lang-v4 values-unique-lang-v4?)))
+
+(require cpsc411/test-suite/public/v4)
+(run-tests
+ (test-suite
+  ""
+  (test-compiler-pass uniquify interp-values-lang-v4 interp-values-unique-lang-v4 values-unique-lang-v4?)))
 ]
 }
 
