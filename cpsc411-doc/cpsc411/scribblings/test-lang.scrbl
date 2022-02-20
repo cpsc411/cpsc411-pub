@@ -59,11 +59,23 @@ should be run inside a @racket[test-suite], or it will have no effect.
 
 @examples[
 (require
+ racket/match
  rackunit
  rackunit/text-ui
  cpsc411/test-suite/utils
- cpsc411/reference/a4-solution
- cpsc411/langs/v4)
+ cpsc411/langs/v4
+ cpsc411/compiler-lib)
+
+(define (uniquify p)
+  (define (uniquify-tail tail)
+    (match tail
+      [`(let ([x ,v]) ,t)
+       `(let ([x.1 ,v]) ,(uniquify-tail t))]
+      ['x 'x.1]
+      [_ tail]))
+  (match p
+    [`(module ,t)
+     `(module ,(uniquify-tail t))]))
 
 (test-compiler-pass uniquify interp-values-lang-v4 interp-values-lang-v4 values-unique-lang-v4?)
 
@@ -91,7 +103,8 @@ should be run inside a @racket[test-suite], or it will have no effect.
 (run-tests
  (test-suite
   ""
-  (test-compiler-pass uniquify interp-values-lang-v4 interp-values-unique-lang-v4 values-unique-lang-v4?)))
+  (test-compiler-pass uniquify interp-values-lang-v4 interp-values-unique-lang-v4 values-unique-lang-v4?))
+ 'quiet)
 ]
 }
 
