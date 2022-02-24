@@ -171,7 +171,9 @@
 (begin-for-syntax
   (define (labelify-begin defs ss)
     (syntax-parse ss
-      #:datum-literals (with-label)
+      #:datum-literals (with-label begin)
+      [((begin ss1 ...) ss ...)
+       (labelify-begin defs #`(ss1 ... ss ...))]
       [((with-label l s) ss ...)
        (let-values ([(defs e) (labelify-begin defs #`(s ss ...))])
          (values
@@ -190,8 +192,10 @@
 ;; NOTE: Assumes no nested begins, I think.
 (define-syntax (new-begin stx)
   (let-values ([(defs e) (labelify-begin '() (cdr (syntax->list stx)))])
-    #`(letrec (#,@defs)
-        (begin #,@e))))
+    (if (null? defs)
+        #`(begin #,@e)
+        #`(letrec (#,@defs)
+            (begin #,@e)))))
 
 (define-syntax (new-define stx)
   (syntax-parse stx
