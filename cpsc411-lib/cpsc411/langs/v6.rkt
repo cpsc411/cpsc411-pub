@@ -229,10 +229,13 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-asm-pred-lang-v6 x)
+  (interp-base x))
+
 @define-grammar/pred[asm-pred-lang-v6/locals
   #:literals (int64? label? aloc? register? fvar? info? info/c)
   #:datum-literals (new-frames locals define module begin set! jump true false not if * + -
-                           < <= = >= > !=)
+                           < <= = >= > != return-point)
   [p    (module info (define label info tail) ... tail)]
   [info   #:with-contract
           (info/c
@@ -271,10 +274,13 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-asm-pred-lang-v6/locals x)
+  (interp-base x))
+
 @define-grammar/pred[asm-pred-lang-v6/undead
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree/rloc? undead-set-tree? info/c)
   #:datum-literals (call-undead undead-out locals define module begin set! jump true false not if * + < <= =
-   >= > != - new-frames)
+   >= > != - new-frames return-point)
   [p    (module info (define label info tail) ... tail)]
   [info   #:with-contract
           (info/c
@@ -319,10 +325,14 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-asm-pred-lang-v6/undead x)
+  (interp-base x))
+
 @define-grammar/pred[asm-pred-lang-v6/conflicts
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree? info/c)
   #:datum-literals (conflicts undead-out locals define module begin set! jump
-                              true false not if * + - < <= = >= > !=)
+                              true false not if * + - < <= = >= > !=
+                              return-point call-undead new-frames)
   [p    (module info (define label info tail) ... tail)]
   [info   #:with-contract
           (info/c
