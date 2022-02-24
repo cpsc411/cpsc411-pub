@@ -79,16 +79,16 @@
                  #`[#,loc (void)])
           #,e)))
 
-  (define (bind-regs tail)
+  (define (bind-regs k tail)
     (with-syntax* ([rax (syntax-local-introduce (format-id #f "~a" 'rax))]
                    [(regs ...)
                     (map
                      (lambda (x) (syntax-local-introduce (format-id #f "~a" x)))
                      '(rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15))]
                    [(vals ...)
-                    #'((void) (void) (void) (void) (void) (void) (void) (void)
+                    #`((void) (void) (void) (void) (void) (void) (void) (void)
                               (void) (void) (alloc 5000) (void) (void)
-                              (lambda () rax))])
+                              (lambda () (#,k rax)))])
       #`(let ([rax (void)])
           (let ([regs vals] ...)
             #,tail))))
@@ -127,6 +127,7 @@
            #,(bind-fvars
               (current-fvars)
               (bind-regs
+               #'k
                (bind-info
                 #'info
                 #`(local [defs ...
