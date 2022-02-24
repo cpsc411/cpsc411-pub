@@ -46,7 +46,7 @@
  vector-set!
  vector-ref)
 
-(compile-allow-set!-undefined #t)
+#;(compile-allow-set!-undefined #t)
 
 (define stack (make-vector 1000 'unalloc))
 (define fbp (box (sub1 (vector-length stack))))
@@ -74,9 +74,7 @@
 
   (define (bind-info info e)
     (let ([info (infostx->dict info)])
-      #`(let #,(for/list ([loc (apply
-                                append
-                                (syntax->list (dict-ref info 'locals #'()))
+      #`(let #,(for/list ([loc (apply append
                                 (map syntax->list (syntax->list (dict-ref info 'new-frames #'()))))])
                  #`[#,loc (void)])
           #,e)))
@@ -139,7 +137,7 @@
                                (begin
                                  (set! rax x)
                                  (k rax))))]
-                    tail))))))]))
+                    (do-bind-locals tail)))))))]))
 
 (define (!= e1 e2) (not (= e1 e2)))
 
@@ -166,10 +164,8 @@
     (d)
     (r:error "Shouldn't have returned!")))
 
-(define (jump l . rest)
-  (l)
-  ;; Not true; once we add calls, jumps can return...
-  #;(r:error "Shouldn't have returned!"))
+(define (jump f . rest)
+  (f))
 
 (begin-for-syntax
   (define (labelify-begin defs ss)
@@ -199,21 +195,49 @@
 (define-syntax (new-define stx)
   (syntax-parse stx
     [(_ name info ((~literal lambda) (args ...) body))
-     #`(define name (lambda (args ...) #,(bind-info #'info #'body)))]
-    [(_ name (~and (~var body) ((~literal lambda) _ ...)))
-     #`(define name body)]
+     #`(define name
+         (lambda (args ...)
+           (do-bind-locals #,(bind-info #'info #'body) args ...)))]
+    [(_ name ((~literal lambda) (args ...) body))
+     #`(define name
+         (lambda (args ...) (do-bind-locals body args ...)))]
     [(_ name body)
-     #`(define name (lambda () body))]
+     #`(define name (lambda () (do-bind-locals body)))]
     [(_ name info body)
-     #`(define name (lambda () #,(bind-info #'info #'body)))]))
+     #`(define name
+         (lambda ()
+           (do-bind-locals #,(bind-info #'info #'body))))]))
+
+(begin-for-syntax
+  (require syntax/id-set racket/set)
+  (define gathered-locals (mutable-free-id-set))
+
+  (define (reset-locals!)
+    (set-clear! gathered-locals))
+
+  (define (collect-local! id)
+    (set-add! gathered-locals id))
+
+  (define (get-locals)
+    (set->list gathered-locals)))
+
+(define-syntax (do-bind-locals stx)
+  (syntax-parse stx
+    [(_ body except ...)
+     (reset-locals!)
+     (define b (local-expand #'body 'expression '()))
+     #`(let (#,@(for/list ([l (get-locals)]
+                           #:unless (set-member? (immutable-free-id-set
+                                                  (attribute except))
+                                                 l))
+                  #`[#,(syntax-local-introduce (format-id #f "~a" l)) (void)]))
+         #,b)]))
 
 (define-syntax (return-point stx)
   (syntax-parse stx
     [(_ label tail)
      #:with rax (format-id stx "~a" 'rax)
-     #`(begin
-         (let/cc label tail)
-         rax)]))
+     #`(let/cc label tail)]))
 
 (define (call f . ops)
   (apply f ops))
@@ -222,11 +246,14 @@
 (define - x64-sub)
 (define * x64-mul)
 
+(require (for-syntax (only-in "../compiler-lib.rkt" aloc?)))
 (define-syntax (set! stx)
   (syntax-parse stx
     [(_ (~literal rbp) v2)
      #`(set-box! fbp v2)]
     [(_ v1:id v2)
+     (when (aloc? (syntax->datum #'v1))
+       (collect-local! #'v1))
      #`(r:set! v1 v2)]
     [(_ ((~literal rbp) - offset) v2)
      #`(vector-set! stack (- (unbox fbp) offset) v2)]
