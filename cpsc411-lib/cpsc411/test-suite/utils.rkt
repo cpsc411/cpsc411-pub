@@ -114,11 +114,10 @@
 (define-check (check-timeout interp program)
   (with-check-info (['interp (object-name interp)])
     (let ([res (gensym)])
-      (unless (eq? res (with-timeout
-                         (run-test-with-timeout
-                          (lambda (_) (interp program))
-                          (current-test-case-timeout)
-                          (lambda () res))))
+      (unless (eq? res (run-test-with-timeout
+                        (lambda (_) (interp program))
+                        (current-test-case-timeout)
+                        (lambda () res)))
         (fail-check)))))
 
 ;; public test suite:
