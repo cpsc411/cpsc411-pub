@@ -13,7 +13,8 @@
  "../langs/v2.rkt"
  "../langs/v3.rkt"
  "../langs/v4.rkt"
- "../langs/v5.rkt")
+ "../langs/v5.rkt"
+ "../langs/v6.rkt")
 
 (provide
  (all-defined-out))
@@ -83,7 +84,27 @@
    interp-block-asm-lang-v5 block-asm-lang-v5?
    interp-para-asm-lang-v5 para-asm-lang-v5?
    interp-paren-x64-fvars-v5 paren-x64-fvars-v5?
-   interp-paren-x64-v5 paren-x64-v5?))
+   interp-paren-x64-v5 paren-x64-v5?
+
+   interp-values-lang-v6 values-lang-v6?
+   interp-values-unique-lang-v6 values-unique-lang-v6?
+   interp-imp-mf-lang-v6 imp-mf-lang-v6?
+   interp-proc-imp-cmf-lang-v6 proc-imp-cmf-lang-v6?
+   interp-imp-cmf-lang-v6 imp-cmf-lang-v6?
+   interp-asm-pred-lang-v6 asm-pred-lang-v6?
+   interp-asm-pred-lang-v6/locals asm-pred-lang-v6/locals?
+   interp-asm-pred-lang-v6/undead asm-pred-lang-v6/undead?
+   interp-asm-pred-lang-v6/conflicts asm-pred-lang-v6/conflicts?
+   interp-asm-pred-lang-v6/pre-framed asm-pred-lang-v6/pre-framed?
+   interp-asm-pred-lang-v6/framed asm-pred-lang-v6/framed?
+   interp-asm-pred-lang-v6/spilled asm-pred-lang-v6/spilled?
+   interp-asm-pred-lang-v6/assignments asm-pred-lang-v6/assignments?
+   interp-nested-asm-lang-fvars-v6 nested-asm-lang-fvars-v6?
+   interp-nested-asm-lang-v6 nested-asm-lang-v6?
+   interp-block-pred-lang-v6 block-pred-lang-v6?
+   interp-block-asm-lang-v6 block-asm-lang-v6?
+   interp-para-asm-lang-v6 para-asm-lang-v6?
+   interp-paren-x64-v6 paren-x64-v6?))
 
 (define (static-compose f1 f2)
   (cond
