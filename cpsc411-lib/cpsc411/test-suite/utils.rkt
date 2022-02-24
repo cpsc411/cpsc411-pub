@@ -169,7 +169,7 @@
           (with-check-info (['test-type "Checking source program is interpretable (failure indicates bug in reference implementation)"])
             (test-not-exn "self-test source interprets"
                           (thunk (with-timeout (src-interp test-prog)))))
-          (define expected (trg-interp output))
+          (define expected (with-timeout (trg-interp output)))
           (with-check-info (['expected expected]
                             ['test-type "Checking that output produces correct value"])
             (check-equal? (src-interp test-prog) expected))
