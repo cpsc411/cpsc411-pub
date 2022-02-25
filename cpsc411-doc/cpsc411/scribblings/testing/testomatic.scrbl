@@ -169,9 +169,12 @@ interpreter can be found.
  (compiler-testomatic
   (code:comment "Compiles all programs to 120")
   (list
-   (code:comment "Compiles programs to themselves; 2 tests fail. since it contains fvars")
+   (code:comment "Compiles programs to themselves; 1 test fails, since it")
+   (code:comment "contains fvars, thus the output isn't valid.")
    (lambda (x) x)
-   (code:comment "Compiles programs to 120; 0 tests fails.")
+   (code:comment "Compiles programs to 120; 0 tests fails, since all")
+   (code:comment "registered test programs in this language produce 120,")
+   (code:comment "and no earlier passes produces new valid test programs.")
    (lambda (x) "mov rax, 120")
    wrap-x64-run-time
    wrap-x64-boilerplate)
