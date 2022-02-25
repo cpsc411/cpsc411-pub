@@ -177,7 +177,7 @@
                       ['trg-interp (object-name trg-interp)]
                       ['pass (or (object-name pass) 'anonymous)])
       (define test-prog (second test-prog-entry))
-      (test-begin
+      (test-case (format "~a suite" (or (object-name pass) 'anonymous))
         (with-check-info (['test-type "Checking test-program compilers without error"])
           (test-not-exn (format "~a" (or (object-name pass) 'anonymous))
                         (thunk
