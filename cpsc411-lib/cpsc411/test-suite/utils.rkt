@@ -175,13 +175,14 @@
     (with-check-info (['test-program (second test-prog-entry)]
                       ['src-interp (object-name src-interp)]
                       ['trg-interp (object-name trg-interp)]
-                      ['pass (object-name pass)])
+                      ['pass (or (object-name pass) 'anonymous)])
       (define test-prog (second test-prog-entry))
       (test-begin
         (with-check-info (['test-type "Checking test-program compilers without error"])
-          (test-not-exn (symbol->string (object-name pass)) (thunk
-                                                             (with-timeout
-                                                               (pass test-prog)))))
+          (test-not-exn (format "~a" (or (object-name pass) 'anonymous))
+                        (thunk
+                         (with-timeout
+                           (pass test-prog)))))
         (define output (pass test-prog))
         (with-check-info (['output-program output])
           (with-check-info (['test-type "Checking output is interpretable"])
