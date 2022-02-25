@@ -6,7 +6,6 @@
 
 @title{Test Lang}
 @defmodulelang[cpsc411/test-lang]
-@deprecated
 
 This module defines a language with a small reader extension to simplify writing
 future-proof tests.
