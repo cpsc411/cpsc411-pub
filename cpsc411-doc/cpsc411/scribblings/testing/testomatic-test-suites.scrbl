@@ -26,4 +26,4 @@ their own tests.
 @include-section{v3.scrbl}
 @include-section{v4.scrbl}
 @include-section{v5.scrbl}
-@;include-section{v6.scrbl}
+@include-section{v6.scrbl}
