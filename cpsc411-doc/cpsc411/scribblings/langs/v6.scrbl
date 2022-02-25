@@ -3,6 +3,7 @@
 @(require
   "utils.rkt"
   cpsc411/langs/v6
+  (for-label cpsc411/langs/v6)
   (for-label racket/contract))
 
 @title{v6 Languages}
