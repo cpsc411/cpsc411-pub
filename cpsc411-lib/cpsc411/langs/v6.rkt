@@ -394,7 +394,6 @@
            (new-frames (frame ...))
            (locals (aloc ...))
            (call-undead (loc ...))
-           (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc fvar) ...)))
           (let ([frame? (listof aloc?)]
@@ -404,7 +403,6 @@
              (new-frames (frame? ...))
              (locals (aloc? ...))
              (call-undead (loc? ...))
-             (undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
              (assignment ((aloc? fvar?) ...))))]
   [frame  (aloc ...)]
@@ -447,7 +445,6 @@
   [info   #:with-contract
           (info/c
            (locals (aloc ...))
-           (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc fvar) ...)))
           (let ([frame? (listof aloc?)]
@@ -455,7 +452,6 @@
                 [rloc? (or/c register? fvar?)])
             (info/c
              (locals (aloc? ...))
-             (undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
              (assignment ((aloc? fvar?) ...))))]
   [pred   (relop loc opand)
@@ -497,14 +493,12 @@
   [info   #:with-contract
           (info/c
            (locals (aloc ...))
-           (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc rloc) ...)))
           (let ([loc? (or/c register? aloc? fvar?)]
                 [rloc? (or/c register? fvar?)])
             (info/c
              (locals (aloc? ...))
-             (undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
              (assignment ((aloc? rloc?) ...))))]
   [pred   (relop loc opand)
