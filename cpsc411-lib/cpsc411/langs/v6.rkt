@@ -194,7 +194,7 @@
 @define-grammar/pred[asm-pred-lang-v6
   #:literals (int64? label? aloc? register? fvar? info? info/c)
   #:datum-literals (define module begin set! jump true false not if * + < <= =
-   >= > != halt return-point new-frames fv0)
+   >= > != halt return-point new-frames fv0 fv1 fv2 call-undead assignment)
   [p    (module info (define label info tail) ... tail)]
   [info   #:with-contract
           (info/c
