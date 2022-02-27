@@ -396,7 +396,7 @@
            (call-undead (loc ...))
            (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
-           (assignment ((aloc loc) ...)))
+           (assignment ((aloc fvar) ...)))
           (let ([frame? (listof aloc?)]
                 [loc? (or/c register? aloc? fvar?)]
                 [rloc? (or/c register? fvar?)])
@@ -406,7 +406,7 @@
              (call-undead (loc? ...))
              (undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
-             (assignment ((aloc? rloc?) ...))))]
+             (assignment ((aloc? fvar?) ...))))]
   [frame  (aloc ...)]
   [pred   (relop loc opand)
           (true)
@@ -449,7 +449,7 @@
            (locals (aloc ...))
            (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
-           (assignment ((aloc loc) ...)))
+           (assignment ((aloc fvar) ...)))
           (let ([frame? (listof aloc?)]
                 [loc? (or/c register? aloc? fvar?)]
                 [rloc? (or/c register? fvar?)])
@@ -457,7 +457,7 @@
              (locals (aloc? ...))
              (undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
-             (assignment ((aloc? rloc?) ...))))]
+             (assignment ((aloc? fvar?) ...))))]
   [pred   (relop loc opand)
           (true)
           (false)
@@ -499,7 +499,7 @@
            (locals (aloc ...))
            (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
-           (assignment ((aloc loc) ...)))
+           (assignment ((aloc rloc) ...)))
           (let ([loc? (or/c register? aloc? fvar?)]
                 [rloc? (or/c register? fvar?)])
             (info/c
@@ -544,7 +544,7 @@
   [p    (module info (define label info tail) ... tail)]
   [info   #:with-contract
           (info/c
-           (assignment ((aloc loc) ...)))
+           (assignment ((aloc rloc) ...)))
           (let ([frame? (listof aloc?)]
                 [loc? (or/c register? fvar?)])
             (info/c
