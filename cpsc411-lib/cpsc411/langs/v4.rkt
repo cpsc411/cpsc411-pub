@@ -299,7 +299,7 @@
   (interp-asm-pred-lang-v4/conflicts x))
 
 @define-grammar/pred[nested-asm-lang-v4
-  #:literals (int64? aloc? any fvar?)
+  #:literals (int64? any fvar?)
   #:datum-literals (module true false not begin if set! * + < <= = >= > rsp rbp
                            rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14
                            r15 halt !=)
@@ -322,7 +322,6 @@
   [reg   rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14 r15]
   [binop * +]
   [relop < <= = >= > !=]
-  [aloc aloc?]
   [fvar fvar?]
   [int64 int64?]
 ]
@@ -333,7 +332,7 @@
 @;todo{Loc or ploc?}
 
 @define-grammar/pred[block-pred-lang-v4
-  #:literals (int64? aloc? info? any fvar? label?)
+  #:literals (int64? any fvar? label?)
   #:datum-literals (module true false not begin if set! * + < <= = >= > != rsp rbp
                            rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14
                            r15 jump define halt)
@@ -357,7 +356,6 @@
   [binop * +]
   [relop < <= = >= > !=]
   [int64 int64?]
-  [aloc aloc?]
   [fvar fvar?]
   [label label?]
 ]
@@ -366,7 +364,7 @@
   (interp-base x))
 
 @define-grammar/pred[block-asm-lang-v4
-  #:literals (int64? aloc? info? any fvar? label?)
+  #:literals (int64? any fvar? label?)
   #:datum-literals (module true false not begin if set! * + < <= = >= > != halt
                            jump rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13
                            r14 r15 define)
@@ -386,7 +384,6 @@
   [binop * +]
   [relop < <= = >= > !=]
   [int64 int64?]
-  [aloc aloc?]
   [fvar fvar?]
   [label label?]
 ]
@@ -397,7 +394,7 @@
 @;todo{The names "b" is bad. "b" is a definition}
 
 @define-grammar/pred[para-asm-lang-v4
-  #:literals (int64? aloc? info? any fvar? label?)
+  #:literals (int64? info? any fvar? label?)
   #:datum-literals (halt true false not begin if set! * + < <= = >= > !=
                          with-label jump compare jump-if rsp rbp rax rbx rcx rdx
                          rsi rdi r8 r9 r12 r13 r14 r15)
@@ -417,7 +414,6 @@
   [binop * +]
   [relop < <= = >= > !=]
   [int64 int64?]
-  [aloc aloc?]
   [fvar fvar?]
   [label label?]
 ]
@@ -426,7 +422,7 @@
   (interp-base `(module ,x)))
 
 @define-grammar/pred[paren-x64-fvars-v4
-  #:literals (int64? aloc? info? any fvar? label? int32?)
+  #:literals (int64? any fvar? label? int32?)
   #:datum-literals (module true false not begin if set! * + < <= = >= > !=
                            with-label jump compare jump-if
                            rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13
@@ -459,7 +455,7 @@
   (interp-base `(module ,(append x (list '(halt rax))))))
 
 @define-grammar/pred[paren-x64-rt-v4
-  #:literals (int64? aloc? info? any fvar? label? int32?
+  #:literals (int64? info? any fvar? label? int32?
                      frame-base-pointer-register? dispoffset? natural-number/c)
   #:datum-literals (module true false not begin if set! * + < <= = >= > !=
                            with-label jump compare jump-if

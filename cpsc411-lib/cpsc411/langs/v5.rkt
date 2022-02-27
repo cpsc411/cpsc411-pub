@@ -286,10 +286,10 @@
   [trg    label loc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
   [rloc   register? fvar?]
+  [int64  int64?]
 ]
 
 (define (interp-asm-pred-lang-v5/undead x)
@@ -328,10 +328,10 @@
   [trg    label loc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
   [rloc   register? fvar?]
+  [int64  int64?]
 ]
 
 (define (interp-asm-pred-lang-v5/conflicts x)
@@ -370,10 +370,10 @@
   [trg    label loc]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
   [rloc   register? fvar?]
+  [int64  int64?]
 ]
 
 (define (interp-asm-pred-lang-v5/assignments x)
