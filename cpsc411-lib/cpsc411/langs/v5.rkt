@@ -398,17 +398,16 @@
           (set! loc_1 (binop loc_1 opand))
           (begin effect ... effect)
           (if pred effect effect)]
-  [opand int64 loc]
   [triv  opand label]
+  [opand int64 loc]
   [loc   reg fvar]
   [trg   label loc]
   [reg   rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14 r15]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64 int64?]
-  [aloc aloc?]
   [fvar fvar?]
   [label label?]
+  [int64 int64?]
 ]
 
 (define (interp-nested-asm-lang-v5 x)
@@ -437,10 +436,10 @@
   [reg   rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14 r15]
   [binop * +]
   [relop < <= = >= > !=]
-  [int64 int64?]
   [aloc aloc?]
   [fvar fvar?]
   [label label?]
+  [int64 int64?]
 ]
 
 (define (interp-block-pred-lang-v5 x)
