@@ -181,7 +181,8 @@
     (d)
     (r:error "Shouldn't have returned!")))
 
-(define (jump f . rest)
+;; allow jump to ignore its "arguments"
+(define-syntax-rule (jump f rest ...)
   (f))
 
 (begin-for-syntax

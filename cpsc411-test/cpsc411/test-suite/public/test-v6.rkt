@@ -42,3 +42,37 @@
           (set! res.0 rax))
         (begin (set! rax res.0) (jump tmp-ra.2 rbp rax))))))
  8)
+
+(check-equal?
+ (interp-asm-pred-lang-v6/pre-framed
+  '(module
+     ((new-frames ())
+      (locals (tmp-ra.10))
+      (assignment ()))
+     (define L.swap.1
+       ((new-frames ((nfv.8 nfv.9)))
+        (locals (y.2 x.1 z.3))
+        (assignment ((tmp-ra.7 fv2))))
+       (begin
+         (set! tmp-ra.7 r15)
+         (set! x.1 fv0)
+         (set! y.2 fv1)
+         (if (< y.2 x.1)
+             (begin (set! rax x.1) (jump tmp-ra.7 rbp rax))
+             (begin
+               (return-point L.rp.3
+                 (begin
+                   (set! nfv.9 x.1)
+                   (set! nfv.8 y.2)
+                   (set! r15 L.rp.3)
+                   (jump L.swap.1 rbp r15 nfv.8 nfv.9)))
+               (set! z.3 rax)
+               (set! rax z.3)
+               (jump tmp-ra.7 rbp rax)))))
+     (begin
+       (set! tmp-ra.10 r15)
+       (set! fv1 2)
+       (set! fv0 1)
+       (set! r15 tmp-ra.10)
+       (jump L.swap.1 rbp r15 fv0 fv1))))
+ 2)
