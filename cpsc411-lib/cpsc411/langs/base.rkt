@@ -74,17 +74,18 @@
 
   (define (bind-info info e)
     (let ([info (infostx->dict info)])
-      #`(let-syntax #,(for/list ([loc (apply append
-                                      (map syntax->list (syntax->list (dict-ref info 'new-frames #'()))))]
-                          [i (in-naturals)])
-                        (with-syntax ([fvar (format-id e "fv~a" i)])
-                          #`[#,loc (make-set!-transformer
-                                    (lambda (stx)
-                                      (syntax-case stx ()
-                                        [(set! id v)
-                                         #`(r:set! fvar v)]
-                                        [id (identifier? #'id) #'fvar])))]))
-            #,e)
+      (for/fold ([e e])
+                ([new-frame (map syntax->list (syntax->list (dict-ref info 'new-frames #'())))])
+        #`(let-syntax #,(for/list ([loc new-frame]
+                                   [i (in-naturals 0)])
+                          (with-syntax ([fvar (format-id e "fv~a" i)])
+                            #`[#,loc (make-set!-transformer
+                                      (lambda (stx)
+                                        (syntax-case stx ()
+                                          [(set! id v)
+                                           #`(r:set! fvar v)]
+                                          [id (identifier? #'id) #'fvar])))]))
+            #,e))
       #;#`(let #,(for/list ([loc (apply append
                                 (map syntax->list (syntax->list (dict-ref info 'new-frames #'()))))])
                  #`[#,loc (void)])
