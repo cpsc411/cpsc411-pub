@@ -149,7 +149,12 @@
                                (begin
                                  (set! rax x)
                                  (k rax))))]
-                    (do-bind-locals tail)))))))]))
+                    (do-bind-locals tail
+                                    #,@(apply append
+                                              (map syntax->list (syntax->list
+                                                                 (dict-ref
+                                                                  (infostx->dict
+                                                                   #'info) 'new-frames #'())))))))))))]))
 
 (define (!= e1 e2) (not (= e1 e2)))
 
