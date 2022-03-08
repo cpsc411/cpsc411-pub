@@ -7,9 +7,6 @@
   (for-label racket/contract))
 
 @title{v6 Languages}
-
-
-@section{Appendix: Languages}
 @defmodule[cpsc411/langs/v6]
 
 @deflangs[
