@@ -1,10 +1,10 @@
 #lang scribble/manual
 
 @(require
-"utils.rkt"
-cpsc411/langs/v7
-(for-label cpsc411/langs/v7)
-(for-label racket/contract))
+  "utils.rkt"
+  cpsc411/langs/v7
+  (for-label cpsc411/langs/v7)
+  (for-label racket/contract))
 
 @title{v7 Languages}
 @declare-exporting[cpsc411/langs/v7]
@@ -16,8 +16,8 @@ exprs-unsafe-data-lang-v7
 exprs-bits-lang-v7
 exprs-bits-lang-v7/contexts
 values-bits-lang-v7
-proc-imp-mf-lang-v7
 imp-mf-lang-v7
+proc-imp-cmf-lang-v7
 imp-cmf-lang-v7
 asm-pred-lang-v7
 asm-pred-lang-v7/locals
