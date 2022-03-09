@@ -16,24 +16,23 @@
 @define-grammar/pred[exprs-lang-v7
 #:literals (name? int61? uint8? ascii-char-literal?)
 #:datum-literals (module lambda define let if void error * + - eq? < <= >
-                         >= fixnum? boolean? empty? void? ascii-char? error? not
-                         call empty)
-[p     (module b ... e)]
-[b     (define x (lambda (x ...) e))]
-[e     v
-       (call e e ...)
-       (let ([x e] ...) e)
-       (if e e e)]
+                 >= fixnum? boolean? empty? void? ascii-char? error? not
+                 call empty)
+[p     (module def ... value)]
+[def   (define x (lambda (x ...) value))]
+[value triv
+       (let ([x value] ...) value)
+       (if value value value)
+       (call value value ...)]
+[triv  x fixnum #t #f empty (void) (error uint8) ascii-char-literal]
 [x     name? prim-f]
-[v     x fixnum #t #f empty (void) (error uint8) ascii-char-literal]
 [prim-f binop unop]
 [binop  * + - eq? < <= > >=]
 [unop   fixnum? boolean? empty? void? ascii-char? error? not]
-[fixnum int61?]
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
+[fixnum int61?]
 ]
-
 
 (module safe-langs racket/base
   (require
@@ -78,21 +77,22 @@
 #:datum-literals (module lambda define apply let if void error * + - eq? < <= >
                          >= fixnum? boolean? empty? void? ascii-char? error? not
                          call)
-[p     (module b ... e)]
-[b     (define label (lambda (aloc ...) e))]
-[e     v
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if e e e)]
-[v     label aloc prim-f fixnum #t #f empty (void) (error uint8) ascii-char-literal]
+[p     (module def ... value)]
+[def   (define x (lambda (x ...) value))]
+[value triv
+       (call value value ...)
+       (let ([x value] ...) value)
+       (if value value value)]
+[x     name? prim-f]
+[triv  label aloc prim-f fixnum #t #f empty (void) (error uint8) ascii-char-literal]
 [prim-f binop unop]
 [binop  * + - < eq? <= > >=]
 [unop   fixnum? boolean? empty? void? ascii-char? error? not]
 [aloc aloc?]
 [label label?]
-[fixnum int61?]
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
+[fixnum int61?]
 ]
 
 @define-grammar/pred[exprs-unsafe-data-lang-v7
