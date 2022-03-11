@@ -167,9 +167,9 @@
              #:when (eq? interp interp-src))
     pass))
 
-(define (test-compiler-pass pass src-interp trg-interp trg-validator)
-  (define target-interp-progs (hash-ref test-prog-dict trg-interp (mutable-set)))
-  (for ([test-prog-entry (hash-ref test-prog-dict src-interp '())]
+(define (test-compiler-pass pass src-interp trg-interp trg-validator [src-equiv equal?])
+  (define target-interp-progs (hash-ref! test-prog-dict trg-interp (mutable-set)))
+  (for ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
         [i (in-naturals)])
     (define name (first test-prog-entry))
     (with-check-info (['test-program (second test-prog-entry)]
@@ -194,7 +194,7 @@
           (define expected (with-timeout (trg-interp output)))
           (with-check-info (['expected expected]
                             ['test-type "Checking that output produces correct value"])
-            (check-equal? (src-interp test-prog) expected))
+            (check src-equiv (src-interp test-prog) expected))
           (with-check-info (['type-type "Checking that output is syntactically correct"])
             (when trg-validator
               (check-true (trg-validator output))))
@@ -233,9 +233,25 @@
         (define pass (first pass-ls))
         (define src-interp (first interp-ls))
         (define trg-interp (second interp-ls))
-        (define src-validator (hash-ref validator-dict src-interp #f))
-        (define trg-validator (hash-ref validator-dict trg-interp #f))
-        (test-compiler-pass pass src-interp trg-interp trg-validator)
+        (define src-extras (hash-ref validator-dict src-interp #f))
+        ;; src programs are assumed to be valid, so ignore src validator
+        (define-values (_1 src-equiv)
+          (match src-extras
+            [`(,src-validator ,src-equiv)
+             (apply values src-extras)]
+            [(? procedure?)
+             (values src-extras equal?)]
+            [_ (values #f equal?)]))
+        (define trg-extras (hash-ref validator-dict trg-interp #f))
+        ;; src directs the equivalence, so ignore trg equiv
+        (define-values (trg-validator _2)
+          (match trg-extras
+            [`(,trg-validator ,trg-equiv)
+             (apply values trg-extras)]
+            [(? procedure?)
+             (values trg-extras equal?)]
+            [_ (values #f equal?)]))
+        (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv)
         (loop (rest pass-ls) (rest interp-ls))]))))
 
 

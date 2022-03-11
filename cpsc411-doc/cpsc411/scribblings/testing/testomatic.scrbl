@@ -43,18 +43,20 @@ will run validators before attempting to interpret output programs.
 
 @defproc[(test-compiler-pass [pass ('a -> 'b)]
                              [src-interp ('a -> 'c)]
-                             [trg-interp ('b -> 'c)]
-                             [trg-validator ((or/c any/c 'b) -> boolean?)])
+                             [trg-interp ('b -> 'd)]
+                             [trg-validator ((or/c any/c 'b) -> boolean?)]
+                             [src-equiv equal? ('c 'd -> boolean?)])
                              void?]{
 @racket['a], @racket['b], and @racket['c] represent arbitrary non-necessarily
 distinct type variables.
-This assumes @racket['c] is some type with Racket values compared by @racket[equal?].
 
 Takes a compiler pass from some language @racket['a] to some language
 @racket['b], an interpeter for each language, and a validator that recognizes
 program in the language @racket['b].
 Run @racket[pass] on each test source program registered with the framework, and
 compares the results in the respective interpreters.
+The results are compared using the optional @racket[src-equiv] procedure, which
+defaults to @racket[equal?].
 Note that all test suites documented in the next section implicitly register
 tests with the framework.
 
