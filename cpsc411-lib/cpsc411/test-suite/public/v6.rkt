@@ -148,7 +148,7 @@
        (call-undead ())
        (new-frames (()))
        (undead-out
-        ((x.1) (x.1 y.2) ((x.1 y.2) (() ()) (() ())))))
+        ((x.1 r15) (x.1 y.2 r15) ((x.1 y.2 r15) ((r15) ()) ((r15) ())))))
       (begin (set! x.1 3) (set! y.2 x.1) (if (> y.2 x.1)
                                              (begin (set! rax x.1)
                                                     (jump r15))
