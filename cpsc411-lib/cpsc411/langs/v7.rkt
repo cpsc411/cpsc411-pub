@@ -46,7 +46,12 @@
 
   (r:define (wrap-error-ret who unsafe)
     (lambda ops
-      (with-handlers ([exn:fail:contract? (λ (e) (error who))])
+      (with-handlers ([exn:fail:contract?
+                       (λ (e)
+                         (eprintf "Dynamic type error in ~a~n  ~a~n"
+                                  who
+                                  (exn-message e))
+                         (error 255))])
         (apply unsafe ops))))
 
   (define-syntax-rule (define-error-ret f unsafe)
