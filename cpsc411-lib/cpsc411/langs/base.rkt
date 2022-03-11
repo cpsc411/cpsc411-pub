@@ -82,6 +82,11 @@
   ;; largest fvar.
   ;; 50 seems.. okay. about 25% slower than 5.
   ;; 1000 is unusable.
+  ;; NOTE: this was actually a result of the macros copy/pasting too much code
+  ;; by generating separate transformers.
+  ;; This has been fixed, but I noticed similar anti-patterns that should also
+  ;; be fixed.
+  ;; Need to pull as many lambdas, in particular, out of #` as possible.
   (define current-fvars (make-parameter 25))
 
   (define (infostx->dict stx)
@@ -99,20 +104,26 @@
                (map (compose car syntax->list) (syntax->list (dict-ref (infostx->dict info) 'assignment #'()))))
            (map syntax->list (syntax->list (dict-ref (infostx->dict info) 'new-frames #'())))))
 
+  (define (implement-aloc-transformer rloc)
+    (with-syntax ([rloc rloc])
+      (make-set!-transformer
+       (lambda (stx)
+         (syntax-case stx ()
+           [(set! id v)
+            #`(r:set! rloc v)]
+           [id (identifier? #'id)
+               #'rloc])))))
+
   (define (bind-info info e)
     (let ([info (infostx->dict info)])
       (define tail
         (for/fold ([e e])
                   ([new-frame (map syntax->list (syntax->list (dict-ref info 'new-frames #'())))])
-          #`(let-syntax #,(for/list ([loc new-frame]
+          #`(let-syntax #,(for/list ([nfvar new-frame]
                                      [i (in-naturals 0)])
-                            (with-syntax ([fvar (format-id e "fv~a" i)])
-                              #`[#,loc (make-set!-transformer
-                                        (lambda (stx)
-                                          (syntax-case stx ()
-                                            [(set! id v)
-                                             #`(r:set! fvar v)]
-                                            [id (identifier? #'id) #'fvar])))]))
+                            (with-syntax ([fvar (format-id e "fv~a" i)]
+                                          [nfvar nfvar])
+                              #`[nfvar (implement-aloc-transformer #'fvar)]))
               #,e)))
       ;; if there's a new-frame, don't use assignments, since the new frame
       ;; hasn't be allocated yet and using fvars for call-undead will be
@@ -126,14 +137,7 @@
                                                                       #'())))])
                             (with-syntax ([aloc (car assignments)]
                                           [rloc (cadr assignments)])
-                              #`[aloc
-                                 (make-set!-transformer
-                                  (lambda (stx)
-                                    (syntax-case stx ()
-                                      [(set! id v)
-                                       #`(r:set! rloc v)]
-                                      [id (identifier? #'id)
-                                          #'rloc])))]))
+                              #`[aloc (implement-aloc-transformer #'rloc)]))
               #,tail))))
 
   (define (bind-regs k tail)
@@ -150,28 +154,27 @@
           (let ([regs vals] ...)
             #,tail))))
 
+  (define (implement-fvar-transformer offset)
+    (with-syntax ([offset offset])
+      (make-set!-transformer
+       (lambda (stx)
+         (syntax-case stx ()
+           [(set! id v)
+            #`(vector-set! stack (- (unbox fbp)
+                                    (+ (unbox current-fvar-offset)
+                                       offset))
+                           v)]
+           [id (identifier? #'id)
+               #`(rbp -
+                      (+ (unbox current-fvar-offset)
+                         offset))])))))
+
   (define (bind-fvars n tail)
     #`(let-syntax #,(for/list ([i (in-range 0 n)])
                       (with-syntax ([fvar (syntax-local-introduce (format-id #f "fv~a" i))]
                                     [offset (* i 8)])
-                        #`[fvar (make-set!-transformer
-                                 (lambda (stx)
-                                   (syntax-case stx ()
-                                     [(set! id v)
-                                      #`(vector-set! stack (- (unbox fbp)
-                                                              (+ (unbox current-fvar-offset)
-                                                                 offset))
-                                                     v)]
-                                     [id (identifier? #'id)
-                                         #`(rbp -
-                                                (+ (unbox current-fvar-offset)
-                                                   offset))])))]))
-        #,tail)
-    #;(with-syntax ([(fvars ...)
-                   (for/list ([i (in-range 0 n)])
-                     (syntax-local-introduce (format-id #f "fv~a" i)))])
-      #`(let ([fvars (void)] ...)
-          #,tail))))
+                        #`[fvar (implement-fvar-transformer offset)]))
+        #,tail)))
 
 (define-syntax-rule (new-module-begin stx ...)
   (#%module-begin
