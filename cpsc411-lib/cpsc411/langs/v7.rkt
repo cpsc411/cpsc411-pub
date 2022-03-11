@@ -18,8 +18,7 @@
 #:datum-literals (module lambda define let if void error * + - eq? < <= >
                  >= fixnum? boolean? empty? void? ascii-char? error? not
                  call empty)
-[p     (module def ... value)]
-[def   (define x (lambda (x ...) value))]
+[p     (module (define x (lambda (x ...) value)) ... value)]
 [value triv
        (let ([x value] ...) value)
        (if value value value)
@@ -77,8 +76,7 @@
 #:datum-literals (module lambda define apply let if void error * + - eq? < <= >
                          >= fixnum? boolean? empty? void? ascii-char? error? not
                          call)
-[p     (module def ... value)]
-[def   (define x (lambda (x ...) value))]
+[p     (module (define label (lambda (aloc ...) value)) ... value)]
 [value triv
        (call value value ...)
        (let ([x value] ...) value)
@@ -102,20 +100,20 @@
                          call
                          unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx<
                          unsafe-fx<= unsafe-fx> unsafe-fx>= true false)
-[p     (module b ... e)]
-[b     (define label (lambda (aloc ...) e))]
-[pred  e
+[p     (module (define label (lambda (aloc ...) value)) ... value)]
+;; Do I want these in this language? I think not
+#;[pred  value
        (true)
        (false)
        (not pred)
-       (let ([aloc e] ...) pred)
+       (let ([aloc value] ...) pred)
        (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if pred e e)]
-[v     label aloc fixnum #t #f empty (void) (error uint8) ascii-char-literal]
+[value triv
+       (primop value ...)
+       (call value value ...)
+       (let ([aloc value] ...) value)
+       (if value value value)]
+[triv  label aloc fixnum #t #f empty (void) (error uint8) ascii-char-literal]
 [primop binop unop]
 [binop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
         unsafe-fx>=]
@@ -132,20 +130,19 @@
 #:datum-literals (module lambda define apply let if void error * + - = != < <= >
                          >=  bitwise-and bitwise-ior bitwise-xor
                          arithmetic-shift-right true false not call)
-[p     (module b ... e)]
-[b     (define label (lambda (aloc ...) e))]
-[pred  (relop e e)
+[p     (module (define label (lambda (aloc ...) value)) ... value)]
+[pred  (relop value value)
        (true)
        (false)
        (not pred)
-       (let ([aloc e] ...) pred)
+       (let ([aloc value] ...) pred)
        (if pred pred pred)]
-[e     v
-       (binop e e)
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if pred e e)]
-[v     label aloc int64]
+[value triv
+       (binop value value)
+       (call value value ...)
+       (let ([aloc value] ...) value)
+       (if pred value value)]
+[triv  label aloc int64]
 [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
 [aloc aloc?]
 [label label?]
@@ -207,9 +204,9 @@
   [triv  opand label]
   [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
   [relop < <= = >= > !=]
-  [int64 int64?]
   [aloc aloc?]
   [label label?]
+  [int64 int64?]
 ]
 
 @define-grammar/pred[proc-imp-mf-lang-v7
@@ -910,7 +907,7 @@
          (set! reg triv)
          (set! reg_1 (binop reg_1 int32))
          (set! reg_1 (binop reg_1 loc))
-         (with-label label? s)
+         (with-label label s)
          (jump trg)
          (compare reg opand)
          (jump-if relop label)]
@@ -923,8 +920,8 @@
   [fbp   frame-base-pointer-register?]
   [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
   [relop < <= = >= > !=]
-  [int32 int32?]
   [int64 int64?]
-  [label label?]
+  [int32 int32?]
   [dispoffset dispoffset?]
+  [label label?]
 ]
