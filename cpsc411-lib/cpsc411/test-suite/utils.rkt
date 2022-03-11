@@ -14,10 +14,37 @@
  "../langs/v3.rkt"
  "../langs/v4.rkt"
  "../langs/v5.rkt"
- "../langs/v6.rkt")
+ "../langs/v6.rkt"
+ "../langs/v7.rkt")
 
 (provide
  (all-defined-out))
+
+(define ((ptr? tag mask) v)
+  (eq? tag (bitwise-and v mask)))
+
+(define fixnum-ptr? (ptr? (current-fixnum-tag) (current-fixnum-mask)))
+(define true-ptr? (curry eq? (current-true-ptr)))
+(define false-ptr? (curry eq? (current-false-ptr)))
+(define empty-ptr? (curry eq? (current-empty-ptr)))
+(define error-ptr? (ptr? (current-error-tag) (current-error-mask)))
+(define ascii-ptr? (ptr? (current-ascii-char-tag) (current-ascii-char-mask)))
+
+;; TODO Finish
+(define (ptr->v v)
+  (match v
+    [(? true-ptr?)
+     #t]
+    [(? false-ptr?)
+     #f]
+    [(? fixnum-ptr?)
+     (arithmetic-shift v -3)]
+    [(? empty-ptr?)
+     '()]
+    [(? error-ptr?)
+     (arithmetic-shift v -8)]
+    [(? ascii-ptr?)
+     (integer->char (arithmetic-shift v -8))]))
 
 ;; dictionary of function pointers to mutable sets of (list string? Program)
 ;; function pointer is an interpreter from cpsc411/langs, identifies the language the programs longs to.
@@ -104,7 +131,36 @@
    interp-block-pred-lang-v6 block-pred-lang-v6?
    interp-block-asm-lang-v6 block-asm-lang-v6?
    interp-para-asm-lang-v6 para-asm-lang-v6?
-   interp-paren-x64-v6 paren-x64-v6?))
+   interp-paren-x64-v6 paren-x64-v6?
+
+
+   interp-exprs-lang-v7 exprs-lang-v7?
+   interp-exprs-unique-lang-v7 exprs-unique-lang-v7?
+   interp-exprs-unsafe-data-lang-v7 (list exprs-unsafe-data-lang-v7?
+                                          (lambda (sv tv)
+                                            (equal? sv (ptr->v tv))))
+   interp-exprs-bits-lang-v7 exprs-bits-lang-v7?
+   interp-values-bits-lang-v7 values-bits-lang-v7?
+   interp-imp-mf-lang-v7 imp-mf-lang-v7?
+   interp-proc-imp-cmf-lang-v7 proc-imp-cmf-lang-v7?
+   interp-imp-cmf-lang-v7 imp-cmf-lang-v7?
+   interp-asm-pred-lang-v7 asm-pred-lang-v7?
+   interp-asm-pred-lang-v7/locals asm-pred-lang-v7/locals?
+   interp-asm-pred-lang-v7/undead asm-pred-lang-v7/undead?
+   interp-asm-pred-lang-v7/conflicts asm-pred-lang-v7/conflicts?
+   interp-asm-pred-lang-v7/pre-framed asm-pred-lang-v7/pre-framed?
+   interp-asm-pred-lang-v7/framed asm-pred-lang-v7/framed?
+   interp-asm-pred-lang-v7/spilled asm-pred-lang-v7/spilled?
+   interp-asm-pred-lang-v7/assignments asm-pred-lang-v7/assignments?
+   interp-nested-asm-lang-fvars-v7 nested-asm-lang-fvars-v7?
+   interp-nested-asm-lang-v7 nested-asm-lang-v7?
+   interp-block-pred-lang-v7 block-pred-lang-v7?
+   interp-block-asm-lang-v7 block-asm-lang-v7?
+   interp-para-asm-lang-v7 para-asm-lang-v7?
+   interp-paren-x64-v7 (list paren-x64-v7?
+                             (lambda (sv tv)
+                               (equal? (ptr->v sv) tv)))
+   ))
 
 (define (static-compose f1 f2)
   (cond
