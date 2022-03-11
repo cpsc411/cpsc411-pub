@@ -8,6 +8,7 @@
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
  (for-label cpsc411/compiler-lib)
+ (submod "base.rkt" interp)
  "redex-gen.rkt"
  "v6.rkt")
 
@@ -84,9 +85,8 @@
 [p     (module (define label (lambda (aloc ...) value)) ... value)]
 [value triv
        (call value value ...)
-       (let ([x value] ...) value)
+       (let ([aloc value] ...) value)
        (if value value value)]
-[x     name? prim-f]
 [triv  label aloc prim-f fixnum #t #f empty (void) (error uint8) ascii-char-literal]
 [prim-f binop unop]
 [binop  * + - < eq? <= > >=]
@@ -97,6 +97,9 @@
 [ascii-char-literal ascii-char-literal?]
 [fixnum int61?]
 ]
+
+(define (interp-exprs-unique-lang-v7 x)
+  (interp-exprs-lang-v7 x))
 
 @define-grammar/pred[exprs-unsafe-data-lang-v7
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -130,6 +133,9 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-exprs-unsafe-data-lang-v7 x)
+  (interp-base x))
+
 @define-grammar/pred[exprs-bits-lang-v7
 #:literals (aloc? label? int64?)
 #:datum-literals (module lambda define apply let if void error * + - = != < <= >
@@ -154,6 +160,9 @@
 [relop < <= = >= > !=]
 [int64 int64?]
 ]
+
+(define (interp-exprs-bits-lang-v7 x)
+  (interp-base x))
 
 @define-grammar/pred[exprs-bits-lang-v7/contexts
 #:literals (aloc? label? int64?)
@@ -183,6 +192,9 @@
 [relop < <= = >= > !=]
 [int64 int64?]
 ]
+
+(define (interp-exprs-bits-lang-v7/contexts x)
+  (interp-base x))
 
 @define-grammar/pred[values-bits-lang-v7
   #:literals (label? aloc? int64?)
@@ -214,7 +226,46 @@
   [int64 int64?]
 ]
 
-@define-grammar/pred[proc-imp-mf-lang-v7
+(define (interp-values-bits-lang-v7 x)
+  (interp-base x))
+
+@define-grammar/pred[imp-mf-lang-v7
+  #:literals (int64? label? aloc? register? fvar? info? any info/c)
+  #:datum-literals (new-frames return-point define lambda module begin jump set! halt true false not if
+                               * + < <= = >= > != bitwise-and bitwise-ior
+                               bitwise-xor arithmetic-shift-right)
+  [p      (module (define label (lambda (aloc ...) tail)) ... tail)]
+  [pred   (relop opand opand)
+          (true)
+          (false)
+          (not pred)
+          (begin effect ... pred)
+          (if pred pred pred)]
+  [tail   value
+          (call triv opand ...)
+          (begin effect ... tail)
+          (if pred tail tail)]
+  [value  triv
+          (call triv opand ...)
+          (binop opand opand)
+          (begin effect ... value)
+          (if pred value value)]
+  [effect (set! aloc value)
+          (begin effect ... effect)
+          (if pred effect effect)]
+  [opand int64 aloc]
+  [triv  opand label]
+  [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
+  [relop  < <= = >= > !=]
+  [aloc   aloc?]
+  [label  label?]
+  [int64  int64?]
+]
+
+(define (interp-imp-mf-lang-v7 x)
+  (interp-base x))
+
+@define-grammar/pred[proc-imp-cmf-lang-v7
   #:literals (int64? label? aloc? info?)
   #:datum-literals (define lambda module begin set! halt call true false not if
                      * + < <= = >= > != bitwise-and bitwise-ior bitwise-xor
@@ -244,55 +295,13 @@
   [triv  opand label]
   [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
   [relop  < <= = >= > !=]
-  [int64 int64?]
   [aloc  aloc?]
   [label  label?]
+  [int64 int64?]
 ]
 
-@define-grammar/pred[imp-mf-lang-v7
-  #:literals (int64? label? aloc? register? fvar? info? any info/c)
-  #:datum-literals (new-frames return-point define lambda module begin jump set! halt true false not if
-                               * + < <= = >= > != bitwise-and bitwise-ior
-                               bitwise-xor arithmetic-shift-right)
-  [p      (module info (define label info tail) ... tail)]
-
-  [info #:with-contract
-        (info/c
-         (new-frames (frame ...)))
-        (let ([frame? (listof aloc?)])
-          (info/c
-           (new-frames (frame? ...))))]
-  [frame  (aloc ...)]
-  [pred   (relop opand opand)
-          (true)
-          (false)
-          (not pred)
-          (begin effect ... pred)
-          (if pred pred pred)]
-  [tail   ;value
-          (jump trg loc ...)
-          (begin effect ... tail)
-          (if pred tail tail)]
-  [value  triv
-          (binop opand opand)
-          (begin effect ... value)
-          (if pred value value)
-          (return-point label tail)]
-  [effect (set! loc value)
-          (begin effect ... effect)
-          (if pred effect effect)]
-  [opand int64 loc]
-  [triv  opand label]
-  [loc    rloc aloc]
-  [trg    label loc]
-  [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
-  [relop  < <= = >= > !=]
-  [int64  int64?]
-  [aloc   aloc?]
-  [label  label?]
-  [rloc   register? fvar?]
-]
-
+(define (interp-proc-imp-cmf-lang-v7 x)
+  (interp-base x))
 
 @define-grammar/pred[imp-cmf-lang-v7
   #:literals (int64? label? aloc? register? fvar? info? info/c)
@@ -328,11 +337,14 @@
   [trg    label loc]
   [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
   [relop  < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
   [rloc   register? fvar?]
+  [int64  int64?]
 ]
+
+(define (interp-imp-cmf-lang-v7 x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v7
   #:literals (int64? label? aloc? register? fvar? info? info/c)
@@ -374,6 +386,9 @@
   [label  label?]
   [rloc   register? fvar?]
 ]
+
+(define (interp-asm-pred-lang-v7 x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v7/locals
   #:literals (int64? label? aloc? register? fvar? info? info/c)
@@ -417,6 +432,9 @@
   [label  label?]
   [rloc   register? fvar?]
 ]
+
+(define (interp-asm-pred-lang-v7/locals x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v7/undead
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree/rloc? undead-set-tree? info/c)
@@ -466,6 +484,9 @@
   [label  label?]
   [rloc   register? fvar?]
 ]
+
+(define (interp-asm-pred-lang-v7/undead x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v7/conflicts
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree? info/c)
@@ -517,6 +538,9 @@
   [label  label?]
   [rloc   register? fvar?]
 ]
+
+(define (interp-asm-pred-lang-v7/conflicts x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v7/pre-framed
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree/rloc? info/c)
@@ -570,6 +594,9 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-asm-pred-lang-v7/pre-framed x)
+  (interp-base x))
+
 @define-grammar/pred[asm-pred-lang-v7/framed
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree?)
   #:datum-literals (conflicts undead-out locals define module begin set! jump
@@ -616,6 +643,9 @@
   [label  label?]
   [rloc   register? fvar?]
 ]
+
+(define (interp-asm-pred-lang-v7/framed x)
+  (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v7/spilled
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree? info/c)
@@ -666,6 +696,9 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-asm-pred-lang-v7/spilled x)
+  (interp-base x))
+
 @define-grammar/pred[asm-pred-lang-v7/assignments
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree? info/c)
   #:datum-literals (assignment conflicts undead-out locals define module begin set! jump
@@ -708,6 +741,9 @@
   [rloc   register? fvar?]
 ]
 
+(define (interp-asm-pred-lang-v7/assignments x)
+  (interp-base x))
+
 @define-grammar/pred[nested-asm-lang-fvars-v7
   #:literals (int64? register? label? aloc? info? fvar?)
   #:datum-literals (define module begin set! true false not if * + - < <= = >= >
@@ -742,6 +778,9 @@
   [fvar fvar?]
   [label label?]
 ]
+
+(define (interp-nested-asm-lang-fvars-v7 x)
+  (interp-base x))
 
 @define-grammar/pred[nested-asm-lang-v7
   #:literals (int64? register? label? aloc? info? fvar?
@@ -781,6 +820,9 @@
   [label label?]
 ]
 
+(define (interp-nested-asm-lang-v7 x)
+  (interp-base x))
+
 @define-grammar/pred[block-pred-lang-v7
   #:literals (int64? register? label? aloc? info? fvar?
                      frame-base-pointer-register? dispoffset?)
@@ -815,6 +857,9 @@
   [label label?]
 ]
 
+(define (interp-block-pred-lang-v7 x)
+  (interp-base x))
+
 @define-grammar/pred[block-asm-lang-v7
   #:literals (int64? aloc? info? any fvar? label? frame-base-pointer-register? dispoffset?)
   #:datum-literals (module true false not begin if set! * + < <= = >= > halt
@@ -843,6 +888,8 @@
   [label label?]
 ]
 
+(define (interp-block-asm-lang-v7 x)
+  (interp-base x))
 
 @define-grammar/pred[para-asm-lang-v7
 #:literals (int64? aloc? info? any fvar? label? frame-base-pointer-register? dispoffset?)
@@ -871,6 +918,9 @@
 [label label?]
 [dispoffset dispoffset?]
 ]
+
+(define (interp-para-asm-lang-v7 x)
+  (interp-para-asm-lang-v6 x))
 
 @define-grammar/pred[paren-x64-rt-v7
   #:literals (int64? aloc? info? any fvar? label? int32? frame-base-pointer-register? dispoffset?)
@@ -930,3 +980,6 @@
   [dispoffset dispoffset?]
   [label label?]
 ]
+
+(define (interp-paren-x64-v7 x)
+  (interp-paren-x64-v6 x))
