@@ -60,38 +60,40 @@
 ;; Register file
 ;; ------------------------------------------------------------------------
 
-;; Module-level variables aren't easy to modify with set!, and introducing
-;; local variables requires a bunch of scope manipulation.
-;; Instead, create a single mutable register file and have all register as
-;; indirection through it.
-
-(define reg-file
-  (make-hasheq))
+;; Each register maps to a top-level box, and variable-like-transformers
+;; transform mutations to set-box! and reference to unbox.
 
 (begin-for-syntax
   (define (make-register-transformer reg)
     (make-variable-like-transformer
-     #`(hash-ref! reg-file '#,reg (void))
+     #`(unbox #,reg)
      (lambda (stx)
        (syntax-case stx (r:set!)
          [(r:set! bla v)
-          #`(hash-set! reg-file '#,reg v)])))))
+          #`(set-box! #,reg v)])))))
 
 (define-syntax (define-registers! stx)
   (syntax-case stx ()
-    [(_ . regs)
+    [(_ (regs ...) (boxs ...))
      #`(begin
-         #,@(for/list ([r (syntax->list #'regs)])
-             #`(define-syntax #,r
-                 (make-register-transformer '#,r))))]))
+         #,@(for/list ([r (syntax->list #'(regs ...))]
+                       [b (syntax->list #'(boxs ...))])
+              #`(begin
+                  (define #,b (box (void)))
+                  (define-syntax #,r
+                    (make-register-transformer #'#,b)))))]))
 
-(define-registers! rax rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15)
+(define-registers!
+  (rax rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15)
+  (_rax _rsp _rbx _rcx _rdx _rsi _rdi _r8 _r9 _r10 _r11 _r12
+  _r13 _r14 _r15))
 
 (define (init-reg-file)
-  (for ([(k v) (in-hash reg-file)])
-    (hash-set! reg-file k (void)))
-  (hash-set! reg-file 'r15 done)
-  (hash-set! reg-file 'r12 (alloc 1000)))
+  (for ([reg (list _rax _rsp _rbx _rcx _rdx _rsi _rdi _r8 _r9 _r10 _r11 _r12
+                         _r13 _r14 _r15)])
+    (set-box! reg (void)))
+  (set-box! _r15 done)
+  (set-box! _r12 (alloc 1000)))
 
 ;; ------------------------------------------------------------------------
 ;; Initial return point
@@ -103,11 +105,11 @@
 (define exit-cont (box r:error))
 
 (define (halt x)
-  (hash-set! reg-file 'rax x)
+  (set-box! _rax x)
   ((unbox exit-cont) x))
 
 (define (done)
-  ((unbox exit-cont) (hash-ref reg-file 'rax)))
+  ((unbox exit-cont) (unbox _rax)))
 
 ;; ------------------------------------------------------------------------
 ;; Stack
