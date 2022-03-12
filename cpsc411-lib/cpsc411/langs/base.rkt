@@ -6,6 +6,7 @@
  racket/local
  racket/list
  (for-syntax
+  syntax/transformer
   racket/base
   racket/dict
   racket/syntax
@@ -55,7 +56,62 @@
  vector-set!
  vector-ref)
 
-#;(compile-allow-set!-undefined #t)
+;; ------------------------------------------------------------------------
+;; Register file
+;; ------------------------------------------------------------------------
+
+;; Module-level variables aren't easy to modify with set!, and introducing
+;; local variables requires a bunch of scope manipulation.
+;; Instead, create a single mutable register file and have all register as
+;; indirection through it.
+
+(define reg-file
+  (make-hasheq))
+
+(begin-for-syntax
+  (define (make-register-transformer reg)
+    (make-variable-like-transformer
+     #`(hash-ref! reg-file '#,reg (void))
+     (lambda (stx)
+       (syntax-case stx (r:set!)
+         [(r:set! bla v)
+          #`(hash-set! reg-file '#,reg v)])))))
+
+(define-syntax (define-registers! stx)
+  (syntax-case stx ()
+    [(_ . regs)
+     #`(begin
+         #,@(for/list ([r (syntax->list #'regs)])
+             #`(define-syntax #,r
+                 (make-register-transformer '#,r))))]))
+
+(define-registers! rax rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15)
+
+(define (init-reg-file)
+  (for ([(k v) (in-hash reg-file)])
+    (hash-set! reg-file k (void)))
+  (hash-set! reg-file 'r15 done)
+  (hash-set! reg-file 'r12 (alloc 1000)))
+
+;; ------------------------------------------------------------------------
+;; Initial return point
+;; ------------------------------------------------------------------------
+
+;; Every module should capture its current continuation, which should end the
+;; entire module, and store it in exit-cont.
+
+(define exit-cont (box r:error))
+
+(define (halt x)
+  (hash-set! reg-file 'rax x)
+  ((unbox exit-cont) x))
+
+(define (done)
+  ((unbox exit-cont) (hash-ref reg-file 'rax)))
+
+;; ------------------------------------------------------------------------
+;; Stack
+;; ------------------------------------------------------------------------
 
 (define stack (make-vector 1000 'unalloc))
 (define fbp (box (sub1 (vector-length stack))))
@@ -68,6 +124,7 @@
      #`(vector-ref stack (- (unbox fbp) offset))]))
 
 (define current-fvar-offset (box 0))
+
 (define (inc-fvar-offset! x)
   (set-box! current-fvar-offset (+ x (unbox current-fvar-offset))))
 
@@ -77,106 +134,100 @@
     (set! stack (make-vector 1000 'unalloc))))
 
 (begin-for-syntax
-  ;; TODO: Using let-syntax, this become a real performance issue.
-  ;; Should probably do a quick traversal of the whole program to find the
-  ;; largest fvar.
-  ;; 50 seems.. okay. about 25% slower than 5.
-  ;; 1000 is unusable.
-  ;; NOTE: this was actually a result of the macros copy/pasting too much code
-  ;; by generating separate transformers.
-  ;; This has been fixed, but I noticed similar anti-patterns that should also
-  ;; be fixed.
-  ;; Need to pull as many lambdas, in particular, out of #` as possible.
   (define current-fvars (make-parameter 25))
 
-  (define (infostx->dict stx)
-    (map (compose (lambda (p)
-                    `(,(syntax->datum (car p))
-                      . ,(car (cdr p))))
-                  syntax->list) (syntax->list stx)))
+  (define (make-fvar-transformer offset)
+    (make-variable-like-transformer
+     #`(rbp - (+ (unbox current-fvar-offset) #,offset))
+     (lambda (stx)
+       (syntax-case stx (r:set!)
+         [(r:set! bla v)
+          #`(vector-set!
+             stack
+             (- (unbox fbp)
+                (+ (unbox current-fvar-offset) #,offset))
+             v)])))))
 
-  (require racket/trace)
+(define-syntax (define-fvars! stx)
+  (syntax-case stx ()
+    [(_)
+     #`(begin
+         #,@(for/list ([i (in-range 0 (current-fvars))])
+              (with-syntax ([fvar (syntax-local-introduce (format-id #f "fv~a" i))]
+                            [offset (* i 8)])
+                #`(define-syntax fvar (make-fvar-transformer offset)))))]))
+
+(define-fvars!)
+
+;; ------------------------------------------------------------------------
+;; ... everything else ...
+;; ------------------------------------------------------------------------
+
+(begin-for-syntax
+  (define (infostx->dict stx)
+    (define (convert-assignments info)
+      (cond
+        [(dict-ref info 'assignment #f)
+         =>
+         (lambda (assignments)
+           (dict-set info 'assignment (map syntax->list assignments)))]
+        [else info]))
+
+    (define (convert-new-frames info)
+      (cond
+        [(dict-ref info 'new-frames #f)
+         =>
+         (lambda (new-frames)
+           (dict-set info 'new-frames (map syntax->list new-frames)))]
+        [else info]))
+
+    (define info-dict
+      (map (compose (lambda (p)
+                      `(,(syntax->datum (car p))
+                        . ,(syntax->list (car (cdr p)))))
+                    syntax->list) (syntax->list stx)))
+    ;; pre-process some well-known info
+    (convert-new-frames (convert-assignments info-dict)))
+
   (define (get-info-bound-vars info)
     (apply append
            ;; see bind-info; if new-frames exist, don't bind assignments
-           (if (dict-ref (infostx->dict info) 'new-frames #f)
+           (if (dict-ref info 'new-frames #f)
                '()
-               (map (compose car syntax->list) (syntax->list (dict-ref (infostx->dict info) 'assignment #'()))))
-           (map syntax->list (syntax->list (dict-ref (infostx->dict info) 'new-frames #'())))))
+               (map car (dict-ref info 'assignment '())))
+           (dict-ref info 'new-frames '())))
 
-  (define (implement-aloc-transformer rloc)
-    (make-set!-transformer
+  (define (make-aloc-transformer rloc)
+    (make-variable-like-transformer
+     rloc
      (lambda (stx)
-       (syntax-case stx ()
-         [(set! id v)
-          #`(set! #,rloc v)]
-         [id (identifier? #'id)
-             rloc]))))
-
-  (define (implement-fvar-transformer offset)
-    (make-set!-transformer
-     (lambda (stx)
-       (syntax-case stx ()
-         [(set! id v)
-          #`(vector-set! stack (- (unbox fbp)
-                                  (+ (unbox current-fvar-offset)
-                                     #,offset))
-                         v)]
-         [id (identifier? #'id)
-             #`(rbp -
-                    (+ (unbox current-fvar-offset)
-                       #,offset))]))))
+       (syntax-case stx (r:set!)
+         [(r:set! bla v)
+          #`(r:set! #,rloc v)]))))
 
   (define (bind-info info e)
-    (let ([info (infostx->dict info)])
-      (define tail
-        (for/fold ([e e])
-                  ([new-frame (map syntax->list (syntax->list (dict-ref info 'new-frames #'())))])
-          #`(let-syntax #,(for/list ([nfvar new-frame]
-                                     [i (in-naturals 0)])
-                            #`[#,nfvar (implement-fvar-transformer #,(* i 8))])
-              #,e)))
-      ;; if there's a new-frame, don't use assignments, since the new frame
-      ;; hasn't be allocated yet and using fvars for call-undead will be
-      ;; inconsistent with using them for new-frames
-      (if (dict-ref info 'new-frames #f)
-          tail
-          #`(let-syntax #,(for/list ([assignments (map syntax->list (syntax->list
-                                                                     (dict-ref
-                                                                      info
-                                                                      'assignment
-                                                                      #'())))])
-                            (with-syntax ([aloc (car assignments)]
-                                          [rloc (cadr assignments)])
-                              #`[aloc (implement-aloc-transformer #'rloc)]))
-              #,tail))))
-
-  (define (bind-regs k tail)
-    (with-syntax* ([rax (syntax-local-introduce (format-id #f "~a" 'rax))]
-                   [(regs ...)
-                    (map
-                     (lambda (x) (syntax-local-introduce (format-id #f "~a" x)))
-                     '(rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15))]
-                   [(vals ...)
-                    #`((void) (void) (void) (void) (void) (void) (void) (void)
-                              (void) (void) (alloc 5000) (void) (void)
-                              (lambda () (#,k rax)))])
-      #`(let ([rax (void)])
-          (let ([regs vals] ...)
+    (define tail
+      (for/fold ([e e])
+                ([new-frame (dict-ref info 'new-frames '())])
+        #`(let-syntax #,(for/list ([nfvar new-frame]
+                                   [i (in-naturals 0)])
+                          #`[#,nfvar (make-fvar-transformer #,(* i 8))])
+            #,e)))
+    ;; if there's a new-frame, don't use assignments, since the new frame
+    ;; hasn't be allocated yet and using fvars for call-undead will be
+    ;; inconsistent with using them for new-frames
+    (if (dict-ref info 'new-frames #f)
+        tail
+        #`(let-syntax #,(for/list ([assignments (dict-ref info 'assignment '())])
+                          (with-syntax ([aloc (car assignments)]
+                                        [rloc (cadr assignments)])
+                            #`[aloc (make-aloc-transformer #'rloc)]))
             #,tail))))
-
-  (define (bind-fvars n tail)
-    #`(let-syntax #,(for/list ([i (in-range 0 n)])
-                      (with-syntax ([fvar (syntax-local-introduce (format-id #f "fv~a" i))]
-                                    [offset (* i 8)])
-                        #`[fvar (implement-fvar-transformer offset)]))
-        #,tail)))
 
 (define-syntax-rule (new-module-begin stx ...)
   (#%module-begin
    (module stx ...)))
 
-#;(require (for-syntax racket/pretty))
 ;; TODO: Use of ~datum is bad should be ~literal
 (define-syntax (module stx)
   (syntax-parse stx
@@ -192,54 +243,24 @@
     [(module (~and (~var defs) ((~datum define) _ ...)) ... tail)
      #`(module () defs ... tail)]
     [(module info defs ... tail)
-     #;(pretty-display
-      (syntax->datum
-       (local-expand
-        (bind-fvars
-         (current-fvars)
-         (bind-regs
-          #'k
-          (bind-info
-           #'info
-           #`(local [defs ...
-                      (define #,(syntax-local-introduce (format-id #f "done"))
-                        (lambda () (k rax)))
-                      (define #,(syntax-local-introduce (format-id #f "halt"))
-                        (lambda (x)
-                          (begin
-                            (set! rax x)
-                            (k rax))))]
-               (do-bind-locals tail
-                               #,@(get-info-bound-vars #'info))))))
-        'expression
-        '())))
+     (define info-dict (infostx->dict #'info))
      #`(let/ec k
+         (set-box! exit-cont k)
          (begin
            (init-heap)
            (init-stack)
-           #;(compile-allow-set!-undefined #t)
-           #,(bind-fvars
-              (current-fvars)
-              (bind-regs
-               #'k
-               (bind-info
-                #'info
-                #`(local [defs ...
-                           (define #,(syntax-local-introduce (format-id #f "done"))
-                             (lambda () (k rax)))
-                           (define #,(syntax-local-introduce (format-id #f "halt"))
-                             (lambda (x)
-                               (begin
-                                 (set! rax x)
-                                 (k rax))))]
-                    (do-bind-locals tail
-                                    #,@(get-info-bound-vars #'info))))))))]))
+           (init-reg-file)
+           #,(bind-info
+              info-dict
+              #`(local [defs ...]
+                  (do-bind-locals tail
+                                  #,@(get-info-bound-vars info-dict))))))]))
 
 (define (!= e1 e2) (not (= e1 e2)))
 
 (define
  flags
- (make-hash
+ (make-hasheq
   (list
    (cons != #f)
    (cons = #f)
@@ -260,11 +281,14 @@
     (d)
     (r:error "Shouldn't have returned!")))
 
-;; allow jump to ignore its "arguments"
-(define-syntax-rule (jump f rest ...)
+(define (jump-to f)
   (begin
     (set-box! current-fvar-offset 0)
     (#%app f)))
+
+;; allow jump to ignore its "arguments"
+(define-syntax-rule (jump f rest ...)
+  (jump-to f))
 
 (begin-for-syntax
   (define (labelify-begin defs ss)
@@ -300,20 +324,22 @@
     ;; TODO: For some reason, ~literal new-lambda doesn't work
     ;; Fix because ~datum is fragile.
     [(_ name info ((~datum lambda) (args ...) body))
-     #`(define name
-         (lambda (args ...)
-           (do-bind-locals #,(bind-info #'info #'body) args ...
-                           #,@(get-info-bound-vars #'info))))]
+     (let ([info-dict (infostx->dict #'info)])
+       #`(define name
+           (lambda (args ...)
+             (do-bind-locals #,(bind-info info-dict #'body) args ...
+                             #,@(get-info-bound-vars info-dict)))))]
     [(_ name ((~datum lambda) (args ...) body))
      #`(define name
          (lambda (args ...) (do-bind-locals body args ...)))]
     [(_ name body)
      #`(define name (lambda () (do-bind-locals body)))]
     [(_ name info body)
-     #`(define name
-         (lambda ()
-           (do-bind-locals #,(bind-info #'info #'body)
-                           #,@(get-info-bound-vars #'info))))]))
+     (let ([info-dict (infostx->dict #'info)])
+       #`(define name
+           (lambda ()
+             (do-bind-locals #,(bind-info info-dict #'body)
+                             #,@(get-info-bound-vars info-dict)))))]))
 
 (begin-for-syntax
   (require syntax/id-set racket/set)
@@ -340,15 +366,15 @@
                   #`[#,(syntax-local-introduce (format-id #f "~a" l)) (void)]))
          #,b)]))
 
+(define ((return-to l saved-frame))
+  (set-box! current-fvar-offset saved-frame)
+  (l))
+
 (define-syntax (return-point stx)
   (syntax-parse stx
     [(_ label tail)
      #`(let/cc l1
-         (let ([label
-                (let ([saved (unbox current-fvar-offset)])
-                  (lambda ()
-                    (set-box! current-fvar-offset saved)
-                    (l1)))])
+         (let ([label (return-to l1 (unbox current-fvar-offset))])
            tail))]))
 
 (define (call f . ops)
