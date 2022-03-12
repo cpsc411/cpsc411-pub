@@ -136,3 +136,66 @@
        (set! rax (+ rax z.2))
        (jump tmp-ra.3 rbp rax))))
  38)
+
+
+(check-equal?
+ (interp-asm-pred-lang-v6/pre-framed
+  '(module
+       ((new-frames ((nfv.9 nfv.10) (nfv.8)))
+        (locals (nfv.8 x.1 nfv.9 nfv.10 x.2))
+        (call-undead (tmp-ra.7))
+        (assignment ((tmp-ra.7 fv2))))
+       (define L.meow.1
+         ((new-frames ())
+          (locals (tmp-ra.1 moo0.8 moo1.7))
+          (call-undead ())
+          (assignment ()))
+         (begin
+           (set! tmp-ra.1 r15)
+           (set! moo0.8 fv0)
+           (set! moo1.7 fv1)
+           (set! rax moo0.8)
+           (set! rax (+ rax moo1.7))
+           (jump tmp-ra.1 rbp rax)))
+     (define L.bark.1
+       ((new-frames ((nfv.5 nfv.6) (nfv.3 nfv.4)))
+        (locals (nfv.3 nfv.4 y.3 nfv.5 nfv.6 z.4))
+        (call-undead (bah0.1 tmp-ra.2))
+        (assignment ((tmp-ra.2 fv1) (bah0.1 fv0))))
+       (begin
+         (set! tmp-ra.2 r15)
+         (set! bah0.1 fv0)
+         (return-point L.rp.1
+           (begin
+             (set! nfv.4 1)
+             (set! nfv.3 0)
+             (set! r15 L.rp.1)
+             (jump L.meow.1 rbp r15 nfv.3 nfv.4)))
+         (set! y.3 rax)
+         (return-point L.rp.2
+           (begin
+             (set! nfv.6 1)
+             (set! nfv.5 0)
+             (set! r15 L.rp.2)
+             (jump L.meow.1 rbp r15 nfv.5 nfv.6)))
+         (set! z.4 rax)
+         (set! rax 1)
+         (set! rax (+ rax bah0.1))
+         (jump tmp-ra.2 rbp rax)))
+     (begin
+       (set! tmp-ra.7 r15)
+       (return-point L.rp.3
+         (begin (set! nfv.8 5) (set! r15 L.rp.3) (jump L.bark.1 rbp r15 nfv.8)))
+       (set! x.1 rax)
+       (return-point L.rp.4
+         (begin
+           (set! nfv.10 1)
+           (set! nfv.9 0)
+           (set! r15 L.rp.4)
+           (jump L.meow.1 rbp r15 nfv.9 nfv.10)))
+       (set! x.2 rax)
+       (set! fv1 1)
+       (set! fv0 0)
+       (set! r15 tmp-ra.7)
+       (jump L.meow.1 rbp r15 fv0 fv1))))
+ 1)

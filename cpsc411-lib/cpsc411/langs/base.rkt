@@ -105,14 +105,27 @@
            (map syntax->list (syntax->list (dict-ref (infostx->dict info) 'new-frames #'())))))
 
   (define (implement-aloc-transformer rloc)
-    (with-syntax ([rloc rloc])
-      (make-set!-transformer
-       (lambda (stx)
-         (syntax-case stx ()
-           [(set! id v)
-            #`(r:set! rloc v)]
-           [id (identifier? #'id)
-               #'rloc])))))
+    (make-set!-transformer
+     (lambda (stx)
+       (syntax-case stx ()
+         [(set! id v)
+          #`(set! #,rloc v)]
+         [id (identifier? #'id)
+             rloc]))))
+
+  (define (implement-fvar-transformer offset)
+    (make-set!-transformer
+     (lambda (stx)
+       (syntax-case stx ()
+         [(set! id v)
+          #`(vector-set! stack (- (unbox fbp)
+                                  (+ (unbox current-fvar-offset)
+                                     #,offset))
+                         v)]
+         [id (identifier? #'id)
+             #`(rbp -
+                    (+ (unbox current-fvar-offset)
+                       #,offset))]))))
 
   (define (bind-info info e)
     (let ([info (infostx->dict info)])
@@ -121,9 +134,7 @@
                   ([new-frame (map syntax->list (syntax->list (dict-ref info 'new-frames #'())))])
           #`(let-syntax #,(for/list ([nfvar new-frame]
                                      [i (in-naturals 0)])
-                            (with-syntax ([fvar (format-id e "fv~a" i)]
-                                          [nfvar nfvar])
-                              #`[nfvar (implement-aloc-transformer #'fvar)]))
+                            #`[#,nfvar (implement-fvar-transformer #,(* i 8))])
               #,e)))
       ;; if there's a new-frame, don't use assignments, since the new frame
       ;; hasn't be allocated yet and using fvars for call-undead will be
@@ -153,21 +164,6 @@
       #`(let ([rax (void)])
           (let ([regs vals] ...)
             #,tail))))
-
-  (define (implement-fvar-transformer offset)
-    (with-syntax ([offset offset])
-      (make-set!-transformer
-       (lambda (stx)
-         (syntax-case stx ()
-           [(set! id v)
-            #`(vector-set! stack (- (unbox fbp)
-                                    (+ (unbox current-fvar-offset)
-                                       offset))
-                           v)]
-           [id (identifier? #'id)
-               #`(rbp -
-                      (+ (unbox current-fvar-offset)
-                         offset))])))))
 
   (define (bind-fvars n tail)
     #`(let-syntax #,(for/list ([i (in-range 0 n)])
