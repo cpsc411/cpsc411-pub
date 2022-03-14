@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require racket/dict)
+(require racket/list racket/dict)
 (provide (all-defined-out))
 
 ;; info data structure library
@@ -76,6 +76,7 @@
 
 (define ((dictof/proc kc) d)
   (and (dict? d)
+       (eq? (length (dict-keys d)) (length (remove-duplicates (dict-keys d))))
        (for/and ([(k c) (in-dict kc)])
          (and (dict-has-key? d k)
               ((flat-contract-predicate c) (dict-ref d k))))))
