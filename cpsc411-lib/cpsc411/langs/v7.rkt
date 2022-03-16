@@ -285,8 +285,6 @@
           (if pred tail tail)]
   [value  triv
           (binop opand opand)
-          (begin effect ... value)
-          (if pred value value)
           (call triv opand ...)]
   [effect (set! aloc value)
           (begin effect ... effect)
