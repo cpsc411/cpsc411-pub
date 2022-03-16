@@ -41,7 +41,7 @@
   (interp-base x))
 
 @define-grammar/pred[exprs-unique-lang-v6.5
-#:literals (name? int64?)
+#:literals (aloc? int64? label?)
 #:datum-literals (module lambda define let if void error * + - = < <= >
                          >= not call)
 [p     (module (define label (lambda (aloc ...) value)) ... value)]
