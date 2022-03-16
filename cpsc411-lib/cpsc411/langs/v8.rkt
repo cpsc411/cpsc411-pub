@@ -8,6 +8,7 @@
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
  (for-label cpsc411/compiler-lib)
+ (submod "base.rkt" interp)
  "redex-gen.rkt"
  "v7.rkt")
 
@@ -17,24 +18,25 @@
 #:literals (name? int61? uint8? ascii-char-literal?)
 #:datum-literals (module lambda define apply let if void error * + - eq? < <= >
                          >= fixnum? boolean? empty? void? ascii-char? error? not
-                         call)
-[p     (module b ... e)]
-[b     (define x (lambda (x ...) e))]
-[e     v
-       (call e e ...)
-       (let ([x e] ...) e)
-       (if e e e)]
+                         call make-vector vector-length vector-set! vector-ref
+                         car cons cdr vector? pair?)
+[p     (module (define x (lambda (x ...) value)) ... value)]
+[value triv
+       (let ([x value] ...) value)
+       (if value value value)
+       (call value value ...)]
+[triv  x fixnum #t #f empty (void) (error uint8) ascii-char-literal]
 [x     name? prim-f]
-[v     x fixnum #t #f empty (void) (error uint8) ascii-char-literal]
 [prim-f * + - < <= > >= eq?
         fixnum? boolean? empty? void? ascii-char? error? not
         pair? vector? cons car cdr make-vector vector-length vector-set! vector-ref]
-[fixnum int61?]
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
+[fixnum int61?]
 ]
 
-(define interp-exprs-lang-v8 interp-exprs-lang-v7)
+(define (interp-exprs-lang-v8 x)
+  (interp-exprs-lang-v7 x))
 
 @define-grammar/pred[exprs-unique-lang-v8
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -59,6 +61,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-exprs-unique-lang-v8 x)
+  (interp-exprs-lang-v7 x))
 
 @define-grammar/pred[exprs-unsafe-data-lang-v8
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -110,6 +115,42 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-exprs-unsafe-data-lang-v8 x)
+  (interp-base x))
+
+
+@define-grammar/pred[exprs-bits-lang-v8
+#:literals (aloc? label? int64?)
+#:datum-literals (module lambda define apply let if void error * + - = != < <= >
+                         >=  bitwise-and bitwise-ior bitwise-xor
+                         arithmetic-shift-right true false not call
+                         mref mset!)
+[p     (module (define label (lambda (aloc ...) value)) ... value)]
+[pred  (relop value value)
+       (true)
+       (false)
+       (not pred)
+       (let ([aloc value] ...) pred)
+       (if pred pred pred)
+       (begin effect ... pred)]
+[value triv
+       (binop value value)
+       (mref value value)
+       (alloc value)
+       (call value value ...)
+       (let ([aloc value]) value)
+       (if pred value value)
+       (begin effect ... value)]
+[effect (mset! value value value)
+        (begin effect ... effect)]
+[triv label aloc int64]
+[binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
+[aloc aloc?]
+[label label?]
+[relop < <= = >= > !=]
+[int64 int64?]
+]
+
 @define-grammar/pred[exprs-bits-lang-v8/contexts
 #:literals (aloc? label? int64?)
 #:datum-literals (module lambda define apply let if void error * + - = != < <= >
@@ -146,6 +187,12 @@
 [relop < <= = >= > !=]
 [int64 int64?]
 ]
+
+(define (interp-exprs-bits-lang x)
+  (interp-base x))
+
+(define (interp-exprs-bits-lang/contexts x)
+  (interp-base x))
 
 @define-grammar/pred[values-bits-lang-v8
   #:literals (label? aloc? int64?)
@@ -186,7 +233,10 @@
   [label label?]
 ]
 
-@define-grammar/pred[proc-imp-mf-lang-v8
+(define (interp-values-bits-lang-v8 x)
+  (interp-base x))
+
+@define-grammar/pred[proc-imp-cmf-lang-v8
   #:literals (int64? label? aloc? info?)
   #:datum-literals (define lambda module begin set! halt call true false not if
                      * + < <= = >= > != bitwise-and bitwise-ior bitwise-xor
