@@ -15,10 +15,9 @@
 (provide (all-defined-out))
 
 @define-grammar/pred[exprs-lang-v6.5
-#:literals (name? int61? uint8? ascii-char-literal?)
-#:datum-literals (module lambda define let if void error * + - eq? < <= >
-                  >= fixnum? boolean? empty? void? ascii-char? error? not
-                  call empty)
+#:literals (name? int64?)
+#:datum-literals (module lambda define let if void error * + - = < <= >
+                  >= call not)
 [p     (module (define x (lambda (x ...) value)) ... value)]
 [pred  (relop triv triv)
        (true)
@@ -42,10 +41,9 @@
   (interp-base x))
 
 @define-grammar/pred[exprs-unique-lang-v6.5
-#:literals (name? int61? uint8? ascii-char-literal?)
-#:datum-literals (module lambda define let if void error * + - eq? < <= >
-                         >= fixnum? boolean? empty? void? ascii-char? error? not
-                         call empty)
+#:literals (name? int64?)
+#:datum-literals (module lambda define let if void error * + - = < <= >
+                         >= not call)
 [p     (module (define label (lambda (aloc ...) value)) ... value)]
 [pred  (relop opand opand)
        (true)
@@ -73,8 +71,7 @@
 @define-grammar/pred[exprs-unique-lang-v6.5/context
 #:literals (aloc? label? int64?)
 #:datum-literals (module lambda define apply let if void error * + - = != < <= >
-                  >=  bitwise-and bitwise-ior bitwise-xor
-                  arithmetic-shift-right true false not call)
+                  >= true false not call)
 [p     (module (define label (lambda (aloc ...) tail)) ... tail)]
 [pred  (relop opand opand)
        (true)
