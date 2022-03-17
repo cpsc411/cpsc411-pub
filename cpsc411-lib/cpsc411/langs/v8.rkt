@@ -124,7 +124,7 @@
 #:datum-literals (module lambda define apply let if void error * + - = != < <= >
                          >=  bitwise-and bitwise-ior bitwise-xor
                          arithmetic-shift-right true false not call
-                         mref mset!)
+                         mref mset! begin alloc)
 [p     (module (define label (lambda (aloc ...) value)) ... value)]
 [pred  (relop value value)
        (true)
@@ -156,7 +156,7 @@
 #:datum-literals (module lambda define apply let if void error * + - = != < <= >
                          >=  bitwise-and bitwise-ior bitwise-xor
                          arithmetic-shift-right true false not call
-                         mref mset!)
+                         mref mset! begin alloc)
 [p     (module b ... tail)]
 [b     (define label (lambda (aloc ...) tail))]
 [pred  (relop value value)
