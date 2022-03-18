@@ -1059,7 +1059,7 @@
          (set! reg triv)
          (set! reg_1 (binop reg_1 int32))
          (set! reg_1 (binop reg_1 loc))
-         (with-label label? s)
+         (with-label label s)
          (jump trg)
          (compare reg opand)
          (jump-if relop label)]
