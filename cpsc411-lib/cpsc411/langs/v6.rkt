@@ -447,8 +447,7 @@
            (locals (aloc ...))
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc fvar) ...)))
-          (let ([frame? (listof aloc?)]
-                [loc? (or/c register? aloc? fvar?)]
+          (let ([loc? (or/c register? aloc? fvar?)]
                 [rloc? (or/c register? fvar?)])
             (info/c
              (locals (aloc? ...))

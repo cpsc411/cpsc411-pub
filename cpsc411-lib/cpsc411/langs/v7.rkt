@@ -604,15 +604,12 @@
   [info   #:with-contract
           (info/c
            (locals (aloc ...))
-           (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc loc) ...)))
-          (let ([frame? (listof aloc?)]
-                [loc? (or/c register? aloc? fvar?)]
+          (let ([loc? (or/c register? aloc? fvar?)]
                 [rloc? (or/c register? fvar?)])
             (info/c
              (locals (aloc? ...))
-             (undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
              (assignment ((aloc? rloc?) ...))))]
   [pred   (relop loc opand)
