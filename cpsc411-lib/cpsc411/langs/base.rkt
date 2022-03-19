@@ -133,7 +133,7 @@
 (define (init-stack)
   (begin
     (set-box! fbp (sub1 (vector-length stack)))
-    (set! stack (make-vector 1000 'unalloc))))
+    (r:set! stack (make-vector 1000 'unalloc))))
 
 (begin-for-syntax
   (define current-fvars (make-parameter 25))
@@ -397,22 +397,24 @@
          (set-box! fbp (binop rbp v)))]
     [(_ (~literal rbp) v)
      #`(set-box! fbp v)]
+    [(_ ((~literal rbp) - offset) v2)
+     #`(vector-set! stack (- (unbox fbp) offset) v2)]
     [(_ v1:id v2)
      (when (aloc? (syntax->datum #'v1))
        (collect-local! #'v1))
-     #`(r:set! v1 v2)]
-    [(_ ((~literal rbp) - offset) v2)
-     #`(vector-set! stack (- (unbox fbp) offset) v2)]
-    #;[(_ (base (~datum +) offset) value)
-     #`(vector-set! base offset value)]
-    #;[(_ (base (~datum -) offset) value)
-     #`(vector-set! base (* -1 offset) value)]
-    #;[(_ loc (base (~datum +) offset))
-     #`(r:set! loc (mref base offset))]
-    #;[(_ loc (base (~datum -) offset))
-     #`(r:set! loc (mref base (* -1 offset)))]
+     (syntax-parse #'v2
+       [((~and base (~not (~literal rbp))) (~datum +) offset)
+        #`(r:set! v1 (mref base offset))]
+       [((~and base (~not (~literal rbp))) (~datum -) offset)
+        #`(r:set! v1 (mref base (* -1 offset)))]
+       [_
+        #`(r:set! v1 v2)])]
+    [(_ (base (~datum +) offset) value)
+     #`(mset! base offset value)]
+    [(_ (base (~datum -) offset) value)
+     #`(mset! base (* -1 offset) value)]
     #;[(_ loc value)
-     #`(r:set! loc value)]))
+       #`(r:set! loc value)]))
 
 (define (true) #t)
 (define (false) #f)
@@ -476,13 +478,13 @@
     (for ([i (in-range len)])
       (vector-set! memory (+ (/ oldhbp ALIGN) i) 'alloced))
     ;; leave buffer space to check over/underflows
-    (set! hbp (+ (+ hbp len8) (* ALIGN 3)))
+    (r:set! hbp (+ (+ hbp len8) (* ALIGN 3)))
     oldhbp))
 
 (define (init-heap)
   (begin
-    (set! hbp (* ALIGN 2))
-    (set! memory (make-vector 10000 'un-aloced))))
+    (r:set! hbp (* ALIGN 2))
+    (r:set! memory (make-vector 10000 'un-aloced))))
 
 (define-syntax new-lambda
   (syntax-rules ()
