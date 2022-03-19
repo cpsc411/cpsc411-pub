@@ -28,3 +28,4 @@ their own tests.
 @include-section{v5.scrbl}
 @include-section{v6.scrbl}
 @include-section{v7.scrbl}
+@include-section{v8.scrbl}

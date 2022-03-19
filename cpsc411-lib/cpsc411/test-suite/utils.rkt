@@ -15,7 +15,8 @@
  "../langs/v4.rkt"
  "../langs/v5.rkt"
  "../langs/v6.rkt"
- "../langs/v7.rkt")
+ "../langs/v7.rkt"
+ "../langs/v8.rkt")
 
 (provide
  (all-defined-out))
@@ -29,6 +30,9 @@
 (define empty-ptr? (curry eq? (current-empty-ptr)))
 (define error-ptr? (ptr? (current-error-tag) (current-error-mask)))
 (define ascii-ptr? (ptr? (current-ascii-char-tag) (current-ascii-char-mask)))
+
+(define cons-ptr? (ptr? (current-pair-tag) (current-pair-mask)))
+(define vector-ptr? (ptr? (current-vector-tag) (current-vector-mask)))
 
 ;; TODO Finish
 (define (ptr->v v)
@@ -44,7 +48,12 @@
     [(? error-ptr?)
      (arithmetic-shift v -8)]
     [(? ascii-ptr?)
-     (integer->char (arithmetic-shift v -8))]))
+     (integer->char (arithmetic-shift v -8))]
+    ;; hm.
+    [(? vector-ptr?)
+     (make-vector 0)]
+    [(? cons-ptr?)
+     (cons 0 0)]))
 
 ;; dictionary of function pointers to mutable sets of (list string? Program)
 ;; function pointer is an interpreter from cpsc411/langs, identifies the language the programs longs to.
@@ -160,7 +169,56 @@
    interp-paren-x64-v7 (list paren-x64-v7?
                              (lambda (sv tv)
                                (equal? (ptr->v sv) tv)))
-   ))
+
+   interp-exprs-lang-v8 exprs-lang-v8?
+   interp-exprs-unique-lang-v8 exprs-unique-lang-v8?
+   interp-exprs-unsafe-data-lang-v8 (list exprs-unsafe-data-lang-v8?
+                                          (lambda (sv tv)
+                                            (cond
+                                              [(vector? sv)
+                                               (vector? (ptr->v tv))]
+                                              [(cons? sv)
+                                               (cons? (ptr->v tv))]
+                                              [else
+                                               (equal? sv (ptr->v tv))])))
+   interp-exprs-bits-lang-v8 exprs-bits-lang-v8?
+   interp-values-bits-lang-v8 values-bits-lang-v8?
+   interp-imp-mf-lang-v8 imp-mf-lang-v8?
+   interp-proc-imp-cmf-lang-v8 proc-imp-cmf-lang-v8?
+   interp-imp-cmf-lang-v8 imp-cmf-lang-v8?
+   interp-asm-alloc-lang-v8
+   (list asm-alloc-lang-v8?
+         (lambda (sv tv)
+           (cond
+             [(vector? (ptr->v sv))
+              (vector? (ptr->v tv))]
+             [(cons? (ptr->v sv))
+              (cons? (ptr->v tv))]
+             [else
+              (equal? sv tv)])))
+   interp-asm-pred-lang-v8 asm-pred-lang-v8?
+   interp-asm-pred-lang-v8/locals asm-pred-lang-v8/locals?
+   interp-asm-pred-lang-v8/undead asm-pred-lang-v8/undead?
+   interp-asm-pred-lang-v8/conflicts asm-pred-lang-v8/conflicts?
+   interp-asm-pred-lang-v8/pre-framed asm-pred-lang-v8/pre-framed?
+   interp-asm-pred-lang-v8/framed asm-pred-lang-v8/framed?
+   interp-asm-pred-lang-v8/spilled asm-pred-lang-v8/spilled?
+   interp-asm-pred-lang-v8/assignments asm-pred-lang-v8/assignments?
+   interp-nested-asm-lang-fvars-v8 nested-asm-lang-fvars-v8?
+   interp-nested-asm-lang-v8 nested-asm-lang-v8?
+   interp-block-pred-lang-v8 block-pred-lang-v8?
+   interp-block-asm-lang-v8 block-asm-lang-v8?
+   interp-para-asm-lang-v8 para-asm-lang-v8?
+   interp-paren-x64-mops-v8 paren-x64-mops-v8?
+   interp-paren-x64-v8 (list paren-x64-v8?
+                             (lambda (sv tv)
+                               (cond
+                                 [(vector? (ptr->v sv))
+                                  (vector? tv)]
+                                 [(cons? (ptr->v sv))
+                                  (cons? tv)]
+                                 [else
+                                  (equal? (ptr->v sv) tv)])))))
 
 (define (static-compose f1 f2)
   (cond
