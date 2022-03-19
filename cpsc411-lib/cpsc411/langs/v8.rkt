@@ -692,7 +692,7 @@
 
 @define-grammar/pred[asm-pred-lang-v8/framed
   #:literals (int32? int64? label? aloc? register? fvar? info? undead-set-tree?)
-  #:datum-literals (conflicts undead-out locals define module begin set! jump
+  #:datum-literals (conflicts locals define module begin set! jump
                               true false not if * + - < <= = >= > != bitwise-and
                               bitwise-ior bitwise-xor arithmetic-shift-right
                               mref mset!)
@@ -743,8 +743,8 @@
   (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v8/spilled
-  #:literals (int32? int64? label? aloc? register? fvar? info? undead-set-tree? info/c)
-  #:datum-literals (assignments conflicts undead-out locals define module begin set! jump
+  #:literals (int32? int64? label? aloc? register? fvar? info? info/c)
+  #:datum-literals (assignments conflicts locals define module begin set! jump
                                 true false not if * + - < <= = >= > !=
                                 bitwise-and bitwise-ior bitwise-xor
                                 arithmetic-shift-right mref mset!)
@@ -752,15 +752,12 @@
   [info   #:with-contract
           (info/c
            (locals (aloc ...))
-           (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc loc) ...)))
-          (let ([frame? (listof aloc?)]
-                [loc? (or/c register? aloc? fvar?)]
+          (let ([loc? (or/c register? aloc? fvar?)]
                 [rloc? (or/c register? fvar?)])
             (info/c
              (locals (aloc? ...))
-             (undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
              (assignment ((aloc? rloc?) ...))))]
   [frame  (aloc ...)]

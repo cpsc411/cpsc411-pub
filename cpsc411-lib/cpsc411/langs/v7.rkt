@@ -643,8 +643,8 @@
   (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v7/spilled
-  #:literals (int64? label? aloc? register? fvar? info? undead-set-tree? info/c)
-  #:datum-literals (assignments conflicts undead-out locals define module begin set! jump
+  #:literals (int64? label? aloc? register? fvar? info? info/c)
+  #:datum-literals (assignments conflicts locals define module begin set! jump
                                 true false not if * + - < <= = >= > !=
                                 bitwise-and bitwise-ior bitwise-xor
                                 arithmetic-shift-right)
@@ -652,15 +652,12 @@
   [info   #:with-contract
           (info/c
            (locals (aloc ...))
-           (undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc loc) ...)))
-          (let ([frame? (listof aloc?)]
-                [loc? (or/c register? aloc? fvar?)]
+          (let ([loc? (or/c register? aloc? fvar?)]
                 [rloc? (or/c register? fvar?)])
             (info/c
              (locals (aloc? ...))
-             (undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
              (assignment ((aloc? rloc?) ...))))]
   [frame  (aloc ...)]
@@ -695,8 +692,8 @@
   (interp-base x))
 
 @define-grammar/pred[asm-pred-lang-v7/assignments
-  #:literals (int64? label? aloc? register? fvar? info? undead-set-tree? info/c)
-  #:datum-literals (assignment conflicts undead-out locals define module begin set! jump
+  #:literals (int64? label? aloc? register? fvar? info? info/c)
+  #:datum-literals (assignment locals define module begin set! jump
                                true false not if * + - < <= = >= > !=
                                bitwise-and bitwise-ior bitwise-xor
                                arithmetic-shift-right)
@@ -704,8 +701,7 @@
   [info   #:with-contract
           (info/c
            (assignment ((aloc loc) ...)))
-          (let ([frame? (listof aloc?)]
-                [loc? (or/c register? fvar?)])
+          (let ([loc? (or/c register? fvar?)])
             (info/c
              (assignment ((aloc? loc?) ...))))]
   [frame  (aloc ...)]
