@@ -377,11 +377,8 @@
   (syntax-parse stx
     [(_ label tail)
      #`(let/cc l1
-         (let ([label (static-rename
-                       label
-                       ;; static-rename wants eta-expanded?
-                       (lambda ()
-                         ((return-to l1 (unbox current-fvar-offset)))))])
+         (let ([label (let ([f (return-to l1 (unbox current-fvar-offset))])
+                        (static-rename label (lambda () (f))))])
            tail))]))
 
 (define (call f . ops)
