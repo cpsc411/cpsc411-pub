@@ -5,6 +5,7 @@
  cpsc411/machine-ints
  racket/local
  racket/list
+ static-rename
  (for-syntax
   syntax/transformer
   racket/base
@@ -376,7 +377,11 @@
   (syntax-parse stx
     [(_ label tail)
      #`(let/cc l1
-         (let ([label (return-to l1 (unbox current-fvar-offset))])
+         (let ([label (static-rename
+                       label
+                       ;; static-rename wants eta-expanded?
+                       (lambda ()
+                         ((return-to l1 (unbox current-fvar-offset)))))])
            tail))]))
 
 (define (call f . ops)
