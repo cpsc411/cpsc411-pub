@@ -45,13 +45,12 @@
                          call
 
                          pair? vector? cons car cdr make-vector vector-length vector-set! vector-ref)
-[p     (module b ... e)]
-[b     (define label (lambda (aloc ...) e))]
-[e     v
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if e e e)]
-[v     label aloc prim-f fixnum #t #f empty (void) (error uint8) ascii-char-literal]
+[p     (module (define label (lambda (aloc ...) value)) ... value)]
+[value triv
+       (call value value ...)
+       (let ([aloc value] ...) value)
+       (if value value value)]
+[triv  label aloc prim-f fixnum #t #f empty (void) (error uint8) ascii-char-literal]
 [prim-f * + - < <= > >= eq?
         fixnum? boolean? empty? void? ascii-char? error? not
         pair? vector? cons car cdr make-vector vector-length vector-set! vector-ref]
