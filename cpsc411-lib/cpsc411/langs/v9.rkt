@@ -19,15 +19,14 @@
                          >= fixnum? boolean? empty? void? ascii-char? error? not
                          procedure? vector? pair? cons car cdr make-vector
                          vector-length vector-set! vector-ref procedure-arity)
-[p     (module b ... e)]
-[b     (define x (lambda (x ...) e))]
-[e     v
-       (call e e ...)
-       (let ([x e] ...) e)
-       (if e e e)]
+[p     (module (define x (lambda (x ...) value)) ... value)]
+[value triv
+       (let ([x value] ...) value)
+       (if value value value)
+       (call value value ...)]
+[triv  x fixnum #t #f empty (void) (error uint8) ascii-char-literal
+      (lambda (x ...) value)]
 [x     name? prim-f]
-[v x fixnum #t #f empty (void) (error uint8) ascii-char-literal
-   (lambda (x ...) e)]
 [prim-f * + - < <= > >= eq?
         fixnum? boolean? empty? void? ascii-char? error? not
         pair?
@@ -49,7 +48,8 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
-(define interp-exprs-lang-v9 interp-exprs-lang-v8)
+(define (interp-exprs-lang-v9 x)
+  (interp-exprs-lang-v8 x))
 
 @define-grammar/pred[exprs-unique-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -57,15 +57,14 @@
                          >= fixnum? boolean? empty? void? ascii-char? error? not
 
                          pair? vector? cons car cdr make-vector vector-length vector-set! vector-ref)
-[p     (module b ... e)]
-[b     (define aloc (lambda (aloc ...) e))]
-[e     v
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if e e e)]
-[v     aloc prim-f fixnum #t #f empty (void) (error uint8)
+[p     (module (define aloc (lambda (aloc ...) value)) ... value)]
+[value triv
+       (call value value ...)
+       (let ([aloc value] ...) value)
+       (if value value value)]
+[triv  aloc prim-f fixnum #t #f empty (void) (error uint8)
        ascii-char-literal
-       (lambda (aloc ...) e)]
+       (lambda (aloc ...) value)]
 [prim-f * + - eq? < <= > >=
         fixnum? boolean? empty? void? ascii-char? error? not
         pair?
@@ -105,23 +104,22 @@
                          unsafe-vector-set!
                          unsafe-vector-ref
                          unsafe-procedure-arity)
-[p     (module b ... e)]
-[b     (define aloc (lambda (aloc ...) e))]
-[pred  e
+[p     (module (define aloc (lambda (aloc ...) value)) ... value)]
+[pred  value
        (true)
        (false)
        (not pred)
-       (let ([aloc e] ...) pred)
+       (let ([aloc value] ...) pred)
        (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v       aloc fixnum #t #f empty (void) (error uint8) ascii-char-literal
-         (lambda (aloc ...) e)]
+[value     triv
+       (primop value ...)
+       (call value value ...)
+       (let ([aloc value] ...) value)
+       (if pred value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv    aloc fixnum #t #f empty (void) (error uint8) ascii-char-literal
+         (lambda (aloc ...) value)]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
 
@@ -159,23 +157,22 @@
                          unsafe-vector-ref
                          unsafe-procedure-arity
                          unsafe-procedure-call)
-[p     (module b ... e)]
-[b     (define aloc (lambda (aloc ...) e))]
-[pred  e
+[p     (module (define aloc (lambda (aloc ...) value)) ... value)]
+[pred  value
        (true)
        (false)
        (not pred)
-       (let ([aloc e] ...) pred)
+       (let ([aloc value] ...) pred)
        (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (unsafe-procedure-call e e ...)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v     aloc fixnum #t #f empty (void) (error uint8)
-       ascii-char-literal (lambda (aloc ...) e)]
+[value triv
+       (primop value ...)
+       (unsafe-procedure-call value value ...)
+       (let ([aloc value] ...) value)
+       (if pred value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv   aloc fixnum #t #f empty (void) (error uint8)
+        ascii-char-literal (lambda (aloc ...) value)]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
 
