@@ -8,6 +8,7 @@
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
  (for-label cpsc411/compiler-lib)
+ (submod "base.rkt" interp)
  "redex-gen.rkt"
  "v8.rkt")
 
@@ -19,15 +20,14 @@
                          >= fixnum? boolean? empty? void? ascii-char? error? not
                          procedure? vector? pair? cons car cdr make-vector
                          vector-length vector-set! vector-ref procedure-arity)
-[p     (module b ... e)]
-[b     (define x (lambda (x ...) e))]
-[e     v
-       (call e e ...)
-       (let ([x e] ...) e)
-       (if e e e)]
+[p     (module (define x (lambda (x ...) value)) ... value)]
+[value triv
+       (call value value ...)
+       (let ([x value] ...) value)
+       (if value value value)]
+[triv  x fixnum #t #f empty (void) (error uint8) ascii-char-literal
+      (lambda (x ...) value)]
 [x     name? prim-f]
-[v x fixnum #t #f empty (void) (error uint8) ascii-char-literal
-   (lambda (x ...) e)]
 [prim-f * + - < <= > >= eq?
         fixnum? boolean? empty? void? ascii-char? error? not
         pair?
@@ -49,7 +49,8 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
-(define interp-exprs-lang-v9 interp-exprs-lang-v8)
+(define (interp-exprs-lang-v9 x)
+  (interp-exprs-lang-v8 x))
 
 @define-grammar/pred[exprs-unique-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -57,15 +58,14 @@
                          >= fixnum? boolean? empty? void? ascii-char? error? not
 
                          pair? vector? cons car cdr make-vector vector-length vector-set! vector-ref)
-[p     (module b ... e)]
-[b     (define aloc (lambda (aloc ...) e))]
-[e     v
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if e e e)]
-[v     aloc prim-f fixnum #t #f empty (void) (error uint8)
+[p     (module (define aloc (lambda (aloc ...) value)) ... value)]
+[value triv
+       (call value value ...)
+       (let ([aloc value] ...) value)
+       (if value value value)]
+[triv  aloc prim-f fixnum #t #f empty (void) (error uint8)
        ascii-char-literal
-       (lambda (aloc ...) e)]
+       (lambda (aloc ...) value)]
 [prim-f * + - eq? < <= > >=
         fixnum? boolean? empty? void? ascii-char? error? not
         pair?
@@ -88,6 +88,9 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-exprs-unique-lang-v9 x)
+  (interp-exprs-lang-v9 x))
+
 @define-grammar/pred[exprs-unsafe-data-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
 #:datum-literals (module lambda define call let if begin void error
@@ -105,23 +108,16 @@
                          unsafe-vector-set!
                          unsafe-vector-ref
                          unsafe-procedure-arity)
-[p     (module b ... e)]
-[b     (define aloc (lambda (aloc ...) e))]
-[pred  e
-       (true)
-       (false)
-       (not pred)
-       (let ([aloc e] ...) pred)
-       (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v       aloc fixnum #t #f empty (void) (error uint8) ascii-char-literal
-         (lambda (aloc ...) e)]
+[p     (module (define aloc (lambda (aloc ...) value)) ... value)]
+[value triv
+       (primop value ...)
+       (call value value ...)
+       (let ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv    aloc fixnum #t #f empty (void) (error uint8) ascii-char-literal
+         (lambda (aloc ...) value)]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
 
@@ -141,6 +137,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-exprs-unsafe-data-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[exprs-unsafe-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -159,23 +158,16 @@
                          unsafe-vector-ref
                          unsafe-procedure-arity
                          unsafe-procedure-call)
-[p     (module b ... e)]
-[b     (define aloc (lambda (aloc ...) e))]
-[pred  e
-       (true)
-       (false)
-       (not pred)
-       (let ([aloc e] ...) pred)
-       (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (unsafe-procedure-call e e ...)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v     aloc fixnum #t #f empty (void) (error uint8)
-       ascii-char-literal (lambda (aloc ...) e)]
+[p     (module (define aloc (lambda (aloc ...) value)) ... value)]
+[value triv
+       (primop value ...)
+       (unsafe-procedure-call value value ...)
+       (let ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv   aloc fixnum #t #f empty (void) (error uint8)
+        ascii-char-literal (lambda (aloc ...) value)]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
 
@@ -196,6 +188,8 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-exprs-unsafe-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[just-exprs-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -214,24 +208,18 @@
                          unsafe-vector-ref
                          unsafe-procedure-arity
                          unsafe-procedure-call)
-[p     (module e)]
-[pred  e
-       (true)
-       (false)
-       (not pred)
-       (let ([aloc e] ...) pred)
-       (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (unsafe-procedure-call e e ...)
-       (letrec ([aloc (lambda (aloc ...) e)] ...) e)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v     aloc fixnum #t #f empty (void) (error uint8)
+[p     (module value)]
+[value triv
+       (primop value ...)
+       (unsafe-procedure-call value value ...)
+       (letrec ([aloc (lambda (aloc ...) value)] ...) value)
+       (let ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv  aloc fixnum #t #f empty (void) (error uint8)
        ascii-char-literal
-       (lambda (aloc ...) e)]
+       (lambda (aloc ...) value)]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
 
@@ -251,6 +239,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-just-exprs-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[lam-opticon-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -269,22 +260,16 @@
                          unsafe-vector-ref
                          unsafe-procedure-arity
                          unsafe-procedure-call)
-[p     (module e)]
-[pred  e
-       (true)
-       (false)
-       (not pred)
-       (let ([aloc e] ...) pred)
-       (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (unsafe-procedure-call e e ...)
-       (letrec ([aloc (lambda (aloc ...) e)] ...) e)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v     aloc fixnum #t #f empty (void) (error uint8)
+[p     (module value)]
+[value triv
+       (primop value ...)
+       (unsafe-procedure-call value value ...)
+       (letrec ([aloc (lambda (aloc ...) value)] ...) value)
+       (let ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv  aloc fixnum #t #f empty (void) (error uint8)
        ascii-char-literal]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
@@ -305,6 +290,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-lam-opticon-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[lam-free-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -323,23 +311,17 @@
                          unsafe-vector-ref
                          unsafe-procedure-arity
                          unsafe-procedure-call)
-[p     (module e)]
+[p     (module value)]
 [info  ((free (aloc ...)) any ...)]
-[pred  e
-       (true)
-       (false)
-       (not pred)
-       (let ([aloc e] ...) pred)
-       (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (unsafe-procedure-call e e ...)
-       (letrec ([aloc (lambda info (aloc ...) e)] ...) e)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v     aloc fixnum #t #f empty (void) (error uint8)
+[value triv
+       (primop value ...)
+       (unsafe-procedure-call value value ...)
+       (letrec ([aloc (lambda info (aloc ...) value)] ...) value)
+       (let ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv  aloc fixnum #t #f empty (void) (error uint8)
        ascii-char-literal]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
@@ -360,6 +342,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-lam-free-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[closure-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -379,25 +364,19 @@
                          unsafe-vector-set!
                          unsafe-vector-ref
                          unsafe-procedure-arity)
-[p     (module e)]
-[pred  e
-       (true)
-       (false)
-       (not pred)
-       (let ([aloc e] ...) pred)
-       (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (closure-ref e e)
-       (closure-call e e ...)
-       (call e e ...)
-       (letrec ([label (lambda (aloc ...) e)] ...) e)
-       (cletrec ([aloc (make-closure label e ...)] ...) e)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v     label aloc fixnum #t #f empty (void) (error uint8)
+[p     (module value)]
+[value triv
+       (primop value ...)
+       (closure-ref value value)
+       (closure-call value value ...)
+       (call value value ...)
+       (letrec ([label (lambda (aloc ...) value)] ...) value)
+       (cletrec ([aloc (make-closure label value ...)] ...) value)
+       (let ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv  label aloc fixnum #t #f empty (void) (error uint8)
        ascii-char-literal]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
@@ -420,6 +399,8 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-closure-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[hoisted-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -439,25 +420,18 @@
                          unsafe-vector-set!
                          unsafe-vector-ref
                          unsafe-procedure-arity)
-[p     (module b ... e)]
-[b     (define label (lambda (aloc ...) e))]
-[pred  e
-       (true)
-       (false)
-       (not pred)
-       (let ([aloc e] ...) pred)
-       (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (closure-ref e e)
-       (closure-call e e ...)
-       (call e e ...)
-       (cletrec ([aloc (make-closure label e ...)] ...) e)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v     label aloc fixnum #t #f empty (void) (error uint8)
+[p     (module (define label (lambda (aloc ...) value)) ... value)]
+[value triv
+       (primop value ...)
+       (closure-ref value value)
+       (closure-call value value ...)
+       (call value value ...)
+       (cletrec ([aloc (make-closure label value ...)] ...) value)
+       (let ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv  label aloc fixnum #t #f empty (void) (error uint8)
        ascii-char-literal]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
@@ -479,6 +453,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-hoisted-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[proc-exposed-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -501,22 +478,15 @@
                          unsafe-procedure-label
                          unsafe-procedure-ref
                          unsafe-procedure-set!)
-[p     (module b ... e)]
-[b     (define label (lambda (aloc ...) e))]
-[pred  e
-       (true)
-       (false)
-       (not pred)
-       (let ([aloc e] ...) pred)
-       (if pred pred pred)]
-[e     v
-       (primop e ...)
-       (call e e ...)
-       (let ([aloc e] ...) e)
-       (if pred e e)
-       (begin effect ... e)]
-[effect (primop e ...) (begin effect ... effect)]
-[v     label aloc fixnum #t #f empty (void) (error uint8)
+[p     (module (define label (lambda (aloc ...) value)) ... value)]
+[value triv
+       (primop value ...)
+       (call value value ...)
+       (let ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[effect (primop value ...) (begin effect ... effect)]
+[triv  label aloc fixnum #t #f empty (void) (error uint8)
        ascii-char-literal]
 [primop  unsafe-fx* unsafe-fx+ unsafe-fx- eq? unsafe-fx< unsafe-fx<= unsafe-fx>
          unsafe-fx>=
@@ -542,3 +512,6 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-proc-exposed-lang-v9 x)
+  (interp-base x))
