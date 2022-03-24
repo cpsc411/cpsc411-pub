@@ -13,7 +13,7 @@
 exprs-lang-v8
 exprs-unique-lang-v8
 exprs-unsafe-data-lang-v8
-@;exprs-bits-lang-v8
+exprs-bits-lang-v8
 exprs-bits-lang-v8/contexts
 values-bits-lang-v8
 imp-mf-lang-v8
