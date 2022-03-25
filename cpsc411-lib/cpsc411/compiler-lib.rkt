@@ -285,7 +285,7 @@
 (define (ld-flags [type (system-type)])
   (match type
     ;; -no_pie needed until we switch from mov to lea for static pointers
-    ['macosx (list "-no_pie" "-macosx_version_min" "10.6" "-e" "start")]
+    ['macosx (list "-e" "start")]
     [_ (list "-e" "start")]))
 
 ; String
