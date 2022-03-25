@@ -80,7 +80,7 @@
                          unsafe-vector-set!
                          unsafe-vector-ref)
 [p     (module (define label (lambda (aloc ...) value)) ... value)]
-[pred  value
+#;[pred  value
        (true)
        (false)
        (not pred)
@@ -90,7 +90,7 @@
        (primop value ...)
        (call value value ...)
        (let ([aloc value] ...) value)
-       (if pred value value)
+       (if value value value)
        (begin effect ... value)]
 [effect (primop value ...) (begin effect ... effect)]
 [triv   label aloc fixnum #t #f empty (void) (error uint8) ascii-char-literal]
