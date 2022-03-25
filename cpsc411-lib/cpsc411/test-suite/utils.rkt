@@ -16,7 +16,8 @@
  "../langs/v5.rkt"
  "../langs/v6.rkt"
  "../langs/v7.rkt"
- "../langs/v8.rkt")
+ "../langs/v8.rkt"
+ "../langs/v9.rkt")
 
 (provide
  (all-defined-out))
@@ -218,7 +219,26 @@
                                  [(cons? (ptr->v sv))
                                   (cons? tv)]
                                  [else
-                                  (equal? (ptr->v sv) tv)])))))
+                                  (equal? (ptr->v sv) tv)])))
+
+   interp-exprs-lang-v9 exprs-lang-v9?
+   interp-exprs-unique-lang-v9 exprs-unique-lang-v9?
+   interp-exprs-unsafe-data-lang-v9 exprs-unsafe-data-lang-v9?
+   interp-exprs-unsafe-lang-v9 exprs-unsafe-lang-v9?
+   interp-just-exprs-lang-v9 just-exprs-lang-v9?
+   interp-lam-opticon-lang-v9 lam-opticon-lang-v9?
+   interp-lam-free-lang-v9 lam-free-lang-v9?
+   interp-closure-lang-v9 closure-lang-v9?
+   interp-hoisted-lang-v9 hoisted-lang-v9?
+   interp-proc-exposed-lang-v9 (list proc-exposed-lang-v9?
+                                     (lambda (sv tv)
+                                       (cond
+                                         [(vector? sv)
+                                          (vector? (ptr->v tv))]
+                                         [(cons? sv)
+                                          (cons? (ptr->v tv))]
+                                         [else
+                                          (equal? sv (ptr->v tv))])))))
 
 (define (static-compose f1 f2)
   (cond
