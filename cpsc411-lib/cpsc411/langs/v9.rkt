@@ -8,6 +8,7 @@
  (for-label cpsc411/info-lib)
  (for-label racket/contract)
  (for-label cpsc411/compiler-lib)
+ (submod "base.rkt" interp)
  "redex-gen.rkt"
  "v8.rkt")
 
@@ -87,6 +88,9 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-exprs-unique-lang-v9 x)
+  (interp-exprs-lang-v9 x))
+
 @define-grammar/pred[exprs-unsafe-data-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
 #:datum-literals (module lambda define call let if begin void error
@@ -133,6 +137,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-exprs-unsafe-data-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[exprs-unsafe-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -181,6 +188,8 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-exprs-unsafe-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[just-exprs-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -231,6 +240,9 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-just-exprs-lang-v9 x)
+  (interp-base x))
+
 @define-grammar/pred[lam-opticon-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
 #:datum-literals (letrec module lambda define call let if begin void error
@@ -278,6 +290,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-lam-opticon-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[lam-free-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -327,6 +342,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-lam-free-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[closure-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -381,6 +399,8 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(define (interp-closure-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[hoisted-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -433,6 +453,9 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-hoisted-lang-v9 x)
+  (interp-base x))
 
 @define-grammar/pred[proc-exposed-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -489,3 +512,6 @@
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
 ]
+
+(define (interp-proc-exposed-lang-v9 x)
+  (interp-base x))
