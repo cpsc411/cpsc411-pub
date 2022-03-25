@@ -329,18 +329,18 @@
     [(_ name info ((~datum lambda) (args ...) body))
      (let ([info-dict (infostx->dict #'info)])
        #`(define name
-           (lambda (args ...)
+           (new-lambda (args ...)
              (do-bind-locals #,(bind-info info-dict #'body) args ...
                              #,@(get-info-bound-vars info-dict)))))]
     [(_ name ((~datum lambda) (args ...) body))
      #`(define name
-         (lambda (args ...) (do-bind-locals body args ...)))]
+         (new-lambda (args ...) (do-bind-locals body args ...)))]
     [(_ name body)
-     #`(define name (lambda () (do-bind-locals body)))]
+     #`(define name (new-lambda () (do-bind-locals body)))]
     [(_ name info body)
      (let ([info-dict (infostx->dict #'info)])
        #`(define name
-           (lambda ()
+           (new-lambda ()
              (do-bind-locals #,(bind-info info-dict #'body)
                              #,@(get-info-bound-vars info-dict)))))]))
 
@@ -488,27 +488,41 @@
     (r:set! hbp (* ALIGN 2))
     (r:set! memory (make-vector 10000 'un-aloced))))
 
-(define-syntax new-lambda
-  (syntax-rules ()
-    [(_ info args tail) (lambda args tail)]
-    [(_ args tail) (lambda args tail)]))
+(define-syntax (new-lambda stx)
+  (syntax-case stx ()
+    [(_ info args tail)
+     (quasisyntax/loc stx
+       (new-lambda args tail))]
+    [(_ args tail)
+     (quasisyntax/loc stx
+       (make-procedure
+        (lambda args tail)
+        #,(length (syntax->list #'args))
+        0))]))
 
 (define-values (procedure-label:prop procedure-label:prop? unsafe-procedure-label)
-    (make-impersonator-property 'procedure-label))
+  (make-impersonator-property 'procedure-label))
 
 (define-values (procedure-env:prop procedure-env:prop? unsafe-procedure-env)
-    (make-impersonator-property 'procedure-label))
+  (make-impersonator-property 'procedure-env))
 
-(define (make-procedure label env-size)
-  (impersonate-procedure label #f procedure-label:prop label procedure-env:prop (unsafe-make-vector env-size)))
+(define-values (procedure-arity:prop procedure-arity:prop? unsafe-procedure-arity)
+  (make-impersonator-property 'procedure-arity))
+
+(define (make-procedure label arity env-size)
+  (impersonate-procedure label #f
+                         procedure-label:prop label
+                         procedure-env:prop (unsafe-make-vector env-size)
+                         procedure-arity:prop arity))
 (define (unsafe-procedure-ref p i)
   (unsafe-vector-ref (unsafe-procedure-env p) i))
 (define (unsafe-procedure-set! p i v)
   (unsafe-vector-set! (unsafe-procedure-env p) i v))
-(define (unsafe-procedure-arity x) (- (procedure-arity x) 1))
 
 (define unsafe-procedure-call call)
+
 (define closure-call call)
+
 (define closure-ref unsafe-procedure-ref)
 
 (define (fill-env proc . es)
@@ -519,10 +533,10 @@
 (define-syntax (cletrec stx)
   (syntax-parse stx
     [(_ ([aloc ((~literal make-closure) label arity es ...)] oths ...) tail)
-     #`(let ([aloc (make-procedure label #,(length (syntax->datum #'(es ...))))])
+     #`(let ([aloc (make-procedure (unsafe-procedure-label label) arity #,(length (syntax->datum #'(es ...))))])
          (cletrec (oths ...)
                   (begin
-                    (unless (equal? arity (unsafe-procedure-arity label))
+                    (unless (equal? arity (sub1 (unsafe-procedure-arity label)))
                       (error 'make-closure "arity argument doesn't match label"))
                     (fill-env aloc es ...)
                     tail)))]

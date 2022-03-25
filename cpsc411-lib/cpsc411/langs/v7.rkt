@@ -39,16 +39,18 @@
    "base.rkt"
    cpsc411/machine-ints
    (only-in racket/base
-            [module+ r:module+] [define r:define]))
+            [module+ r:module+]
+            [define r:define]
+            [lambda r:lambda]))
 
   (provide
    (all-from-out "base.rkt")
    (all-defined-out))
 
   (r:define (wrap-error-ret who unsafe)
-    (lambda ops
+    (r:lambda ops
       (with-handlers ([exn:fail:contract?
-                       (λ (e)
+                       (r:lambda (e)
                          (eprintf "Dynamic type error in ~a~n  ~a~n"
                                   who
                                   (exn-message e))
