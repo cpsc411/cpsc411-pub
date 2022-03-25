@@ -499,7 +499,7 @@
 (define-values (procedure-env:prop procedure-env:prop? unsafe-procedure-env)
     (make-impersonator-property 'procedure-label))
 
-(define (make-procedure label env-size)
+(define (make-procedure label arity env-size)
   (impersonate-procedure label #f procedure-label:prop label procedure-env:prop (unsafe-make-vector env-size)))
 (define (unsafe-procedure-ref p i)
   (unsafe-vector-ref (unsafe-procedure-env p) i))
@@ -519,7 +519,7 @@
 (define-syntax (cletrec stx)
   (syntax-parse stx
     [(_ ([aloc ((~literal make-closure) label arity es ...)] oths ...) tail)
-     #`(let ([aloc (make-procedure label #,(length (syntax->datum #'(es ...))))])
+     #`(let ([aloc (make-procedure label arity #,(length (syntax->datum #'(es ...))))])
          (cletrec (oths ...)
                   (begin
                     (unless (equal? arity (unsafe-procedure-arity label))
