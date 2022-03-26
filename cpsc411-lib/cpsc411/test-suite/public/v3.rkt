@@ -95,8 +95,9 @@
                            (let ([z (+ z t)])
                              z)))))))))))))))
 
-(hash-set! test-prog-dict interp-values-lang-v3
-           (list->mutable-set values-lang-v3-progs))
+(register-test-programs!
+ interp-values-lang-v3
+ (list->mutable-set values-lang-v3-progs))
 
 (define values-unique-lang-v3-progs
   `((""
@@ -124,8 +125,9 @@
                    [y.1 (let ([z.1 (+ 7 8)]) z.1)])
                (+ x.1 y.1))))))
 
-(hash-set! test-prog-dict interp-values-unique-lang-v3
-           (list->mutable-set values-unique-lang-v3-progs))
+(register-test-programs!
+ interp-values-unique-lang-v3
+ (list->mutable-set values-unique-lang-v3-progs))
 
 (define imp-mf-lang-v3-progs
   `((""
@@ -174,8 +176,9 @@
                           y.4))
          x.3)))))
 
-(hash-set! test-prog-dict interp-imp-mf-lang-v3
-           (list->mutable-set imp-mf-lang-v3-progs))
+(register-test-programs!
+ interp-imp-mf-lang-v3
+ (list->mutable-set imp-mf-lang-v3-progs))
 
 (define imp-cmf-lang-v3-progs
   `((""
@@ -209,8 +212,9 @@
     #;(""
        (module undefined.1))))
 
-(hash-set! test-prog-dict interp-imp-cmf-lang-v3
-           (list->mutable-set imp-cmf-lang-v3-progs))
+(register-test-programs!
+ interp-imp-cmf-lang-v3
+ (list->mutable-set imp-cmf-lang-v3-progs))
 
 (define (v3-public-test-sutie pass-ls interp-ls)
   (define run/read (current-run/read))

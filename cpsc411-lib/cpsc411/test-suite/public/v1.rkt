@@ -111,7 +111,9 @@
        (set! rdi (+ rdi rcx))
        (set! rax rdi)))))
 
-(hash-set! test-prog-dict interp-paren-x64-v1 (list->mutable-set paren-x64-v1-progs))
+(register-test-programs!
+ interp-paren-x64-v1
+ (list->mutable-set paren-x64-v1-progs))
 
 (define (a1-check-paren-x64-syntax-test-suite check-paren-x64)
   (test-suite

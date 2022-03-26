@@ -9,6 +9,7 @@
  racket/set
  rackunit
  cpsc411/compiler-lib
+ (submod "../langs/base.rkt" interp)
  "../langs/v1.rkt"
  "../langs/v2.rkt"
  "../langs/v3.rkt"
@@ -58,17 +59,37 @@
 
 ;; dictionary of function pointers to mutable sets of (list string? Program)
 ;; function pointer is an interpreter from cpsc411/langs, identifies the language the programs longs to.
-;; the mutable set is a set of pairs of names a test programs for that language.
+;; the mutable set is a set of lists of names, a test programs for that
+;; language, and the expected value (optional)
 (define test-prog-dict
   (make-hasheq))
 
+(require racket/contract)
 (define (register-test-programs! interp progs)
+  #;(-> (-> any/c any/c)
+      (listof
+       (or/c (list/c string? list?)
+             (list/c string? list?
+                     (or/c int64?
+                           char?
+                           pair?
+                           vector?
+                           void?))))
+      void?)
+  (when (eq? interp interp-base)
+    (error "Trying to register programs to base interpreter"))
   (hash-update!
    test-prog-dict
    interp
    (lambda (u)
      (begin
-       (set-union! u (list->mutable-set progs))
+       (set-union! u (list->mutable-set
+                      (for/list ([entry progs])
+                        (if (= 3 (length entry))
+                            entry
+                            (match entry
+                              [(list name prog)
+                               (list name prog (interp prog))])))))
        u))
    (mutable-set)))
 
@@ -302,37 +323,38 @@
     pass))
 
 (define (test-compiler-pass pass src-interp trg-interp trg-validator [src-equiv equal?])
+  (when (eq? trg-interp interp-base)
+    (error "interp-base used as target interpreter"))
   (define target-interp-progs (hash-ref! test-prog-dict trg-interp (mutable-set)))
   (for ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
         [i (in-naturals)])
     (define name (first test-prog-entry))
-    (with-check-info (['test-program (second test-prog-entry)]
+    (define test-prog (second test-prog-entry))
+    (define expected (third test-prog-entry))
+    (with-check-info (['test-program test-prog]
+                      ['expected expected]
                       ['src-interp (object-name src-interp)]
-                      ['trg-interp (object-name trg-interp)]
-                      ['pass (or (object-name pass) 'anonymous)])
-      (define test-prog (second test-prog-entry))
+                      ['trg-interp (object-name trg-interp)])
       (test-case (format "~a suite" (or (object-name pass) 'anonymous))
+        (define _output (box (void)))
         (with-check-info (['test-type "Checking test-program compiles without error"])
-          (test-not-exn (format "~a" (or (object-name pass) 'anonymous))
-                        (thunk
-                         (with-timeout
-                           (pass test-prog)))))
-        (define output (pass test-prog))
+          (check-not-exn
+           (thunk
+            (with-timeout
+              (set-box! _output (pass test-prog))))))
+        (define output (unbox _output))
         (with-check-info (['output-program output])
-          (with-check-info (['test-type "Checking output is interpretable"])
-            (test-not-exn "test output interprets"
-                          (thunk (with-timeout (trg-interp output)))))
-          (with-check-info (['test-type "Checking source program is interpretable (failure indicates bug in reference implementation)"])
-            (test-not-exn "self-test source interprets"
-                          (thunk (with-timeout (src-interp test-prog)))))
-          (define expected (with-timeout (trg-interp output)))
-          (with-check-info (['expected expected]
-                            ['test-type "Checking that output produces correct value"])
-            (check src-equiv (src-interp test-prog) expected))
           (with-check-info (['type-type "Checking that output is syntactically correct"])
             (when trg-validator
               (check-true (trg-validator output))))
-          (set-add! target-interp-progs `(,name ,output)))))))
+          (define actual (box (void)))
+          (with-check-info (['test-type "Checking output is interpretable"])
+            (check-not-exn
+             (thunk (with-timeout
+                      (set-box! actual (trg-interp output))))))
+          (with-check-info (['test-type "Checking that output produces correct value"])
+            (check src-equiv expected (unbox actual)))
+          (set-add! target-interp-progs `(,name ,output ,(unbox actual))))))))
 
 (define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)])
   (unless (eq? (length _pass-ls) (length _interp-ls))

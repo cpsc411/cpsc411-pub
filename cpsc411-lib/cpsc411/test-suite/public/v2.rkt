@@ -49,8 +49,9 @@
          (set! w.1 (+ w.1 y.1))
          (halt w.1))))))
 
-(hash-set! test-prog-dict interp-asm-lang-v2
-           (list->mutable-set asm-lang-v2-progs))
+(register-test-programs!
+ interp-asm-lang-v2
+ (list->mutable-set asm-lang-v2-progs))
 
 (define asm-lang-v2/locals-progs
   `((""
@@ -82,8 +83,10 @@
          (set! w.1 (+ w.1 y.1))
          (halt w.1))))))
 
-(hash-set! test-prog-dict interp-asm-lang-v2/locals
-           (list->mutable-set asm-lang-v2/locals-progs))
+(register-test-programs!
+ interp-asm-lang-v2/locals
+ (list->mutable-set asm-lang-v2/locals-progs))
+
 (define asm-lang-v2/assignments-progs
   `((""
      (module
@@ -124,8 +127,9 @@
          (set! w.1 (+ w.1 y.1))
          (halt w.1))))))
 
-(hash-set! test-prog-dict interp-asm-lang-v2/assignments
-           (list->mutable-set asm-lang-v2/assignments-progs))
+(register-test-programs!
+ interp-asm-lang-v2/assignments
+ (list->mutable-set asm-lang-v2/assignments-progs))
 
 (define nested-asm-lang-v2-progs
   `((""
@@ -143,8 +147,9 @@
             (begin (begin (set! fv0 (+ fv0 fv1))))
             (halt fv0)))))
 
-(hash-set! test-prog-dict interp-nested-asm-lang-v2
-           (list->mutable-set nested-asm-lang-v2-progs))
+(register-test-programs!
+ interp-nested-asm-lang-v2
+ (list->mutable-set nested-asm-lang-v2-progs))
 
 (define para-asm-lang-v2-progs
   `((""
@@ -201,8 +206,9 @@
     ("Set fvar to max int64 val"
      (begin (set! fv0 2147483648) (halt 12)))))
 
-(hash-set! test-prog-dict interp-para-asm-lang-v2
-           (list->mutable-set para-asm-lang-v2-progs))
+(register-test-programs!
+ interp-para-asm-lang-v2
+ (list->mutable-set para-asm-lang-v2-progs))
 
 (define paren-x64-fvars-v2-progs
   `((""
@@ -248,8 +254,9 @@
        (set! fv5 rax)
        (set! rax fv5)))))
 
-(hash-set! test-prog-dict interp-paren-x64-fvars-v2
-           (list->mutable-set paren-x64-fvars-v2-progs))
+(register-test-programs!
+ interp-paren-x64-fvars-v2
+ (list->mutable-set paren-x64-fvars-v2-progs))
 
 (define paren-x64-v2-progs
   (append
@@ -312,8 +319,9 @@
         (set! rax rdi))))))
 
 
-(hash-set! test-prog-dict interp-paren-x64-v2
-           (list->mutable-set paren-x64-v2-progs))
+(register-test-programs!
+ interp-paren-x64-v2
+ (list->mutable-set paren-x64-v2-progs))
 
 (define (v2-public-test-sutie pass-ls interp-ls)
   (define run/read (current-run/read))
