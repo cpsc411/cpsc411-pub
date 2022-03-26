@@ -39,11 +39,7 @@
           (,interp-block-asm-lang-v8 . ,interp-block-asm-lang-v7)
           #;(,interp-para-asm-lang-v8 . ,interp-para-asm-lang-v7)
           #;(,interp-paren-x64-v8 . ,interp-paren-x64-v7)))])
-  (register-test-programs!
-   new-v
-   (for/list ([test-prog
-               (set->list (hash-ref test-prog-dict alias-v '()))])
-     (replace-int64-exprs-to-ptr test-prog))))
+  (register-test-programs! new-v (hash-ref test-prog-dict alias-v '())))
 
 (register-test-programs!
  interp-exprs-bits-lang-v8
