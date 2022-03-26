@@ -15,11 +15,47 @@
  (only-in racket/base [define r:define] [error r:error] [set! r:set!])
  (only-in racket/list empty))
 
-;; NOTE: must any mirror renaming in base interpreter in module+ below.
 (provide
- #%top-interaction
- #%datum
- #%app)
+ ;; NOTE: must mirror renaming in base interpreter in module+ below.
+ (rename-out [new-define define])
+ (rename-out [new-lambda lambda])
+ (rename-out [new-begin begin])
+ (except-out (all-defined-out)
+             new-define
+             new-+
+             new--
+             new-*)
+ #;(rename-out [new-module-begin #%module-begin])
+ #;#%top-interaction
+ #;#%datum
+ #;#%app
+ (rename-out
+  [new-+ +]
+  [new-- -]
+  [new-* *])
+ =
+ >
+ <
+ <=
+ >=
+
+ bitwise-and
+ fixnum?
+ boolean?
+ void?
+ empty
+ empty?
+ void
+ vector?
+ pair?
+
+ cons
+ car
+ cdr
+ make-vector
+ vector-length
+ vector-set!
+ vector-ref)
 
 ;; ------------------------------------------------------------------------
 ;; Register file
@@ -53,9 +89,6 @@
   (_rax _rsp _rbx _rcx _rdx _rsi _rdi _r8 _r9 _r10 _r11 _r12
   _r13 _r14 _r15))
 
-(provide
- rax rsp rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15)
-
 (define (init-reg-file)
   (for ([reg (list _rax _rsp _rbx _rcx _rdx _rsi _rdi _r8 _r9 _r10 _r11 _r12
                          _r13 _r14 _r15)])
@@ -70,8 +103,6 @@
 ;; Every module should capture its current continuation, which should end the
 ;; entire module, and store it in exit-cont.
 
-(provide halt done)
-
 (define exit-cont (box r:error))
 
 (define (halt x)
@@ -84,8 +115,6 @@
 ;; ------------------------------------------------------------------------
 ;; Stack
 ;; ------------------------------------------------------------------------
-
-(provide rbp stack)
 
 (define stack (make-vector 1000 'unalloc))
 (define fbp (box (sub1 (vector-length stack))))
@@ -126,9 +155,6 @@
   (syntax-case stx ()
     [(_)
      #`(begin
-         (provide
-          #,@(for/list ([i (in-range 0 (current-fvars))])
-               (format-id #f "fv~a" i)))
          #,@(for/list ([i (in-range 0 (current-fvars))])
               (with-syntax ([fvar (syntax-local-introduce (format-id #f "fv~a" i))]
                             [offset (* i 8)])
@@ -201,10 +227,6 @@
                             #`[aloc (make-aloc-transformer #'rloc)]))
             #,tail))))
 
-(provide
- module
- (rename-out [new-module-begin #%module-begin]))
-
 (define-syntax-rule (new-module-begin stx ...)
   (#%module-begin
    (module stx ...)))
@@ -237,9 +259,6 @@
                   (do-bind-locals tail
                                   #,@(get-info-bound-vars info-dict))))))]))
 
-(provide != compare jump-if flags
-         < <= = > >= eq?)
-
 (define (!= e1 e2) (not (= e1 e2)))
 
 (define
@@ -264,8 +283,6 @@
   (when (hash-ref flags flag)
     (d)
     (r:error "Shouldn't have returned!")))
-
-(provide jump-to jump)
 
 (define (jump-to f)
   (begin
@@ -296,10 +313,6 @@
              (values
               defs
               #`(s #,@e))))])))
-
-(provide
- (rename-out [new-begin begin]
-             [new-define define]))
 
 ;; NOTE: Assumes no nested begins, I think.
 (define-syntax (new-begin stx)
@@ -356,8 +369,6 @@
                   #`[#,(syntax-local-introduce (format-id #f "~a" l)) (void)]))
          #,b)]))
 
-(provide return-point call)
-
 (define ((return-to l saved-frame))
   (set-box! current-fvar-offset saved-frame)
   (l))
@@ -373,17 +384,11 @@
 (define (call f . ops)
   (apply f ops))
 
-(provide (rename-out [new-+ +]
-                     [new-- -]
-                     [new-* *]))
-
 (define new-+ x64-add)
 (define new-- x64-sub)
 (define new-* x64-mul)
 
 (require (for-syntax (only-in "../compiler-lib.rkt" aloc?)))
-
-(provide set!)
 
 (define-syntax (set! stx)
   (syntax-parse stx
@@ -413,17 +418,6 @@
     #;[(_ loc value)
        #`(r:set! loc value)]))
 
-(provide true false nop
-         if boolean?
-         unsafe-fx+
-         unsafe-fx-
-         unsafe-fx*
-         unsafe-fx<=
-         unsafe-fx>=
-         unsafe-fx<
-         unsafe-fx>
-         fixnum?)
-
 (define (true) #t)
 (define (false) #f)
 (define (nop) (void))
@@ -435,36 +429,15 @@
 (define unsafe-fx>= >=)
 (define unsafe-fx< <)
 (define unsafe-fx> >)
-
-(provide error error?)
-
 (define/memo (error n)
   `(error ,n))
-
 (define (error? n) (and (list? n) (eq? (car n) 'error) (int64? (second n))))
-
-(provide arithmetic-shift-right bitwise-and bitwise-ior bitwise-xor)
-
 (define (arithmetic-shift-right x y) (arithmetic-shift x (- 0 y)))
-
-(provide void? empty empty? void)
-
-(provide ascii-char?)
-
 (define (ascii-char? x)
   (and (char? x) (<= 40 (char->integer x) 176)))
 
-(provide cons unsafe-car unsafe-cdr pair?
-         car cdr)
-
 (define unsafe-car car)
 (define unsafe-cdr cdr)
-
-(provide
- unsafe-make-vector unsafe-vector-length unsafe-vector-set!
- unsafe-vector-ref vector?
- vector-ref vector-length make-vector vector-set!)
-
 (define (unsafe-make-vector size) (make-vector size 'uninitialized))
 (define unsafe-vector-length vector-length)
 (define unsafe-vector-set! vector-set!)
@@ -474,13 +447,9 @@
       (r:error 'unsafe-vector-ref "attempting to read from uninitialized memory"))
     val))
 
-(provide memory hbp)
-
 (define ALIGN 8)
 (define memory (make-vector 10000 'un-aloced))
 (define hbp (* ALIGN 2))
-
-(provide unsafe-mset! mset! mref alloc)
 
 (define (unsafe-mset! base offset value)
   (vector-set! memory (/ (+ base offset) ALIGN) value))
@@ -519,8 +488,6 @@
     (r:set! hbp (* ALIGN 2))
     (r:set! memory (make-vector 10000 'un-aloced))))
 
-(provide (rename-out [new-lambda lambda]))
-
 (define-syntax (new-lambda stx)
   (syntax-case stx ()
     [(_ info args tail)
@@ -532,16 +499,6 @@
         (lambda args tail)
         #,(length (syntax->list #'args))
         0))]))
-
-(provide unsafe-procedure-label
-         unsafe-procedure-env
-         unsafe-procedure-arity
-         make-procedure
-         procedure-arity
-         unsafe-procedure-ref
-         unsafe-procedure-set!
-         unsafe-procedure-call
-         cletrec)
 
 (define-values (procedure-label:prop procedure-label:prop? unsafe-procedure-label)
   (make-impersonator-property 'procedure-label))
