@@ -69,15 +69,17 @@
   (define-error-ret >= unsafe-fx>=)
 
   (r:module+ interp
-             (provide interp-exprs-lang-v7)
+             (provide _interp-exprs-lang-v7)
              (define-namespace-anchor a)
-             (r:define interp-exprs-lang-v7
+             (r:define _interp-exprs-lang-v7
                        (let ([ns (namespace-anchor->namespace a)])
                          (lambda (x)
                            (eval x ns))))))
 
 (require (submod 'safe-langs interp))
-(provide interp-exprs-lang-v7)
+
+(define (interp-exprs-lang-v7 x)
+  (_interp-exprs-lang-v7 x))
 
 @define-grammar/pred[exprs-unique-lang-v7
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
