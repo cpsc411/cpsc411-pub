@@ -300,7 +300,7 @@
           (alloc opand)
           (call triv opand ...)]
   [effect (set! aloc value)
-          (mset! aloc opand value)
+          (mset! aloc opand triv)
           (begin effect ... effect)
           (if pred effect effect)]
   [opand int64 aloc]
