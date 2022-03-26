@@ -252,24 +252,21 @@
   [value  triv
           (call triv opand ...)
           (binop opand opand)
-          (mref loc opand)
+          (mref aloc opand)
           (alloc opand)
           (begin effect ... value)
           (if pred value value)]
-  [effect (set! loc value)
-          (mset! loc opand value)
+  [effect (set! aloc value)
+          (mset! aloc opand value)
           (begin effect ... effect)
           (if pred effect effect)]
-  [opand int64 loc]
+  [opand int64 aloc]
   [triv  opand label]
-  [loc    rloc aloc]
-  [trg    label loc]
   [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
   [relop  < <= = >= > !=]
-  [int64  int64?]
   [aloc   aloc?]
   [label  label?]
-  [rloc   register? fvar?]
+  [int64  int64?]
 ]
 
 (define (interp-imp-mf-lang-v8 x)
