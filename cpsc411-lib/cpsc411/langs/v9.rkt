@@ -22,9 +22,9 @@
                          vector-length vector-set! vector-ref procedure-arity)
 [p     (module (define x (lambda (x ...) value)) ... value)]
 [value triv
-       (call value value ...)
        (let ([x value] ...) value)
-       (if value value value)]
+       (if value value value)
+       (call value value ...)]
 [triv  x fixnum #t #f empty (void) (error uint8) ascii-char-literal
       (lambda (x ...) value)]
 [x     name? prim-f]
