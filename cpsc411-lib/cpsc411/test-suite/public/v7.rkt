@@ -39,9 +39,10 @@
           (,interp-proc-imp-cmf-lang-v7 . ,interp-proc-imp-cmf-lang-v6)))])
   (register-test-programs!
    new-v
-   (for/list ([test-prog
+   (for/list ([test-entry
                (set->list (hash-ref test-prog-dict alias-v '()))])
-     (replace-int64-exprs-to-ptr test-prog))))
+     (list (first test-entry)
+           (replace-int64-exprs-to-ptr (second test-entry))))))
 
 (define (opand->ptr v)
   (if (integer? v)
@@ -74,9 +75,10 @@
           (,interp-asm-pred-lang-v7/assignments . ,interp-asm-pred-lang-v6/assignments)))])
   (register-test-programs!
    new-v
-   (for/list ([test-prog
+   (for/list ([test-entry
                (set->list (hash-ref test-prog-dict alias-v '()))])
-     (replace-int-opands-to-ptr test-prog))))
+     (list (first test-entry)
+           (replace-int-opands-to-ptr (second test-entry))))))
 
 (define (i32-opand->ptr v)
   (if (integer? v)
@@ -85,7 +87,7 @@
 
 (register-test-programs!
  interp-paren-x64-v7
- (for/list ([test-prog
+ (for/list ([test-entry
              (set->list (hash-ref test-prog-dict interp-paren-x64-v6 '()))]
             ;; A stupid way to detect multiplication
             #:when (equal? (replace-all
@@ -93,26 +95,28 @@
                               (eq? x '*))
                             (lambda (x)
                               #f)
-                            test-prog)
-                           test-prog))
-   (replace-all
-    (lambda (x)
-      (match x
-        [`(set! ,x (,binop ,x ,v))
-         #:when (not (frame-base-pointer-register? x))
-         #t]
-        [`(set! ,x ,v)
-         #t]
-        [_ #f]))
-    (lambda (x)
-      (match x
-        [`(set! ,x (,binop ,v1 ,v2))
-         #:when (memq binop '(+ -))
-         `(set! ,x (,binop ,(i32-opand->ptr v1) ,(i32-opand->ptr v2)))]
-        [`(set! ,x ,v)
-         `(set! ,x ,(opand->ptr v))]
-        [_ x]))
-    test-prog)))
+                            test-entry)
+                           test-entry))
+   (list
+    (first test-entry)
+    (replace-all
+     (lambda (x)
+       (match x
+         [`(set! ,x (,binop ,x ,v))
+          #:when (not (frame-base-pointer-register? x))
+          #t]
+         [`(set! ,x ,v)
+          #t]
+         [_ #f]))
+     (lambda (x)
+       (match x
+         [`(set! ,x (,binop ,v1 ,v2))
+          #:when (memq binop '(+ -))
+          `(set! ,x (,binop ,(i32-opand->ptr v1) ,(i32-opand->ptr v2)))]
+         [`(set! ,x ,v)
+          `(set! ,x ,(opand->ptr v))]
+         [_ x]))
+     (second test-entry)))))
 
 (register-test-programs!
  interp-exprs-lang-v7
