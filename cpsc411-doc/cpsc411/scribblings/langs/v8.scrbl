@@ -7,7 +7,7 @@
   (for-label racket/contract))
 
 @title{v8 Languages}
-@declare-exporting[cpsc411/langs/v8]
+@defmodule[cpsc411/langs/v8]
 
 @deflangs[
 exprs-lang-v8
