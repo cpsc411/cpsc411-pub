@@ -21,3 +21,5 @@ Validators will reject invalid programs, but don't necessarily provide useful er
 @include-section{langs/v7.scrbl}
 @include-section{langs/v8.scrbl}
 @include-section{langs/v9.scrbl}
+@include-section{langs/v10.scrbl}
+@include-section{langs/v11.scrbl}
