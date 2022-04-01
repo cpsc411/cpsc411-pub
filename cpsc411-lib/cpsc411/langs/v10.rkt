@@ -14,7 +14,7 @@
 
 (provide (all-defined-out))
 
-@definegrammar/pred[racketish-core
+@define-grammar/pred[racketish-core-v10
 #:literals (name? int61? uint8? ascii-char-literal?)
 #:datum-literals (module lambda define call let if void error * + - eq? < <= >
                          >= fixnum? boolean? empty? void? ascii-char? error? not
@@ -22,7 +22,7 @@
                          vector-length vector-set! vector-ref procedure-arity)
 [p     (module (define x value) ... value)]
 [value triv
-       (apply value value ...)
+       (call value value ...)
        (let ([x value] ...) value)
        (letrec ([x value] ...) value)
        (if value value value)]
@@ -49,10 +49,10 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
-(define (interp-racketish-core x)
+(define (interp-racketish-core-v10 x)
   (interp-exprs-lang-v9 x))
 
-@definegrammar/pred[racketish-unique
+@define-grammar/pred[racketish-unique-v10
 #:literals (int61? uint8? ascii-char-literal? aloc?)
 #:datum-literals (module lambda define call let if void error * + - eq? < <= >
                          >= fixnum? boolean? empty? void? ascii-char? error? not
@@ -60,7 +60,7 @@
                          vector-length vector-set! vector-ref procedure-arity)
 [p     (module (define aloc value) ... value)]
 [value triv
-       (apply value value ...)
+       (call value value ...)
        (let ([aloc value] ...) value)
        (letrec ([alocx value] ...) value)
        (if value value value)]
@@ -87,21 +87,56 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
-(define (interp-racketish-unique x)
-  (interp-racketish-core x))
+(define (interp-racketish-unique-v10 x)
+  (interp-racketish-core-v10 x))
 
-
-@definegrammar/pred[just-exprs-lang-v10
+@define-grammar/pred[assigned-lang-v10
 #:literals (int61? uint8? ascii-char-literal? aloc?)
 #:datum-literals (module lambda define call let if void error * + - eq? < <= >
                   >= fixnum? boolean? empty? void? ascii-char? error? not
                   procedure? vector? pair? cons car cdr make-vector
                   vector-length vector-set! vector-ref procedure-arity)
+
 [p     (module value)]
+[effect (set! aloc value)]
 [value triv
-       (apply value value ...)
+       (call value value ...)
+       (letrec ([aloc value] ...) value)
+       (let (info ((assigned (aloc ...)))) ([aloc value] ...) value)
+       (if value value value)
+       (begin effect ... value)]
+[triv  fixnum prim-f aloc #t #f ()
+       (void) (error uint8) ascii-char-literal
+       (lambda (aloc ...) e)]
+[prim-f * + - eq? < <= > >=
+        fixnum? boolean? empty? void? ascii-char? error? not
+        pair?
+        procedure?
+        vector?
+
+        cons
+        car
+        cdr
+
+        make-vector
+        vector-length
+        vector-set!
+        vector-ref
+
+        procedure-arity]
+]
+
+@define-grammar/pred[exprs-safe-lang-v10
+#:literals (int61? uint8? ascii-char-literal? aloc?)
+#:datum-literals (module lambda define call let if void error * + - eq? < <= >
+                  >= fixnum? boolean? empty? void? ascii-char? error? not
+                  procedure? vector? pair? cons car cdr make-vector
+                  vector-length vector-set! vector-ref procedure-arity)
+[p     (module (define aloc value) ... value)]
+[value triv
+       (call value value ...)
        (let ([aloc value] ...) value)
-       (letrec ([alocx value] ...) value)
+       (letrec ([aloc value] ...) value)
        (if value value value)]
 [triv  aloc prim-f fixnum #t #f () (void) (error uint8) ascii-char-literal (lambda (x ...) value)]
 [prim-f * + - eq? < <= > >=
@@ -126,5 +161,5 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
-(define (interp-racketish-unique x)
-  (interp-racketish-core x))
+(define (interp-exprs-safe-lang-v10 x)
+  (interp-racketish-core-v10 x))
