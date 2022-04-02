@@ -18,7 +18,8 @@
  "../langs/v6.rkt"
  "../langs/v7.rkt"
  "../langs/v8.rkt"
- "../langs/v9.rkt")
+ "../langs/v9.rkt"
+ "../langs/v11.rkt")
 
 (provide
  (all-defined-out))
@@ -259,7 +260,10 @@
                                          [(cons? sv)
                                           (cons? (ptr->v tv))]
                                          [else
-                                          (equal? sv (ptr->v tv))])))))
+                                          (equal? sv (ptr->v tv))])))
+
+   interp-racketish-surface racketish-surface?
+   interp-racketish-unique racketish-unique?))
 
 (define (static-compose f1 f2)
   (cond
