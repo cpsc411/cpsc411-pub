@@ -49,7 +49,7 @@
     [(? empty-ptr?)
      '()]
     [(? error-ptr?)
-     (arithmetic-shift v -8)]
+     `(error ,(arithmetic-shift v -8))]
     [(? ascii-ptr?)
      (integer->char (arithmetic-shift v -8))]
     ;; hm.
