@@ -603,7 +603,8 @@
   #:literals (int64? label? aloc? register? fvar? info? undead-set-tree?)
   #:datum-literals (conflicts undead-out locals define module begin set! jump
                               true false not if * + - < <= = >= > != bitwise-and
-                              bitwise-ior bitwise-xor arithmetic-shift-right)
+                              bitwise-ior bitwise-xor arithmetic-shift-right
+                              return-point assignment)
   [p    (module info (define label info tail) ... tail)]
   [info   #:with-contract
           (info/c
@@ -651,7 +652,7 @@
   #:datum-literals (assignments conflicts locals define module begin set! jump
                                 true false not if * + - < <= = >= > !=
                                 bitwise-and bitwise-ior bitwise-xor
-                                arithmetic-shift-right)
+                                arithmetic-shift-right return-point)
   [p    (module info (define label info tail) ... tail)]
   [info   #:with-contract
           (info/c
@@ -700,7 +701,7 @@
   #:datum-literals (assignment locals define module begin set! jump
                                true false not if * + - < <= = >= > !=
                                bitwise-and bitwise-ior bitwise-xor
-                               arithmetic-shift-right)
+                               arithmetic-shift-right return-point)
   [p    (module info (define label info tail) ... tail)]
   [info   #:with-contract
           (info/c
@@ -744,7 +745,7 @@
   #:datum-literals (define module begin set! true false not if * + - < <= = >= >
                      != jump rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14
                      r15 halt bitwise-and bitwise-ior bitwise-xor
-                     arithmetic-shift-right)
+                     arithmetic-shift-right return-point)
   [p     (module (define label tail) ... tail)]
   [pred  (relop loc opand)
          (true)
@@ -769,7 +770,6 @@
   [binop * + - bitwise-and bitwise-ior bitwise-xor arithmetic-shift-right]
   [relop < <= = >= > !=]
   [int64 int64?]
-  [aloc aloc?]
   [fvar fvar?]
   [label label?]
 ]
@@ -783,7 +783,7 @@
   #:datum-literals (define module begin set! true false not if * + - < <= = >= >
                      != jump rsp rbp rax rbx rcx rdx rsi rdi r8 r9 r12 r13 r14
                      r15 halt bitwise-and bitwise-ior bitwise-xor
-                     arithmetic-shift-right)
+                     arithmetic-shift-right return-point)
   [p     (module (define label tail) ... tail)]
   [pred  (relop loc opand)
          (true)
