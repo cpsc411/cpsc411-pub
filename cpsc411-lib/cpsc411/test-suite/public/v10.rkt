@@ -178,18 +178,18 @@
                  (and (< (car ls) (car (cdr ls)))
                       (sorted? (cdr (cdr ls))))))))
 
-     (let* ([x (make-vector 1)]
-            [random (lambda ()
-                      (let ([A 12312]
-                            [C 1]
-                            [MAX 100])
-                        (let ([p (mod
-                                  (+ C (* A (vector-ref x 0)))
-                                  MAX)])
-                          (begin
-                            (vector-set! x 0 p)
-                            p))))])
-       (sorted? (quicksort (build-list (lambda (x) (random)) 20))))))
+     (let ([x (make-vector 1)])
+       (let ([random (lambda ()
+                       (let ([A 12312]
+                             [C 1]
+                             [MAX 100])
+                         (let ([p (mod
+                                   (+ C (* A (vector-ref x 0)))
+                                   MAX)])
+                           (begin
+                             (vector-set! x 0 p)
+                             p))))])
+         (sorted? (quicksort (build-list (lambda (x) (random)) 20)))))))
 
 (define (v10-public-test-suite pass-ls interp-ls)
   (define run/read (current-run/read))
