@@ -11,12 +11,14 @@
  (submod "base.rkt" interp)
  "redex-gen.rkt"
  #;"v10.rkt"
- "v9.rkt")
+ "v9.rkt"
+ (only-in racket/base [vector? host:vector?])
+ (for-label (only-in racket/base [vector? host:vector?])))
 
 (provide (all-defined-out))
 
 @define-grammar/pred[racketish-surface
-#:literals (name? int61? uint8? ascii-char-literal? vector/c)
+#:literals (name? int61? uint8? ascii-char-literal? host:vector?)
 #:datum-literals (module lambda define call let if void error * + - eq? < <= >
                   >= fixnum? boolean? empty? void? ascii-char? error? not
                   procedure? vector? pair? cons car cdr make-vector
@@ -59,7 +61,7 @@
 [fixnum int61?]
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
-[vec-literal vector/c]
+[vec-literal host:vector?]
 ]
 
 (define (interp-racketish-surface x)
