@@ -16,7 +16,7 @@
 (provide (all-defined-out))
 
 @define-grammar/pred[racketish-surface
-#:literals (name? int61? uint8? ascii-char-literal? quote)
+#:literals (name? int61? uint8? ascii-char-literal? vector/c)
 #:datum-literals (module lambda define call let if void error * + - eq? < <= >
                   >= fixnum? boolean? empty? void? ascii-char? error? not
                   procedure? vector? pair? cons car cdr make-vector
@@ -24,21 +24,22 @@
                   and or quote vector begin empty)
 #;(define x value)
 [p     (module (define x (lambda (x ...) value)) ... value)]
+
+#;(letrec ([x value] ...) value)
 [value triv
        (quote s-expr)
-       (vector value ...)
 
        (value value ...)
        (macro-id value ...)
        (let ([x value] ...) value)
-       #;(letrec ([x value] ...) value)
        (if value value value)
        (call value value ...)]
 [triv  fixnum prim-f x #t #f empty (void) (error uint8) ascii-char-literal
-       (lambda (x ...) value)]
+       (lambda (x ...) value)
+       vec-literal]
 [x     name? prim-f]
 [s-expr #t #f fixnum ascii-char-literal (s-expr ...)]
-[macro-id and or quote vector begin]
+[macro-id vector and or begin]
 [prim-f * + - eq? < <= > >=
         fixnum? boolean? empty? void? ascii-char? error? not
         pair?
@@ -58,6 +59,7 @@
 [fixnum int61?]
 [uint8 uint8?]
 [ascii-char-literal ascii-char-literal?]
+[vec-literal vector/c]
 ]
 
 (define (interp-racketish-surface x)
