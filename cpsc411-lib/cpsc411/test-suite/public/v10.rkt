@@ -212,4 +212,5 @@
 
    (test-suite
     "quicksort"
-    (execute (411-quicksort)))))
+    (test-begin
+      (check-equal? (execute (411-quicksort) nasm-run/read) #t)))))
