@@ -137,7 +137,7 @@
     (r:set! stack (make-vector 1000 'unalloc))))
 
 (begin-for-syntax
-  (define current-fvars (make-parameter 25))
+  (define current-fvars (make-parameter 1000))
 
   (define (make-fvar-transformer offset)
     (make-variable-like-transformer
