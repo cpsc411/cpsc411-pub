@@ -91,6 +91,8 @@
   (_rax _rsp _rbx _rcx _rdx _rsi _rdi _r8 _r9 _r10 _r11 _r12
   _r13 _r14 _r15))
 
+(set-box! _r12 0)
+
 (define (init-reg-file)
   (for ([reg (list _rax _rsp _rbx _rcx _rdx _rsi _rdi _r8 _r9 _r10 _r11 _r12
                          _r13 _r14 _r15)])
@@ -105,7 +107,7 @@
 ;; Every module should capture its current continuation, which should end the
 ;; entire module, and store it in exit-cont.
 
-(define exit-cont (box r:error))
+(define exit-cont (box (lambda (x) (r:error "halt continuation not initialized"))))
 
 (define (halt x)
   (set-box! _rax x)
@@ -113,6 +115,8 @@
 
 (define (done)
   ((unbox exit-cont) (unbox _rax)))
+
+(set-box! _r15 done)
 
 ;; ------------------------------------------------------------------------
 ;; Stack
