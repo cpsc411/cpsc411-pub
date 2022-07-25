@@ -119,14 +119,14 @@
 ;; ------------------------------------------------------------------------
 
 (define stack (make-vector 1000 'unalloc))
-(define fbp (box (sub1 (vector-length stack))))
+(define _rbp (box (sub1 (vector-length stack))))
 
 (define-syntax (rbp stx)
   (syntax-parse stx
     [:id
-     #'(unbox fbp)]
+     #'(unbox _rbp)]
     [(base (~datum -) offset)
-     #`(vector-ref stack (- (unbox fbp) offset))]))
+     #`(vector-ref stack (- (unbox _rbp) offset))]))
 
 (define current-fvar-offset (box 0))
 
@@ -135,7 +135,7 @@
 
 (define (init-stack)
   (begin
-    (set-box! fbp (sub1 (vector-length stack)))
+    (set-box! _rbp (sub1 (vector-length stack)))
     (r:set! stack (make-vector 1000 'unalloc))))
 
 (begin-for-syntax
@@ -149,7 +149,7 @@
          [(r:set! bla v)
           #`(vector-set!
              stack
-             (- (unbox fbp)
+             (- (unbox _rbp)
                 (+ (unbox current-fvar-offset) #,offset))
              v)])))))
 
@@ -417,15 +417,18 @@
 
 (define-syntax (set! stx)
   (syntax-parse stx
+    ;; Stack pointer increment
     [(_ (~literal rbp) (binop (~literal rbp) v))
      #`(begin
          ;; NOTE: This binop gets bound to one of the new-* above.
          (inc-fvar-offset! (binop 0 v))
-         (set-box! fbp (binop rbp v)))]
+         (set-box! _rbp (binop rbp v)))]
+    ;; Stack pointer update
     [(_ (~literal rbp) v)
-     #`(set-box! fbp v)]
+     #`(set-box! _rbp v)]
+    ;; Stack slot update
     [(_ ((~literal rbp) - offset) v2)
-     #`(vector-set! stack (- (unbox fbp) offset) v2)]
+     #`(vector-set! stack (- (unbox _rbp) offset) v2)]
     [(_ v1:id v2)
      (when (aloc? (syntax->datum #'v1))
        (collect-local! #'v1))
