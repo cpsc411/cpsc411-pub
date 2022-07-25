@@ -16,6 +16,8 @@
  (only-in racket/list empty))
 
 (provide
+ ;; A boundary term, for interop
+ boundary
  ;; NOTE: must mirror renaming in base interpreter in module+ below.
  (rename-out [new-define define])
  (rename-out [new-lambda lambda])
@@ -237,6 +239,13 @@
   (#%module-begin
    (module stx ...)))
 
+(define-syntax (boundary stx)
+  (syntax-case stx ()
+    [(_ term)
+     #`(let/ec k
+         (set-box! exit-cont k)
+         term)]))
+
 (define-syntax (new-top-interaction stx)
   (syntax-case stx (require)
     ;; Hack
@@ -268,17 +277,16 @@
      #`(module () defs ... tail)]
     [(module info defs ... tail)
      (define info-dict (infostx->dict #'info))
-     #`(let/ec k
-         (set-box! exit-cont k)
-         (begin
-           (init-heap)
-           (init-stack)
-           (init-reg-file)
-           #,(bind-info
-              info-dict
-              #`(local [defs ...]
-                  (do-bind-locals tail
-                                  #,@(get-info-bound-vars info-dict))))))]))
+     #`(boundary
+        (begin
+          (init-heap)
+          (init-stack)
+          (init-reg-file)
+          #,(bind-info
+             info-dict
+             #`(local [defs ...]
+                 (do-bind-locals tail
+                                 #,@(get-info-bound-vars info-dict))))))]))
 
 (define (!= e1 e2) (not (= e1 e2)))
 
