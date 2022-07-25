@@ -26,6 +26,8 @@
              new--
              new-*)
  #;(rename-out [new-module-begin #%module-begin])
+ new-module-begin
+ new-top-interaction
  #;#%top-interaction
  #;#%datum
  #;#%app
@@ -231,6 +233,15 @@
   (#%module-begin
    (module stx ...)))
 
+(define-syntax (new-top-interaction stx)
+  (syntax-case stx ()
+    [(_ . tail)
+     #`(#%top-interaction
+        .
+        (let/ec k
+          (set-box! exit-cont k)
+          (do-bind-locals tail)))]))
+
 ;; TODO: Use of ~datum is bad should be ~literal
 (define-syntax (module stx)
   (syntax-parse stx
@@ -238,6 +249,8 @@
     ;; NB: Work around an issue that can happen when interpreters are called
     ;; incorrectly, e.g., from stubs.
     ;; Really, should put contracts on the individual interpreters.
+    [(module)
+     #'(void)]
     [(module (module r ...))
      #`(module r ...)]
     [(module (~and (~var defs) ((~datum define) _ ...)) ...)
