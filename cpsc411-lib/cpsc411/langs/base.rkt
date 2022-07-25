@@ -323,16 +323,17 @@
             #:literals (with-label new-begin)
             [(new-begin effects1 ...)
              (labelify-begin defs (append (attribute effects1) effects))]
-            [(with-label label effect)
-             (let-values ([(defs effects^) (labelify-begin defs (cons #'effect effects))])
+            [(with-label label effect1)
+             (let-values ([(defs effects^)
+                           (labelify-begin defs (cons (attribute effect1) effects))])
                (values
                 (cons #`(label (lambda () (begin #,@effects^))) defs)
-                #`((jump label))))]
-            [effect
+                (list #`(#%app label))))]
+            [_
              (let-values ([(defs effects^) (labelify-begin defs effects)])
                (values
                 defs
-                #`(effect #,@effects^)))])))))
+                (cons effect effects^)))])))))
 
 ;; NOTE: Assumes no nested begins, I think.
 (define-syntax (new-begin stx)
@@ -417,7 +418,10 @@
 
 (begin-for-syntax
   (define-syntax-class addr-op
-    (pattern (~or (~datum +) (~datum -)))))
+    (pattern (~or (~datum +) (~datum -))))
+
+  (define-syntax-class not-rbp
+    (pattern (~not (~literal rbp)))))
 
 (define-syntax (set! stx)
   (syntax-parse stx
@@ -437,12 +441,12 @@
      (when (aloc? (syntax->datum #'v1))
        (collect-local! #'v1))
      (syntax-parse #'v2
-       [((~and base (~not (~literal rbp))) op:addr-op offset)
+       [(base:not-rbp op:addr-op offset)
         #`(r:set! v1 (mref base (* (op 1 0) offset)))]
        [_
         #`(r:set! v1 v2)])]
     ;; Assign to memory
-    [(_ (base op:addr-op offset) value)
+    [(_ (base:not-rbp op:addr-op offset) value)
      #`(mset! base (* (op 1 0) offset) value)]
     #;[(_ loc value)
        #`(r:set! loc value)]))
