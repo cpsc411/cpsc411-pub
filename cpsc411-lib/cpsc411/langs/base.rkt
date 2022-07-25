@@ -480,45 +480,37 @@
       (r:error 'unsafe-vector-ref "attempting to read from uninitialized memory"))
     val))
 
-(define ALIGN 8)
 (define memory (make-vector 10000 'un-aloced))
-(define hbp (* ALIGN 2))
+(define hbp 0)
 
 (define (unsafe-mset! base offset value)
-  (vector-set! memory (/ (+ base offset) ALIGN) value))
+  (vector-set! memory (+ base offset) value))
 
 (define (mset! base offset value)
-  (let ([loc (/ (+ base offset) ALIGN)])
-    (unless (integer? loc)
-      (r:error 'mset! "attempting to write to unaligned memory (base: ~a, offset: ~a)" base offset))
+  (let ([loc (+ base offset)])
     (when (equal? 'un-aloced (vector-ref memory loc))
       (r:error 'mset! "attempting to write to unallocated memory (base: ~a, offset: ~a)" base offset))
     (vector-set! memory loc value)))
 
 (define (mref base offset)
-  (let ([loc (/ (+ base offset) ALIGN)])
-    (unless (integer? loc)
-      (r:error 'mref "attempting to read from unaligned memory (base: ~a, offset: ~a)" base offset))
+  (let ([loc (+ base offset)])
     (when (equal? 'un-aloced (vector-ref memory loc))
       (r:error 'mref "attempting to read from unallocated memory (base: ~a, offset: ~a)" base offset))
     (when (equal? 'aloced (vector-ref memory loc))
       (r:error 'mref "attempting to read from uninitialized memory (base: ~a, offset: ~a)" base offset))
     (vector-ref memory loc)))
 
-(define (alloc len8)
-  (let ([len (/ len8 ALIGN)]
+(define (alloc len)
+  (let ([len8 len]
         [oldhbp hbp])
-    (unless (integer? len)
-      (r:error 'alloc "attemptying to allocate unaligned memory (len: ~a)" len8))
     (for ([i (in-range len)])
-      (vector-set! memory (+ (/ oldhbp ALIGN) i) 'alloced))
-    ;; leave buffer space to check over/underflows
-    (r:set! hbp (+ (+ hbp len8) (* ALIGN 3)))
+      (vector-set! memory (+ oldhbp i) 'alloced))
+    (r:set! hbp (+ hbp len8))
     oldhbp))
 
 (define (init-heap)
   (begin
-    (r:set! hbp (* ALIGN 2))
+    (r:set! hbp 0)
     (r:set! memory (make-vector 10000 'un-aloced))))
 
 (define-syntax (new-lambda stx)
