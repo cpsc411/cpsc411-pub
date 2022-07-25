@@ -234,7 +234,10 @@
    (module stx ...)))
 
 (define-syntax (new-top-interaction stx)
-  (syntax-case stx ()
+  (syntax-case stx (require)
+    ;; Hack
+    [(_ . (require foo))
+     #`(#%top-interaction . (require foo))]
     [(_ . tail)
      #`(#%top-interaction
         .
