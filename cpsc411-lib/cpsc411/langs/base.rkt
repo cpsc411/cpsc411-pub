@@ -553,7 +553,7 @@
          (cletrec (oths ...)
                   (begin
                     (unless (equal? arity (sub1 (unsafe-procedure-arity label)))
-                      (error 'make-closure "arity argument doesn't match label"))
+                      (r:error 'make-closure "arity argument doesn't match label"))
                     (fill-env aloc es ...)
                     tail)))]
     [(_ () tail) #'tail]))
