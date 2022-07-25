@@ -309,34 +309,37 @@
 (define-syntax-rule (jump f rest ...)
   (jump-to f))
 
+(define (with-label . rest)
+  (error "Cannot use with-label in non-begin context"))
+
 (begin-for-syntax
-  (define (labelify-begin defs ss)
-    (syntax-parse ss
-      #:datum-literals (with-label begin)
-      [((begin ss1 ...) ss ...)
-       (labelify-begin defs #`(ss1 ... ss ...))]
-      [((with-label l s) ss ...)
-       (let-values ([(defs e) (labelify-begin defs #`(s ss ...))])
-         (values
-          (cons #`(l (lambda () (begin #,@e))) defs)
-          #`((l))))]
-      [(s ss ...)
-       (if (null? (attribute ss))
-           (values
-            defs
-            #`(s))
-           (let-values ([(defs e) (labelify-begin defs (attribute ss))])
-             (values
-              defs
-              #`(s #,@e))))])))
+  (define (labelify-begin defs effects)
+    (if (null? effects)
+        (values defs '())
+        (let ([effect (car effects)]
+              [effects (cdr effects)])
+          (syntax-parse effect
+            #:literals (with-label new-begin)
+            [(new-begin effects1 ...)
+             (labelify-begin defs (append (attribute effects1) effects))]
+            [(with-label label effect)
+             (let-values ([(defs effects^) (labelify-begin defs (cons #'effect effects))])
+               (values
+                (cons #`(label (lambda () (begin #,@effects^))) defs)
+                #`((jump label))))]
+            [effect
+             (let-values ([(defs effects^) (labelify-begin defs effects)])
+               (values
+                defs
+                #`(effect #,@effects^)))])))))
 
 ;; NOTE: Assumes no nested begins, I think.
 (define-syntax (new-begin stx)
-  (let-values ([(defs e) (labelify-begin '() (cdr (syntax->list stx)))])
+  (let-values ([(defs effects) (labelify-begin '() (cdr (syntax->list stx)))])
     (if (null? defs)
-        #`(begin #,@e)
+        #`(begin #,@effects)
         #`(letrec (#,@defs)
-            (begin #,@e)))))
+            (begin #,@effects)))))
 
 (define-syntax (new-define stx)
   (syntax-parse stx
