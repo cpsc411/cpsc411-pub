@@ -239,11 +239,12 @@
     [(_ . (require foo))
      #`(#%top-interaction . (require foo))]
     [(_ . tail)
+     ;; TODO: For Racket interop, we want to be able to shift the exit explicitly.
      #`(#%top-interaction
         .
-        (let/ec k
-          (set-box! exit-cont k)
-          (do-bind-locals tail)))]))
+        (begin
+          (call/cc (lambda (k) (set-box! exit-cont k)))
+          tail))]))
 
 ;; TODO: Use of ~datum is bad should be ~literal
 (define-syntax (module stx)
@@ -376,6 +377,11 @@
   (define (get-locals)
     (set->list gathered-locals)))
 
+;; TODO: For interoperability, would be better if this was part of begin.
+;; But, we need the except list... so modules and definitions need to pass it
+;; down.
+;; Or actually, the IRs should just change to have locals declared, and this
+;; could go away.
 (define-syntax (do-bind-locals stx)
   (syntax-parse stx
     [(_ body except ...)

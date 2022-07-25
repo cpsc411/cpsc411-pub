@@ -4,6 +4,7 @@
 
 (provide
  require
+ only-in
  local-require
  (all-from-out "../langs/base.rkt")
  (rename-out [new-top-interaction #%top-interaction])
