@@ -446,12 +446,12 @@
        (collect-local! #'v1))
      (syntax-parse #'v2
        [(base:not-rbp op:addr-op offset)
-        #`(r:set! v1 (mref base (* (op 1 0) offset)))]
+        #`(r:set! v1 (unsafe-mref base (* (op 1 0) offset)))]
        [_
         #`(r:set! v1 v2)])]
     ;; Assign to memory
     [(_ (base:not-rbp op:addr-op offset) value)
-     #`(mset! base (* (op 1 0) offset) value)]
+     #`(unsafe-mset! base (* (op 1 0) offset) value)]
     #;[(_ loc value)
        #`(r:set! loc value)]))
 
@@ -489,6 +489,9 @@
 
 (define (unsafe-mset! base offset value)
   (vector-set! memory (+ base offset) value))
+
+(define (unsafe-mref base offset)
+  (vector-ref memory (+ base offset)))
 
 (define (mset! base offset value)
   (let ([loc (+ base offset)])
