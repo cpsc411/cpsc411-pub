@@ -415,6 +415,10 @@
 
 (require (for-syntax (only-in "../compiler-lib.rkt" aloc?)))
 
+(begin-for-syntax
+  (define-syntax-class addr-op
+    (pattern (~or (~datum +) (~datum -)))))
+
 (define-syntax (set! stx)
   (syntax-parse stx
     ;; Stack pointer increment
@@ -433,16 +437,13 @@
      (when (aloc? (syntax->datum #'v1))
        (collect-local! #'v1))
      (syntax-parse #'v2
-       [((~and base (~not (~literal rbp))) (~datum +) offset)
-        #`(r:set! v1 (mref base offset))]
-       [((~and base (~not (~literal rbp))) (~datum -) offset)
-        #`(r:set! v1 (mref base (* -1 offset)))]
+       [((~and base (~not (~literal rbp))) op:addr-op offset)
+        #`(r:set! v1 (mref base (* (op 1 0) offset)))]
        [_
         #`(r:set! v1 v2)])]
-    [(_ (base (~datum +) offset) value)
-     #`(mset! base offset value)]
-    [(_ (base (~datum -) offset) value)
-     #`(mset! base (* -1 offset) value)]
+    ;; Assign to memory
+    [(_ (base op:addr-op offset) value)
+     #`(mset! base (* (op 1 0) offset) value)]
     #;[(_ loc value)
        #`(r:set! loc value)]))
 
