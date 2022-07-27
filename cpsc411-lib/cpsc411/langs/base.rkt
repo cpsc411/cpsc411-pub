@@ -131,7 +131,7 @@
   (syntax-parse stx
     [:id
      #'(unbox _rbp)]
-    [(base (~datum -) offset:nat)
+    [(base (~datum -) offset:integer)
      #`(vector-ref stack (- (unbox _rbp) offset))]))
 
 (define current-fvar-offset (box 0))
