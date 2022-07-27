@@ -124,7 +124,7 @@
 ;; Stack
 ;; ------------------------------------------------------------------------
 
-(define stack (make-vector 1000 'unalloc))
+(define stack (make-vector 1000 'uninit))
 (define _rbp (box (sub1 (vector-length stack))))
 
 (define-syntax (rbp stx)
@@ -142,7 +142,7 @@
 (define (init-stack)
   (begin
     (set-box! _rbp (sub1 (vector-length stack)))
-    (r:set! stack (make-vector 1000 'unalloc))))
+    (r:set! stack (make-vector 1000 'uninit))))
 
 (begin-for-syntax
   (define current-fvars (make-parameter 1000))
@@ -489,7 +489,7 @@
       (r:error 'unsafe-vector-ref "attempting to read from uninitialized memory"))
     val))
 
-(define memory (make-vector 10000 'un-aloced))
+(define memory (make-vector 10000 'unalloced))
 (define hbp 0)
 
 (define (unsafe-mset! base offset value)
@@ -500,15 +500,15 @@
 
 (define (mset! base offset value)
   (let ([loc (+ base offset)])
-    (when (equal? 'un-aloced (vector-ref memory loc))
+    (when (equal? 'unalloced (vector-ref memory loc))
       (r:error 'mset! "attempting to write to unallocated memory (base: ~a, offset: ~a)" base offset))
     (vector-set! memory loc value)))
 
 (define (mref base offset)
   (let ([loc (+ base offset)])
-    (when (equal? 'un-aloced (vector-ref memory loc))
+    (when (equal? 'unalloced (vector-ref memory loc))
       (r:error 'mref "attempting to read from unallocated memory (base: ~a, offset: ~a)" base offset))
-    (when (equal? 'aloced (vector-ref memory loc))
+    (when (equal? 'alloced (vector-ref memory loc))
       (r:error 'mref "attempting to read from uninitialized memory (base: ~a, offset: ~a)" base offset))
     (vector-ref memory loc)))
 
@@ -523,7 +523,7 @@
 (define (init-heap)
   (begin
     (r:set! hbp 0)
-    (r:set! memory (make-vector 10000 'un-aloced))))
+    (r:set! memory (make-vector 10000 'unalloced))))
 
 (define-syntax (new-lambda stx)
   (syntax-case stx ()
