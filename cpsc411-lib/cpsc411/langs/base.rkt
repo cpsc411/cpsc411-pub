@@ -131,7 +131,7 @@
   (syntax-parse stx
     [:id
      #'(unbox _rbp)]
-    [(base (~datum -) offset)
+    [(base (~datum -) offset:nat)
      #`(vector-ref stack (- (unbox _rbp) offset))]))
 
 (define current-fvar-offset (box 0))
@@ -147,17 +147,14 @@
 (begin-for-syntax
   (define current-fvars (make-parameter 1000))
 
-  (define (make-fvar-transformer offset)
-    (make-variable-like-transformer
-     #`(rbp - (+ (unbox current-fvar-offset) #,offset))
-     (lambda (stx)
-       (syntax-case stx (r:set!)
-         [(r:set! bla v)
-          #`(vector-set!
-             stack
-             (- (unbox _rbp)
-                (+ (unbox current-fvar-offset) #,offset))
-             v)])))))
+  (define (make-fvar-transformer frame-offset)
+    (with-syntax ([stack-index #`(- (unbox _rbp) (+ (unbox current-fvar-offset) #,frame-offset))])
+      (make-variable-like-transformer
+       #`(vector-ref stack stack-index)
+       (lambda (stx)
+         (syntax-case stx ()
+           [(set! _ v)
+            #`(vector-set! stack stack-index v)]))))))
 
 (define-syntax (define-fvars! stx)
   (syntax-case stx ()
