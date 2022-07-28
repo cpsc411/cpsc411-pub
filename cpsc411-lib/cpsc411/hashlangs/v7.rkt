@@ -1,5 +1,6 @@
 #lang racket/base
 
+;; TODO: copy/pasted from base because I'm bad at this hash-lang pattern.
 (require
  (submod "../langs/v7.rkt" safe-langs)
  (for-syntax racket/base))
@@ -8,7 +9,6 @@
  require
  only-in
  local-require
- #;(all-from-out "../langs/base.rkt")
  (all-from-out (submod "../langs/v7.rkt" safe-langs))
  (rename-out [new-top-interaction #%top-interaction])
  #%datum
