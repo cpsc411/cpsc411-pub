@@ -486,8 +486,10 @@
      (when (aloc? (syntax->datum #'v1))
        (collect-local! #'v1))
      (syntax-parse #'v2
+       ;; Read from memory
        [(base:not-rbp op:addr-op offset)
         #`(r:set! v1 (unsafe-mref base (* (op 1 0) offset)))]
+       ;; Else use Racket's set!
        [_
         #`(r:set! v1 v2)])]
     ;; Assign to memory
