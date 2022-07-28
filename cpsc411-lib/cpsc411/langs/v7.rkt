@@ -36,7 +36,7 @@
 
 (module safe-langs racket/base
   (require
-   "base.rkt"
+   (except-in "base.rkt" + - * < > <= >=)
    cpsc411/machine-ints
    (only-in racket/base
             [module+ r:module+]
