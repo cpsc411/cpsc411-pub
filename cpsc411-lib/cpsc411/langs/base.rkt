@@ -213,24 +213,58 @@
          [(r:set! bla v)
           #`(r:set! #,rloc v)]))))
 
-  (define (bind-info info e)
-    (define tail
-      (for/fold ([e e])
-                ([new-frame (dict-ref info 'new-frames '())])
-        #`(let-syntax #,(for/list ([nfvar new-frame]
-                                   [i (in-naturals 0)])
-                          #`[#,nfvar (make-fvar-transformer #,(* i 8))])
-            #,e)))
-    ;; if there's a new-frame, don't use assignments, since the new frame
-    ;; hasn't be allocated yet and using fvars for call-undead will be
-    ;; inconsistent with using them for new-frames
-    (if (dict-ref info 'new-frames #f)
-        tail
-        #`(let-syntax #,(for/list ([assignments (dict-ref info 'assignment '())])
-                          (with-syntax ([aloc (car assignments)]
-                                        [rloc (cadr assignments)])
-                            #`[aloc (make-aloc-transformer #'rloc)]))
+  (require (only-in "../compiler-lib.rkt" fvar? fvar->index))
+
+  (define (bind-assignments info tail)
+    #`(let-syntax #,(for/list ([assignments (dict-ref info 'assignment '())]
+                               ;; TODO: Related to frame allocation.
+                               ;; if there's a new-frame, don't use fvars yet.
+                               ;; The frame hasn't been allocated yet and using fvars will be
+                               ;; inconsistent with using them for new-frames.
+                               #:unless (and (fvar? (syntax->datum (cadr assignments)))
+                                             (dict-ref info 'new-frames #f)))
+                      (with-syntax ([aloc (car assignments)]
+                                    [rloc (cadr assignments)])
+                        #`[aloc (make-aloc-transformer #'rloc)]))
+        #,tail))
+
+  (require racket/set racket/function)
+  ;; TODO: Attempt to emulate frame allocation in return-point, when it hasn't
+  ;; happened yet.
+  ;; If 'call-undead still exists, then frame allocation hasn't happened yet,
+  ;; and it disappears once it does happen.
+  ;; Unfortunately, this approach doesn't seem to work well, so leaving in place
+  ;; the hack above.
+  (define (frame-size info)
+    (define assignment-dict (map (curry map syntax->datum) (dict-ref info 'assignment '())))
+    (cond
+      [(dict-ref info 'call-undead #f)
+       =>
+       (lambda (call-undead-syn)
+         (define call-undead-set (map syntax->datum call-undead-syn))
+         (max
+          (set-count call-undead-set)
+          (add1 (apply max -1
+                       (map fvar->index (filter fvar?
+                                                (map (lambda (x) (cond
+                                                                   [(dict-ref assignment-dict x #f) => car])) call-undead-set)))))))]
+      [else 0]))
+
+  (define (bind-new-frame-vars info tail)
+    (define size (frame-size info))
+
+    (for/fold ([tail tail])
+              ([new-frame (dict-ref info 'new-frames '())])
+      #`(let-syntax #,(for/list ([nfvar new-frame]
+                                 [i (in-naturals size)])
+                        #`[#,nfvar (make-fvar-transformer #,(* i 8))])
+          (parameterize ([current-frame-size #,(* 8 size)])
             #,tail))))
+
+  (define (bind-info info tail)
+    (bind-assignments info (bind-new-frame-vars info tail))))
+
+(define current-frame-size (make-parameter 0))
 
 (define-syntax-rule (new-module-begin stx ...)
   (#%module-begin
@@ -406,12 +440,14 @@
 
 (define ((return-to l saved-frame))
   (set-box! current-fvar-offset saved-frame)
+  (set! rbp (+ rbp (current-frame-size)))
   (l))
 
 (define-syntax (return-point stx)
   (syntax-parse stx
     [(_ label tail)
      #`(let/cc l1
+         (set! rbp (- rbp (current-frame-size)))
          (let ([label (let ([f (return-to l1 (unbox current-fvar-offset))])
                         (static-rename label (lambda () (f))))])
            tail))]))
