@@ -124,7 +124,11 @@
 ;; Stack
 ;; ------------------------------------------------------------------------
 
-(define stack (make-vector 1000 'uninit))
+(begin-for-syntax
+  (define CURRENT-FVARS 1620))
+(define CURRENT-FVARS 1620)
+
+(define stack (make-vector (* 8 CURRENT-FVARS) 'uninit))
 (define _rbp (box (sub1 (vector-length stack))))
 
 (define-syntax (rbp stx)
@@ -142,10 +146,11 @@
 (define (init-stack)
   (begin
     (set-box! _rbp (sub1 (vector-length stack)))
-    (r:set! stack (make-vector 1000 'uninit))))
+    (r:set! stack (make-vector (* 8 CURRENT-FVARS) 'uninit))))
 
 (begin-for-syntax
-  (define current-fvars (make-parameter 1000))
+  ;; TODO: Parameter doesn't work as intended, but I think I try to use it somewhere.
+  (define current-fvars (make-parameter CURRENT-FVARS))
 
   (define (make-fvar-transformer frame-offset)
     (with-syntax ([stack-index #`(- (unbox _rbp) (+ (unbox current-fvar-offset) #,frame-offset))])
