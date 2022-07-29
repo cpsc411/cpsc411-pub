@@ -357,34 +357,31 @@
   (error "Cannot use with-label in non-begin context"))
 
 (begin-for-syntax
-  (define (labelify-begin defs effects)
-    (if (null? effects)
-        (values defs '())
-        (let ([effect (car effects)]
-              [effects (cdr effects)])
-          (syntax-parse effect
-            #:literals (with-label new-begin)
-            [(new-begin effects1 ...)
-             (labelify-begin defs (append (attribute effects1) effects))]
-            [(with-label label effect1)
-             (let-values ([(defs effects^)
-                           (labelify-begin defs (cons (attribute effect1) effects))])
-               (values
-                (cons #`(label (lambda () (begin #,@effects^))) defs)
-                (list #`(#%app label))))]
-            [_
-             (let-values ([(defs effects^) (labelify-begin defs effects)])
-               (values
-                defs
-                (cons effect effects^)))])))))
+  (require racket/match)
+  (define (labelify defs effects)
+    (match effects
+      ['() (values defs '())]
+      [(cons effect effects)
+       (syntax-parse effect
+         #:literals (with-label new-begin)
+         [(with-label label effect)
+          (let-values ([(defs effects^)
+                        (labelify defs (cons #'effect effects))])
+            (values
+             (cons #`(label (lambda () (begin #,@effects^))) defs)
+             #`((jump label))))]
+         [(new-begin effects1 ...)
+          (labelify defs (append (attribute effects1) effects))]
+         [effect
+          (let-values ([(defs effects^) (labelify defs effects)])
+            (values defs #`(effect #,@effects^)))])])))
 
 ;; NOTE: Assumes no nested begins, I think.
 (define-syntax (new-begin stx)
-  (let-values ([(defs effects) (labelify-begin '() (cdr (syntax->list stx)))])
+  (let-values ([(defs effects) (labelify '() (cdr (syntax->list stx)))])
     (if (null? defs)
         #`(begin #,@effects)
-        #`(letrec (#,@defs)
-            (begin #,@effects)))))
+        #`(letrec #,defs (begin #,@effects)))))
 
 (define-syntax (new-define stx)
   (syntax-parse stx
