@@ -271,9 +271,15 @@
 
 (define current-frame-size (make-parameter 0))
 
-(define-syntax-rule (new-module-begin stx ...)
-  (#%module-begin
-   (module stx ...)))
+(define-syntax (new-module-begin stx)
+  (syntax-parse stx
+    ;; HACK
+    [(_ ((~literal require) spec ...)
+        ...
+        stx ...)
+     #`(#%module-begin
+        (require spec ...) ...
+        (module () stx ...))]))
 
 (define-syntax (boundary stx)
   (syntax-case stx ()
