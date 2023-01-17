@@ -11,7 +11,7 @@ described by the `cpsc411-book` package.
 
 ## Installation
 From the `cpsc411-lib` directory, run `raco pkg install`, or run
-`raco pkg install https://github.com/cpsc411/cpsc411-pub.git?path=cpsc411-lib#2020w2`.
+`raco pkg install https://github.com/cpsc411/cpsc411-pub.git?path=cpsc411-lib#2022w2`.
 
 If you get strange errors referencing `cpsc411-pub`, you may have run the
 command from the wrong directory.
