@@ -348,7 +348,7 @@
               (set-box! _output (pass test-prog))))))
         (define output (unbox _output))
         (with-check-info (['output-program output])
-          (with-check-info (['type-type "Checking that output is syntactically correct"])
+          (with-check-info (['test-type "Checking that output is syntactically correct"])
             (when trg-validator
               (check-true (trg-validator output))))
           (define actual (box (void)))
