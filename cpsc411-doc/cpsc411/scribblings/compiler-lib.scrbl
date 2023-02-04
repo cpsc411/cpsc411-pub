@@ -390,7 +390,7 @@ process, as a string.
 }
 
 @defproc[(nasm-run/error-string+code [s string?]) (cons/c (in-range/c 0 256) string?)]{
-A @tech{run-reader} that returns a pair of the exit code and thecontents of the standard error port of the
+A @tech{run-reader} that returns a pair of the exit code and the contents of the standard error port of the
 process as a string.
 }
 
