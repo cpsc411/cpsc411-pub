@@ -324,9 +324,35 @@ See also @racket[nasm-run/exit-code], @racket[nasm-run/print-string],
 Compiles @racket[v] using the @racket[current-pass-list] and then runs the
 program using the @racket[run/read] argument, and returns the result.
 
+The intention is that the program is compiled to assembly, then assembled with
+@tt{nasm}, then linked, then the binary is executed and the result returned as a
+Racket value, enabling testing the end-to-end compiler.
+
 Expects @racket[e] to be a valid input program to the first pass in the
 @racket[current-pass-list], and the compiler to produce a valid input to the
 @racket[run/read] procedure.
+
+@; NOTE: The following only works with the reference, so typeset it manually.
+@examples[
+(eval:alts (require cpsc411/reference/a2-solution cpsc411/2c-run-time) (void))
+(eval:alts (parameterize ([current-pass-list
+                (list generate-x64
+                      wrap-x64-run-time
+                      wrap-x64-boilerplate)])
+  (execute '(begin (set! rax 120)))) 120)
+(eval:alts (parameterize ([current-pass-list
+                (list implement-fvars
+                      generate-x64
+                      wrap-x64-run-time
+                      wrap-x64-boilerplate)])
+  (execute '(begin (set! fv1 120) (set! rax fv1)))) 120)
+(eval:alts (require cpsc411/reference/a1-solution) (void))
+(eval:alts (parameterize ([current-pass-list
+                (list generate-x64
+                      wrap-x64-run-time
+                      wrap-x64-boilerplate)])
+  (execute '(begin (set! rax 120)) nasm-run/exit-code)) 120)
+]
 }
 
 @defproc[(nasm-run/observe (runner path? any/c)) (-> string? any/c)]{
