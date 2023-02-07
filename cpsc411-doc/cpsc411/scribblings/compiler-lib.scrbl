@@ -923,10 +923,17 @@ argument is a tail-context statement.
 @racket[make-begin] will construct @racket[`(begin ,is ... ,t)], but try to
 minimize @racket[begins] in the process.
 
+Assumes that @racket[t] has already been constructed using @racket[make-begin].
+
 @examples[#:eval eg
 (make-begin '() '(halt 5))
 (make-begin '() '(begin (halt 5)))
 (make-begin '((set! rax 5)) '(begin (halt 5)))
+(make-begin '((set! rax 5)) '(begin (begin (halt 5))))
+(make-begin '((begin (set! rax 5))) '(begin (halt 5)))
+(make-begin '((begin (begin (set! rax 5)))) '(begin (halt 5)))
+(make-begin '((begin (begin (set! rax 5)))) '(begin (begin (halt 5))))
+(make-begin '((begin (begin (set! rax 5)))) (make-begin '() (make-begin '() '(halt 5))))
 ]
 }
 
@@ -940,6 +947,7 @@ minimize @racket[begins] in the process.
 (make-begin-effect '())
 (make-begin-effect '((begin (set! rax 5))))
 (make-begin-effect '((set! rax 5)))
+(make-begin-effect '((begin (begin (set! rax 5))) (begin (set! rax 5))))
 ]
 }
 
