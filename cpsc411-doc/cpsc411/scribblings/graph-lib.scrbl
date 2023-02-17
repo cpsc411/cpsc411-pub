@@ -104,7 +104,7 @@ Assumes all vertexes are already in @racket[g].
 @defproc[(get-neighbors [g graph?] [v any/c]) graph?]{
 Returns a list of each vertex with an edge coming from @racket[v] in the graph
 @racket[g].
-Returns the empty set if @racket[v] in the graph.
+Returns the empty set if @racket[v] isn't in the graph.
 
 @examples[#:eval eg
 (add-edges (new-graph '(a b c d)) 'a '(b c))
