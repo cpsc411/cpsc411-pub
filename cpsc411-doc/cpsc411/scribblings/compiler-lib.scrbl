@@ -70,14 +70,19 @@ in the CPSC411 languages.
 ]
 }
 
-@defproc[(fresh-label) label?]{
+@defproc[(fresh-label [x (or/c string? symbol?) 'tmp]) label?]{
 Returns a fresh label, distinct from any label that has previously been
 generated.
+Assumes all other labels in the program have been generated using this
+procedure, to ensure freshness.
+Optionally, takes a base label to generate from.
 
 @examples[#:eval eg
 (fresh-label)
 (fresh-label)
 (fresh-label)
+(fresh-label 'meow)
+(fresh-label "hello")
 ]
 }
 
