@@ -124,10 +124,15 @@
    (""
     (module
       (begin
-        (if (true) (set! x.3 (begin (set! y.4 (begin (set! z.4 (+ 4 5))
-                                                     z.4))
-                                    y.4))
-            (set! x.3 y.7))
+        (if (true)
+            (set! x.3
+                  (begin
+                    (set! y.4
+                          (begin
+                            (set! z.4 (+ 4 5))
+                            z.4))
+                    y.4))
+            (set! x.3 y.4))
         x.3)))
 
    (""
