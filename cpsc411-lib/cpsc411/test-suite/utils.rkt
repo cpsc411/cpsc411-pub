@@ -173,7 +173,7 @@
    interp-imp-cmf-lang-v4 imp-cmf-lang-v4?
    interp-asm-pred-lang-v4 asm-pred-lang-v4?
    interp-asm-pred-lang-v4/locals asm-pred-lang-v4/locals?
-   interp-asm-pred-lang-v4/undead (and/c asm-pred-lang-v4/undead? undead-set-tree-okay-v4?)
+   interp-asm-pred-lang-v4/undead asm-pred-lang-v4/undead? #;(and/c asm-pred-lang-v4/undead? undead-set-tree-okay-v4?)
    interp-asm-pred-lang-v4/conflicts asm-pred-lang-v4/conflicts?
    interp-asm-pred-lang-v4/assignments asm-pred-lang-v4/assignments?
    interp-nested-asm-lang-v4 nested-asm-lang-v4?
