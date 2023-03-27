@@ -95,13 +95,36 @@
           ;; patch can't update undead-out sets
           #;(,interp-asm-pred-lang-v6/undead . ,interp-asm-pred-lang-v5/undead)
           (,interp-asm-pred-lang-v6/conflicts . ,interp-asm-pred-lang-v5/conflicts)
-          (,interp-asm-pred-lang-v6/assignments . ,interp-asm-pred-lang-v5/assignments)
           ))])
   (register-test-programs!
    new-v
    (map (lambda (x)
           (list (first x) (add-new-frames (replace-halts (second x)))))
     (set->list (hash-ref test-prog-dict alias-v '())))))
+
+(define (fixup-locals p)
+  (define (fixup-blocks def)
+    (match def
+      [`(define ,label ,info ,tail)
+       `(define ,label ,(info-set info 'locals '()) ,tail)]))
+  (match p
+    [`(module ,info ,defs ... ,tail)
+     `(module ,(info-set info 'locals '())
+              ,@(map fixup-blocks defs)
+              ,tail)]))
+
+(for ([(new-v alias-v)
+       (in-dict
+        `(
+          ;; locals set interpretation changes
+          (,interp-asm-pred-lang-v6/assignments . ,interp-asm-pred-lang-v5/assignments)
+          ))])
+  (register-test-programs!
+   new-v
+   (map (lambda (x)
+          (list (first x) (fixup-locals (add-new-frames (replace-halts (second x))))))
+        (set->list (hash-ref test-prog-dict alias-v '()))))
+  )
 
 (define (fixup-begin p)
   (define (fixup-i i)
