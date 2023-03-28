@@ -103,6 +103,29 @@ should be run inside a @racket[test-suite], or it will have no effect.
   ""
   (test-compiler-pass uniquify interp-values-lang-v4 interp-values-unique-lang-v4 values-unique-lang-v4?))
  'quiet)
+
+ (define (specify-implementation x)
+   (match x [`(module ,x) `(module ,(* x 8))]))
+ (require cpsc411/langs/v7)
+ (register-test-programs!
+  interp-exprs-unsafe-data-lang-v7
+  '(("" (module 5))))
+ (run-tests
+  (test-suite
+   ""
+   (test-compiler-pass specify-implementation interp-exprs-unsafe-data-lang-v7
+                       interp-exprs-bits-lang-v7 exprs-bits-lang-v7?
+                       (lambda (sv tv) (equal? sv (ptr->v tv))))) 'quiet)
+]
+}
+
+@defproc[(ptr->v [v ptr]) any/c]{
+Converts a ptr (tagged 64-bit immediate data representation) to a Racket value.
+
+@examples[#:eval eg
+(ptr->v 8)
+(ptr->v #b1110)
+(ptr->v #b0110)
 ]
 }
 
