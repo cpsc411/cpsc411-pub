@@ -45,7 +45,7 @@ will run validators before attempting to interpret output programs.
                              [src-interp ('a -> 'c)]
                              [trg-interp ('b -> 'd)]
                              [trg-validator ((or/c any/c 'b) -> boolean?)]
-                             [src-equiv equal? ('c 'd -> boolean?)])
+                             [src-equiv ('c 'd -> boolean?) equal?])
                              void?]{
 @racket['a], @racket['b], and @racket['c] represent arbitrary non-necessarily
 distinct type variables.
