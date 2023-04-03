@@ -556,8 +556,8 @@
           (info/c
            (new-frames (frame ...))
            (locals (aloc ...))
+           (call-undead (loc ...))
            ;; should be unnecessary
-           #;(call-undead (loc ...))
            #;(undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc loc) ...)))
@@ -567,8 +567,8 @@
             (info/c
              (new-frames (frame? ...))
              (locals (aloc? ...))
+             (call-undead (loc? ...))
              ;; should be unnecessary
-             #;(call-undead (loc? ...))
              #;(undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
              (assignment ((aloc? rloc?) ...))))]
