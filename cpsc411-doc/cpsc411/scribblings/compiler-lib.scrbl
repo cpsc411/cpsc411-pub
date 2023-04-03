@@ -737,12 +737,12 @@ The tag mask for the ptr encoding of the empty list.
 }
 
 @defparam[current-empty-tag bits int64?
-          #:value (unsyntax @code{#b00010110})]{
+         #:value (unsyntax @code[(format "#b~b" (current-empty-tag))])]{
 The tag for the ptr encoding of the empty list.
 }
 
 @defparam[current-empty-ptr bits int64?
-          #:value (unsyntax @code{#b11111111})]{
+          #:value (unsyntax @code[(format "#b~b" (current-empty-ptr))])]{
 The ptr encoding of the empty list.
 Note that this should always be identical to the @racket[current-empty-tag].
 }
