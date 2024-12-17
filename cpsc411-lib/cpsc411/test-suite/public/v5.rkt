@@ -93,4 +93,4 @@
     "compiler testomatic test suite"
     (compiler-testomatic pass-ls interp-ls))
 
-   (v4-check-values-lang check-values-lang)))
+   (when check-values-lang (v4-check-values-lang check-values-lang))))

@@ -267,11 +267,11 @@
   [info #:with-contract
         (info/c
          (locals (aloc ...))
-         (assignment ((aloc loc) ...)))
-        (let ([loc?  (or/c register? fvar?)])
+         (assignment ((aloc rloc) ...)))
+        (let ([rloc?  (or/c register? fvar?)])
           (info/c
            (locals (aloc? ...))
-           (assignment ((aloc? loc?) ...))))]
+           (assignment ((aloc? rloc?) ...))))]
   [pred (relop aloc triv)
         (true)
         (false)

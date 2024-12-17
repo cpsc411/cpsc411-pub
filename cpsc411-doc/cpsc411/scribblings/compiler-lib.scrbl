@@ -70,14 +70,19 @@ in the CPSC411 languages.
 ]
 }
 
-@defproc[(fresh-label) label?]{
+@defproc[(fresh-label [x (or/c string? symbol?) 'tmp]) label?]{
 Returns a fresh label, distinct from any label that has previously been
 generated.
+Assumes all other labels in the program have been generated using this
+procedure, to ensure freshness.
+Optionally, takes a base label to generate from.
 
 @examples[#:eval eg
 (fresh-label)
 (fresh-label)
 (fresh-label)
+(fresh-label 'meow)
+(fresh-label "hello")
 ]
 }
 
@@ -324,9 +329,35 @@ See also @racket[nasm-run/exit-code], @racket[nasm-run/print-string],
 Compiles @racket[v] using the @racket[current-pass-list] and then runs the
 program using the @racket[run/read] argument, and returns the result.
 
+The intention is that the program is compiled to assembly, then assembled with
+@tt{nasm}, then linked, then the binary is executed and the result returned as a
+Racket value, enabling testing the end-to-end compiler.
+
 Expects @racket[e] to be a valid input program to the first pass in the
 @racket[current-pass-list], and the compiler to produce a valid input to the
 @racket[run/read] procedure.
+
+@; NOTE: The following only works with the reference, so typeset it manually.
+@examples[
+(eval:alts (require cpsc411/reference/a2-solution cpsc411/2c-run-time) (void))
+(eval:alts (parameterize ([current-pass-list
+                (list generate-x64
+                      wrap-x64-run-time
+                      wrap-x64-boilerplate)])
+  (execute '(begin (set! rax 120)))) 120)
+(eval:alts (parameterize ([current-pass-list
+                (list implement-fvars
+                      generate-x64
+                      wrap-x64-run-time
+                      wrap-x64-boilerplate)])
+  (execute '(begin (set! fv1 120) (set! rax fv1)))) 120)
+(eval:alts (require cpsc411/reference/a1-solution) (void))
+(eval:alts (parameterize ([current-pass-list
+                (list generate-x64
+                      wrap-x64-run-time
+                      wrap-x64-boilerplate)])
+  (execute '(begin (set! rax 120)) nasm-run/exit-code)) 120)
+]
 }
 
 @defproc[(nasm-run/observe (runner path? any/c)) (-> string? any/c)]{
@@ -364,7 +395,7 @@ process, as a string.
 }
 
 @defproc[(nasm-run/error-string+code [s string?]) (cons/c (in-range/c 0 256) string?)]{
-A @tech{run-reader} that returns a pair of the exit code and thecontents of the standard error port of the
+A @tech{run-reader} that returns a pair of the exit code and the contents of the standard error port of the
 process as a string.
 }
 
@@ -706,12 +737,12 @@ The tag mask for the ptr encoding of the empty list.
 }
 
 @defparam[current-empty-tag bits int64?
-          #:value (unsyntax @code{#b00010110})]{
+         #:value (unsyntax @code[(format "#b~b" (current-empty-tag))])]{
 The tag for the ptr encoding of the empty list.
 }
 
 @defparam[current-empty-ptr bits int64?
-          #:value (unsyntax @code{#b11111111})]{
+          #:value (unsyntax @code[(format "#b~b" (current-empty-ptr))])]{
 The ptr encoding of the empty list.
 Note that this should always be identical to the @racket[current-empty-tag].
 }
@@ -897,10 +928,17 @@ argument is a tail-context statement.
 @racket[make-begin] will construct @racket[`(begin ,is ... ,t)], but try to
 minimize @racket[begins] in the process.
 
+Assumes that @racket[t] has already been constructed using @racket[make-begin].
+
 @examples[#:eval eg
 (make-begin '() '(halt 5))
 (make-begin '() '(begin (halt 5)))
 (make-begin '((set! rax 5)) '(begin (halt 5)))
+(make-begin '((set! rax 5)) '(begin (begin (halt 5))))
+(make-begin '((begin (set! rax 5))) '(begin (halt 5)))
+(make-begin '((begin (begin (set! rax 5)))) '(begin (halt 5)))
+(make-begin '((begin (begin (set! rax 5)))) '(begin (begin (halt 5))))
+(make-begin '((begin (begin (set! rax 5)))) (make-begin '() (make-begin '() '(halt 5))))
 ]
 }
 
@@ -914,6 +952,7 @@ minimize @racket[begins] in the process.
 (make-begin-effect '())
 (make-begin-effect '((begin (set! rax 5))))
 (make-begin-effect '((set! rax 5)))
+(make-begin-effect '((begin (begin (set! rax 5))) (begin (set! rax 5))))
 ]
 }
 

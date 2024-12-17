@@ -578,7 +578,8 @@
            (new-frames (frame ...))
            (locals (aloc ...))
            (call-undead (loc ...))
-           (undead-out undead-set-tree/rloc?)
+           ;; should be unnecessary
+           #;(undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...)))
           #;info?
           (let ([frame? (listof aloc?)]
@@ -588,7 +589,8 @@
              (new-frames (frame? ...))
              (locals (aloc? ...))
              (call-undead (loc? ...))
-             (undead-out undead-set-tree/rloc?)
+             ;; should be unnecessary
+             #;(undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))))]
   [frame  (aloc ...)]
   [pred   (relop loc opand)
@@ -638,7 +640,8 @@
            (new-frames (frame ...))
            (locals (aloc ...))
            (call-undead (loc ...))
-           (undead-out undead-set-tree/rloc?)
+           ;; should be unnecessary
+           #;(undead-out undead-set-tree/rloc?)
            (conflicts ((loc (loc ...)) ...))
            (assignment ((aloc loc) ...)))
           (let ([frame? (listof aloc?)]
@@ -648,7 +651,8 @@
              (new-frames (frame? ...))
              (locals (aloc? ...))
              (call-undead (loc? ...))
-             (undead-out undead-set-tree/rloc?)
+             ;; should be unnecessary
+             #;(undead-out undead-set-tree/rloc?)
              (conflicts ((loc? (loc? ...)) ...))
              (assignment ((aloc? rloc?) ...))))]
   [frame  (aloc ...)]

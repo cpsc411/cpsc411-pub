@@ -94,6 +94,61 @@
        u))
    (mutable-set)))
 
+(define (undead-set-tree-okay-v4? p)
+  (define (check-pred ust pred)
+    (match (cons ust pred)
+      [(cons `(,usts ... ,ust) `(begin ,effects ... ,pred))
+       (and
+        (eq? (length usts) (length effects))
+        (andmap check-effect usts effects)
+        (check-pred ust pred))]
+      [(cons `(,ustp ,ustc ,usta) `(if ,pred ,pred1 ,pred2))
+       (and
+        (check-pred ustp pred)
+        (check-pred ustc pred1)
+        (check-pred usta pred2))]
+      [(cons (? undead-set?) _) #t]
+      [_ #f]))
+
+  (define (check-effect ust effect)
+    (match (cons ust effect)
+      [(cons `(,usts ...) `(begin ,effects ...))
+       (and
+        (eq? (length usts) (length effects))
+        (andmap check-effect usts effects))]
+      [(cons `(,ustp ,ustc ,usta) `(if ,pred ,effect1 ,effect2))
+       (and
+        (check-pred ustp pred)
+        (check-effect ustc effect1)
+        (check-effect usta effect2))]
+      [(cons (? undead-set?) `(set! ,bla ,bla))
+       #t]
+      [_ #f]))
+
+  (define (check-tail ust tail)
+    (match (cons ust tail)
+      [(cons `(,usts ... ,ust_tail) `(begin ,effects ... ,tail))
+       (and (eq? (length usts) (length effects))
+            (andmap check-effect usts effects))]
+      [(cons `(,ustp ,ustc ,usta) `(if ,pred ,tail1 ,tail2))
+       (and
+        (check-pred ustp pred)
+        (check-tail ustc tail1)
+        (check-tail usta tail2))]
+      [(cons (? undead-set?) `(halt ,triv))
+       #t]
+      [_ #f]))
+  (match p
+    [`(module ,info ,tail)
+     (check-tail (info-ref info 'undead-out) tail)]
+    [_ #f]))
+
+(module+ test
+  (require rackunit)
+  (check-false
+   (undead-set-tree-okay-v4?
+   '(module ((locals (x.1 y.2 b.3 c.4)) (undead-out ((x.1) (x.1 y.2) (b.3 y.2) (b.3) (c.4 b.3) (c.4) (()) ((c.4) ())))) (begin (set! x.1 5) (set! y.2 x.1) (begin (set! b.3 x.1) (set! b.3 (+ b.3 y.2)) (set! c.4 b.3) (if (= c.4 b.3) (halt c.4) (begin (set! x.1 c.4) (halt c.4)))))))))
+
 ;; map from interpreters to validates for the source language
 (define validator-dict
   (hasheq
@@ -118,7 +173,7 @@
    interp-imp-cmf-lang-v4 imp-cmf-lang-v4?
    interp-asm-pred-lang-v4 asm-pred-lang-v4?
    interp-asm-pred-lang-v4/locals asm-pred-lang-v4/locals?
-   interp-asm-pred-lang-v4/undead asm-pred-lang-v4/undead?
+   interp-asm-pred-lang-v4/undead asm-pred-lang-v4/undead? #;(and/c asm-pred-lang-v4/undead? undead-set-tree-okay-v4?)
    interp-asm-pred-lang-v4/conflicts asm-pred-lang-v4/conflicts?
    interp-asm-pred-lang-v4/assignments asm-pred-lang-v4/assignments?
    interp-nested-asm-lang-v4 nested-asm-lang-v4?
@@ -348,7 +403,7 @@
               (set-box! _output (pass test-prog))))))
         (define output (unbox _output))
         (with-check-info (['output-program output])
-          (with-check-info (['type-type "Checking that output is syntactically correct"])
+          (with-check-info (['test-type "Checking that output is syntactically correct"])
             (when trg-validator
               (check-true (trg-validator output))))
           (define actual (box (void)))
