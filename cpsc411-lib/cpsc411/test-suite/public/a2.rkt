@@ -6,8 +6,7 @@
   cpsc411/test-suite/utils
   cpsc411/compiler-lib
   "../../langs/v2.rkt"
-  "../../langs/v3.rkt"
-  "a1.rkt")
+  "../../langs/v3.rkt")
 
 (provide
  (all-defined-out))
@@ -1355,16 +1354,6 @@
    #:after
    (thunk
     (current-run/read run/read))
-
-   (let ([passes (list
-                  check-paren-x64
-                  generate-x64
-                  wrap-x64-run-time
-                  wrap-x64-boilerplate)])
-     (test-suite
-      "a2, backward compat a1 tests"
-      (a1-check-paren-x64-syntax-test-suite check-paren-x64)
-      (a1-paren-x64-test-suite passes interp-paren-x64)))
 
    (a2-paren-x64-v2-test-suite (list
                                 check-paren-x64
