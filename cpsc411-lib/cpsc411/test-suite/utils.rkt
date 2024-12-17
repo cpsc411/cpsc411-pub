@@ -381,7 +381,9 @@
              #:when (eq? interp interp-src))
     pass))
 
-(define (test-compiler-pass pass src-interp trg-interp trg-validator [src-equiv equal?])
+(define (test-compiler-pass pass src-interp trg-interp trg-validator
+                            [src-equiv equal?]
+                            #:grading [grading? #f])
   (when (eq? trg-interp interp-base)
     (error "interp-base used as target interpreter"))
   (define target-interp-progs (hash-ref! test-prog-dict trg-interp (mutable-set)))
@@ -413,9 +415,17 @@
                       (set-box! actual (trg-interp output))))))
           (with-check-info (['test-type "Checking that output produces correct value"])
             (check src-equiv expected (unbox actual)))
-          (set-add! target-interp-progs `(,name ,output ,(unbox actual))))))))
+          ; if grading, disable dynamic generation.
+          ; these are useful for debugging, since they isolate bugs, but screw up test count for assessment.
+          (unless grading?
+            (set-add! target-interp-progs `(,name ,output ,(unbox actual)))))))))
 
-(define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)])
+; Disables fragile/feedback-only tests, typically for grading but also if you
+; just want to.
+(define current-enable-grading (make-parameter #f))
+
+(define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)]
+                             #:grading [grading? (current-enable-grading)])
   (unless (eq? (length _pass-ls) (length _interp-ls))
     (error "Compiler Testomatic expects the pass list to be the same length as the interpreter list."
            _pass-ls
@@ -466,7 +476,8 @@
             [(? procedure?)
              (values trg-extras equal?)]
             [_ (values #f equal?)]))
-        (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv)
+        (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv
+                            #:grading grading?)
         (loop (rest pass-ls) (rest interp-ls))]))))
 
 
@@ -476,10 +487,6 @@
 (define current-input-encoder (make-parameter (lambda (x) x)))
 (define current-actual-decoder (make-parameter (lambda (x) x)))
 (define current-expected-masker (make-parameter (lambda (x) x)))
-
-; Disables fragile/feedback-only tests, typically for grading but also if you
-; just want to.
-(define current-enable-grading (make-parameter #f))
 
 (define-syntax-rule (fragile-test-case e)
   (if (current-enable-grading)
