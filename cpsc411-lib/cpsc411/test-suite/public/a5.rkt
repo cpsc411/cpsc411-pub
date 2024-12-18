@@ -10,7 +10,6 @@
  cpsc411/compiler-lib
  cpsc411/2c-run-time
  "../../langs/v5.rkt"
- "a2.rkt"
  "a3.rkt"
  "a4.rkt")
 
@@ -101,24 +100,6 @@
 
    (test-suite
     "a5 backwards compatibility tests"
-    (a2-paren-x64-v2-test-suite (list
-                                 values; check-paren-x64
-                                 generate-x64
-                                 wrap-x64-run-time
-                                 wrap-x64-boilerplate)
-                                interp-paren-x64)
-
-    (a2-implement-fvars-test-suite passes implement-fvars)
-    (a2-patch-instructions-test-suite passes patch-instructions)
-    #;(a2-flatten-begins-test-suite passes flatten-program)
-    (a2-select-instructions-test-suite passes select-instructions)
-    #;(a2-assign-homes-test-suite passes assign-homes-opt)
-    #;(a2-assign-homes-test-suite passes assign-homes)
-    (a2-normalize-bind-test-suite passes normalize-bind)
-    (a2-sequentialize-let-test-suite passes sequentialize-let)
-    (a2-uniquify-test-suite passes uniquify)
-    (a2-check-values-lang-test-suite passes check-values-lang)
-    #;(a2-values-lang-test-suite passes interp-values-lang)
 
     (a3-public-test-undead-sets undead-analysis)
     (a3-conflict-analysis-tests conflict-analysis)

@@ -4,8 +4,7 @@
  racket/match
  rackunit
  cpsc411/test-suite/utils
- cpsc411/compiler-lib
- "a2.rkt")
+ cpsc411/compiler-lib)
 
 (provide (all-defined-out))
 
@@ -582,27 +581,6 @@
    #:after
    (thunk
     (current-run/read run/read))
-
-   (test-suite
-    "a3 backwards compatibility tests"
-    (a2-paren-x64-v2-test-suite (list
-                                 check-paren-x64
-                                 generate-x64
-                                 wrap-x64-run-time
-                                 wrap-x64-boilerplate)
-                                interp-paren-x64)
-
-    (a2-implement-fvars-test-suite passes implement-fvars)
-    (a2-patch-instructions-test-suite passes patch-instructions)
-    (a2-flatten-begins-test-suite passes flatten-begins)
-    (a2-select-instructions-test-suite passes select-instructions)
-    ;(a2-assign-homes-test-suite passes assign-homes-opt)
-    (a2-assign-homes-test-suite passes assign-homes)
-    (a2-normalize-bind-test-suite passes normalize-bind)
-    (a2-sequentialize-let-test-suite passes sequentialize-let)
-    (a2-uniquify-test-suite passes uniquify)
-    (a2-check-values-lang-test-suite passes check-values-lang)
-    (a2-values-lang-test-suite passes interp-values-lang))
 
    (test-suite
     "a3 tests"
