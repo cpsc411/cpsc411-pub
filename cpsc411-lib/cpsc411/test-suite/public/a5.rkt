@@ -10,7 +10,6 @@
  cpsc411/compiler-lib
  cpsc411/2c-run-time
  "../../langs/v5.rkt"
- "a3.rkt"
  "a4.rkt")
 
 (provide (all-defined-out))
@@ -100,10 +99,6 @@
 
    (test-suite
     "a5 backwards compatibility tests"
-
-    (a3-public-test-undead-sets undead-analysis)
-    (a3-conflict-analysis-tests conflict-analysis)
-    (a3-assign-registers-stress-tests assign-registers)
 
     (a4-link-paren-x64-test-suite link-paren-x64)
     (a4-interp-paren-x64-test-suite interp-paren-x64)

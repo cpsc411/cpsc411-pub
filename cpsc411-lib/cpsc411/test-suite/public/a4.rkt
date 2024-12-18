@@ -6,7 +6,7 @@
  cpsc411/test-suite/utils
  cpsc411/compiler-lib
  "../../langs/v4.rkt"
- "a3.rkt")
+ )
 
 (provide (all-defined-out))
 
@@ -710,13 +710,6 @@ mov rax, rdx")
    #:after
    (thunk
     (current-run/read run/read))
-
-   (test-suite
-    "a4 backwards compatibility tests"
-
-    (a3-public-test-undead-sets undead-analysis)
-    (a3-conflict-analysis-tests conflict-analysis)
-    (a3-assign-registers-stress-tests assign-registers))
 
    (a4-link-paren-x64-test-suite link-paren-x64)
    (a4-interp-paren-x64-test-suite interp-paren-x64)
