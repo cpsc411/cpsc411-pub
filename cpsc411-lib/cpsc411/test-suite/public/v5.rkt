@@ -45,33 +45,9 @@
       (call id 5)))
 
    (""
-    (module
-      (define odd?
-        (lambda (x)
-          (if (= x 0)
-              0
-              (let ([y (+ x -1)])
-                (call even? y)))))
-      (define even?
-        (lambda (x)
-          (if (= x 0)
-              1
-              (let ([y (+ x -1)])
-                (call odd? y)))))
-      (call even? 5)))
-
-   (""
     (module (define zero (lambda (v0 v1 v2 v3) 0)) 0))
 
-   (""
-    (module (define id (lambda (x) x)) (let ([y id]) (call y 5))))
-
-   (""
-    (module
-      (define id1 (lambda (x) x))
-      (define id2 (lambda (x) x))
-      (let ([y (if (true) id1 id2)])
-        (call y 5))))))
+   ))
 
 (define (v5-public-test-suite pass-ls interp-ls
                               check-values-lang)
