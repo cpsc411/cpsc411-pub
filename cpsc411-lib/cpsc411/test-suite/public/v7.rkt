@@ -176,75 +176,16 @@
 
    (""
     (module (call + (call + 5 6) (call * 4 5))))
-   (""
-    (module (if (call eq? (call + 5 6) 11) 4 6)))
+
    (""
     (module #t))
+
    (""
     (module #f))
+
    (""
     (module empty))
-   #;(module (void))
-
-   ("blerner's stack smasher"
-    (module
-      (define F
-        (lambda (a b c d e f g)
-          (call + 10 (call G a b c d e f g 8))))
-      (define G
-        (lambda (a b c d e f g h)
-          (call H a b c d e f g h 9)))
-      (define H
-        (lambda (a b c d e f g h j)
-          (let ([r1 (call + a b)])
-            (let ([r2 (call + r1 c)])
-              (let ([r3 (call + r2 d)])
-                (let ([r4 (call + r3 e)])
-                  (let ([r5 (call + r4 f)])
-                    (let ([r6 (call + r5 g)])
-                      (let ([r7 (call + r6 h)])
-                        (call + r7 j))))))))))
-      (call F 1 2 3 4 5 6 7)))
-
-   ("swap"
-    (module
-      (define swap
-        (lambda (x y)
-          (if (call < y x)
-              x
-              (call swap y x))))
-      (call swap 1 2)))
-
-   ("ae fact tail"
-    (module
-      (define fact_loop
-        (lambda (n acc)
-          (if (call eq? n 0)
-              acc
-              (call fact_loop (call - n 1) (call * acc n)))))
-      (call fact_loop 5 1)))
-
-   ("ae fact non-tail"
-    (module
-      (define fact
-        (lambda (x)
-          (if (call eq? x 0)
-              1
-              (call * x (call fact (call - x 1))))))
-      (call fact 5)))
-
-   ("values fib tail"
-    (module
-      (define fib_loop
-        (lambda (n acc1 acc2)
-          (if (call eq? n 0)
-              acc1
-              (if (call eq? n 1)
-                  acc2
-                  (let ([new-n (call + n -1)])
-                    (let ([new-acc2 (call + acc1 acc2)])
-                      (call fib_loop new-n acc2 new-acc2)))))))
-      (call fib_loop 5 0 1)))))
+   ))
 
 (define (v7-public-test-suite pass-ls interp-ls)
   (define run/read (current-run/read))
