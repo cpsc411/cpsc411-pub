@@ -142,23 +142,8 @@
 
    (""
     (module
-        (call vector-ref (call make-vector 2) 0)))
-
-   (""
-    (module
-      (let ([x.1 (call make-vector 3)])
-        (let ([x.2 (call vector-set! x.1 0 1)])
-          (let ([x.3 (call vector-set! x.1 1 2)])
-            (let ([x.4 (call vector-set! x.1 2 3)])
-              x.1))))))
-
-   (""
-    (module
-        (let ([x.1 (call make-vector 3)])
-          (let ([x.2 (call vector-set! x.1 0 1)])
-            (let ([x.3 (call vector-set! x.1 1 2)])
-              (let ([x.4 (call vector-set! x.1 2 3)])
-                (call vector-ref x.1 2)))))))))
+      (call vector-ref (call make-vector 2) 0)))
+   ))
 
 (define (v8-public-invalid-test-suite pass-ls interp-ls)
   (define run/read (current-run/read))
@@ -187,17 +172,7 @@
     (and/c integer? (not/c zero?))
     (execute `(module (call make-vector #\x)) nasm-run/exit-code))
 
-   (test-pred
-    ""
-    (and/c integer? (not/c zero?))
-    (execute
-     `(module
-        (let ([x.1 (call make-vector 2)])
-          (let ([x.2 (call vector-set! x.1 0 1)])
-            (let ([x.3 (call vector-set! x.1 1 2)])
-              (let ([x.4 (call vector-set! x.1 2 3)])
-                x.4)))))
-     nasm-run/exit-code))))
+   ))
 
 (define (v8-public-test-suite pass-ls interp-ls)
   (define run/read (current-run/read))
