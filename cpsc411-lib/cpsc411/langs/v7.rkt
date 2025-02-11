@@ -58,7 +58,8 @@
         (apply unsafe ops))))
 
   (define-syntax-rule (define-error-ret f unsafe)
-    (r:define f (wrap-error-ret 'f unsafe)))
+    ;; eta expand to get arity right
+    (r:define f (r:lambda (x y) ((wrap-error-ret 'f unsafe) x y))))
 
   (define-error-ret + unsafe-fx+)
   (define-error-ret - unsafe-fx-)

@@ -32,12 +32,13 @@
  (rename-out
   [new-+ +]
   [new-- -]
-  [new-* *])
+  [new-* *]
+  [new-> >]
+  [new-< <]
+  [new-<= <=]
+  [new->= >=]
+  )
  =
- >
- <
- <=
- >=
 
  bitwise-and
  fixnum?
@@ -52,7 +53,7 @@
  cons
  car
  cdr
- make-vector
+ (rename-out [new-make-vector make-vector])
  vector-length
  vector-set!
  vector-ref)
@@ -387,6 +388,11 @@
 (define new-+ x64-add)
 (define new-- x64-sub)
 (define new-* x64-mul)
+;; eta expand to get arity right
+(define new-< (lambda (x y) (< x y)))
+(define new-<= (lambda (x y) (<= x y)))
+(define new-> (lambda (x y) (> x y)))
+(define new->= (lambda (x y) (>= x y)))
 
 (require (for-syntax (only-in "../compiler-lib.rkt" aloc?)))
 
@@ -446,6 +452,9 @@
     (when (equal? val 'uninitialized)
       (r:error 'unsafe-vector-ref "attempting to read from uninitialized memory"))
     val))
+
+; eta expand to get arity right
+(define (new-make-vector x) (make-vector x))
 
 (define ALIGN 8)
 (define memory (make-vector 10000 'un-aloced))
