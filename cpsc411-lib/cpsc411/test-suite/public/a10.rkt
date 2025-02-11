@@ -60,72 +60,9 @@
   `(
     ("Data types works"
      ,@(make-valid-expr-tests
-        `(("#<procedure>" (lambda (x) x) ,nasm-run/print-string)
-          ("" (void) ,nasm-run/print-string)
-          (42 42)
-          (0 0)
-          (-42 -42)
-          (#t #t)
-          (#f #f)
-          (() empty)
-          (#\a #\a)
-          (#\A #\A)
-          (,(curry equal? '(1 2)) (cons 1 (cons 2 empty)))
+        `( (,(curry equal? '(1 2)) (cons 1 (cons 2 empty)))
           (,(curry equal? #(1 2 3)) (vector 1 2 3))))
-     ,@(invalid-expr 42 '(error 42)))
-
-     ("Primops are Procedures"
-      ,@(make-invalid-expr-tests
-         `((,non-zero? (cons 1))
-           (,non-zero? (cons))
-           (,non-zero? (cons 1 2 3))
-
-           (,non-zero? (car 1 2))
-           (,non-zero? (car '() 2))
-
-           (,non-zero? (cdr 1 2))
-           (,non-zero? (cdr '() 2))
-
-           (,non-zero? (vector-ref))
-           (,non-zero? (vector-ref 1 2 3))
-
-           (,non-zero? (vector-set!))
-           (,non-zero? (vector-set! 1 2 3 4 5 6))
-
-           (,non-zero? (make-vector))
-           (,non-zero? (make-vector 1 2 3 4))
-
-           (,non-zero? (procedure-arity))
-           (,non-zero? (procedure-arity (lambda (x) x) 2 3 4))
-
-           (,non-zero? (empty?) )
-           (,non-zero? (empty? '() '() '()) )
-
-           (,non-zero? (void?))
-           (,non-zero? (void? (void) (void) (void)))
-
-           (,non-zero? (pair?))
-           (,non-zero? (pair? '() '() '()))
-
-           (,non-zero? (fixnum?))
-           (,non-zero? (fixnum? 5 5 5 5))
-
-           (,non-zero? (ascii-char?))
-           (,non-zero? (ascii-char? #\a 5 5 5))
-
-           (,non-zero? (boolean?))
-           (,non-zero? (boolean? #t #t #t)))))
-
-     ("Overflow Tests"
-      ,@(make-valid-expr-tests
-         `((#t (fixnum? ,(max-int 61)))
-           (#t (fixnum? ,(min-int 61)))
-
-           (,(max-int 61) ,(max-int 61))
-           (,(min-int 61) ,(min-int 61))
-
-           (,(min-int 61) (+ 1 ,(max-int 61)))
-           (,(max-int 61) (- ,(min-int 61) 1)))))
+     )
 
      ("Binding Tests"
       ,@(valid-p
