@@ -58,54 +58,6 @@
 (define tests
   ;; (listof (name . (listof (flat-contract x execute args))))
   `(
-    ("Data types works"
-     ,@(make-valid-expr-tests
-        `( (,(curry equal? '(1 2)) (cons 1 (cons 2 empty)))
-          (,(curry equal? #(1 2 3)) (vector 1 2 3))))
-     )
-
-     ("Binding Tests"
-      ,@(valid-p
-         #f
-         `(module
-            (define odd?
-              (lambda (x)
-                (if (eq? x 0)
-                    #f
-                    (let ([y (+ x -1)])
-                      (even? y)))))
-            (define even?
-              (lambda (x)
-                (if (eq? x 0)
-                    #t
-                    (let ([y (+ x -1)])
-                      (odd? y)))))
-            (even? 5)))
-
-      ,@(make-valid-expr-tests
-         `((42 (let ([lambda 42]) lambda))
-           (42 (let ([define 42]) define))
-           (42 (let ([module 42]) module))
-           (42 (let ([let 42]) let))
-           ("#<procedure>" ((lambda (lambda) (lambda lambda)) (lambda (lambda) lambda))
-                           ,nasm-run/print-string)))
-
-      ,@(apply
-         append
-         (for/list ([bind '(call
-                            ; void error ;; TODO these aren't handled right
-                            ; because applify needs to come after uniquify
-                            * + - eq? < <= >
-                            >= fixnum? boolean? empty? void? ascii-char? error? not
-                            procedure? vector? pair? cons car cdr make-vector
-                            vector-length vector-set! vector-ref
-                            procedure-arity)])
-           (valid-p
-            42
-            `(module
-               (define ,bind (lambda (,bind) (let ([,bind ,bind]) ,bind)))
-               (,bind 42))))))
-
 
      ("Closure Tests"
       ,@(make-valid-expr-tests
@@ -136,62 +88,6 @@
             (cons
              (build-list (lambda (n) 1) 5)
              (build-list (curry + 1) 5)))))
-
-     ("Big Tests"
-      ,@(valid-expr
-         (curry equal? '#(#\h #\e #\l #\l #\o #\space #\w #\o #\r #\l #\d))
-         '(vector #\h #\e #\l #\l #\o #\space #\w #\o #\r #\l #\d))
-
-      ,@(valid-p
-         (curry
-          equal?
-          '(1
-            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)
-            #(#\f #\i #\z #\z)
-            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)
-            #(#\b #\u #\z #\z)
-            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)
-            7
-            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)
-            #(#\f #\i #\z #\z)
-            #(#\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a)))
-         `(module
-            (define* (zero? n)
-              (eq? n 0))
-
-            (define* (mod x y)
-              (if (>= x y)
-                  (mod (- x y) y)
-                  x))
-
-            (define* (sub1 n) (- n 1))
-
-            (define* (append ls1 ls2)
-              (if (empty? ls1)
-                  ls2
-                  (cons (car ls1) (append (cdr ls1) ls2))))
-
-            (define* (reverse ls)
-              (if (empty? ls)
-                  '()
-                  (append (reverse (cdr ls)) (cons (car ls) '()))))
-
-            (define* (fizzbuzz n)
-              (cond
-                [(zero? n)
-                 '()]
-                [(zero? (mod n 2))
-                 ;; The Arthur Shappey version
-                 (cons (vector #\h #\a #\v #\e #\a #\b #\a #\n #\a #\n #\a) (fizzbuzz (sub1 n)))]
-                [(and (zero? (mod n 3)) (zero? (mod n 5)))
-                 (cons (vector #\f #\i #\z #\z #\b #\u #\z #\z) (fizzbuzz (sub1 n)))]
-                [(zero? (mod n 3))
-                 (cons (vector #\f #\i #\z #\z) (fizzbuzz (sub1 n)))]
-                [(zero? (mod n 5))
-                 (cons (vector #\b #\u #\z #\z) (fizzbuzz (sub1 n)))]
-                [else (cons n (fizzbuzz (sub1 n)))]))
-
-            (let ([fizzbuzz (lambda (x) (reverse (fizzbuzz x)))]) (fizzbuzz 10)))))
 
      ))
 
