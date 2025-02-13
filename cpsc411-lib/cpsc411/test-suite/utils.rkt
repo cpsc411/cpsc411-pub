@@ -52,7 +52,7 @@
      `(error ,(arithmetic-shift v -8))]
     [(? ascii-ptr?)
      (integer->char (arithmetic-shift v -8))]
-    ;; hm.
+    ;; hm. need to be able to access memory from the interpreter to do this.
     [(? vector-ptr?)
      (make-vector 0)]
     [(? cons-ptr?)
@@ -149,7 +149,41 @@
    (undead-set-tree-okay-v4?
    '(module ((locals (x.1 y.2 b.3 c.4)) (undead-out ((x.1) (x.1 y.2) (b.3 y.2) (b.3) (c.4 b.3) (c.4) (()) ((c.4) ())))) (begin (set! x.1 5) (set! y.2 x.1) (begin (set! b.3 x.1) (set! b.3 (+ b.3 y.2)) (set! c.4 b.3) (if (= c.4 b.3) (halt c.4) (begin (set! x.1 c.4) (halt c.4)))))))))
 
-;; map from interpreters to validates for the source language
+;; map from interpreters to extras for the source language
+;; extras are either:
+;; - a validator
+;; - or a list of a validator and an equivalence function
+;; - or a list of a validator, an equivalence function between source and target values, and an equvialence function between source and *read* values
+;;   (the third function is used when running in grading mode, from the source to the final execution, and depends on how the result value is read back)
+
+; when is a ptr equal to a v?
+(define ptr/v-equal? (lambda (sv tv) (equal? (ptr->v sv) tv)))
+
+; when is a v equal to a ptr?
+(define v/ptr-equal? (lambda (sv tv) (equal? sv (ptr->v tv))))
+
+;; TODO: these could probably replaced the above as they're strictly more general.
+(define mem-v/ptr-equal?
+  (lambda (sv tv)
+    (cond
+      ; have to approximate because we can't read the interpreter's memory
+      [(vector? sv)
+       (vector? (ptr->v tv))]
+      [(cons? sv)
+       (cons? (ptr->v tv))]
+      [else
+        (v/ptr-equal? sv tv)])))
+(define mem-ptr/v-equal?
+  (lambda (sv tv)
+    (cond
+      ; have to approximate because we can't read the interpreter's memory
+      [(vector? (ptr->v sv))
+       (vector? tv)]
+      [(cons? (ptr->v sv))
+       (cons? tv)]
+      [else
+        (ptr/v-equal? sv tv)])))
+
 (define validator-dict
   (hasheq
    interp-paren-x64-v1 paren-x64-v1?
@@ -224,46 +258,41 @@
    interp-exprs-lang-v7 exprs-lang-v7?
    interp-exprs-unique-lang-v7 exprs-unique-lang-v7?
    interp-exprs-unsafe-data-lang-v7 (list exprs-unsafe-data-lang-v7?
-                                          (lambda (sv tv)
-                                            (equal? sv (ptr->v tv))))
-   interp-exprs-bits-lang-v7 exprs-bits-lang-v7?
-   interp-values-bits-lang-v7 values-bits-lang-v7?
-   interp-imp-mf-lang-v7 imp-mf-lang-v7?
-   interp-proc-imp-cmf-lang-v7 proc-imp-cmf-lang-v7?
-   interp-imp-cmf-lang-v7 imp-cmf-lang-v7?
-   interp-asm-pred-lang-v7 asm-pred-lang-v7?
-   interp-asm-pred-lang-v7/locals asm-pred-lang-v7/locals?
-   interp-asm-pred-lang-v7/undead asm-pred-lang-v7/undead?
-   interp-asm-pred-lang-v7/conflicts asm-pred-lang-v7/conflicts?
-   interp-asm-pred-lang-v7/pre-framed asm-pred-lang-v7/pre-framed?
-   interp-asm-pred-lang-v7/framed asm-pred-lang-v7/framed?
-   interp-asm-pred-lang-v7/spilled asm-pred-lang-v7/spilled?
-   interp-asm-pred-lang-v7/assignments asm-pred-lang-v7/assignments?
-   interp-nested-asm-lang-fvars-v7 nested-asm-lang-fvars-v7?
-   interp-nested-asm-lang-v7 nested-asm-lang-v7?
-   interp-block-pred-lang-v7 block-pred-lang-v7?
-   interp-block-asm-lang-v7 block-asm-lang-v7?
-   interp-para-asm-lang-v7 para-asm-lang-v7?
+                                          v/ptr-equal?
+                                          equal?)
+   interp-exprs-bits-lang-v7 (list exprs-bits-lang-v7? 
+                                   equal? 
+                                   ptr/v-equal?)
+   interp-values-bits-lang-v7 (list values-bits-lang-v7? equal? ptr/v-equal?)
+   interp-imp-mf-lang-v7 (list imp-mf-lang-v7? equal? ptr/v-equal?)
+   interp-proc-imp-cmf-lang-v7 (list proc-imp-cmf-lang-v7? equal? ptr/v-equal?)
+   interp-imp-cmf-lang-v7 (list imp-cmf-lang-v7? equal? ptr/v-equal?)
+   interp-asm-pred-lang-v7 (list asm-pred-lang-v7? equal? ptr/v-equal?)
+   interp-asm-pred-lang-v7/locals (list asm-pred-lang-v7/locals? equal? ptr/v-equal?)
+   interp-asm-pred-lang-v7/undead (list asm-pred-lang-v7/undead? equal? ptr/v-equal?)
+   interp-asm-pred-lang-v7/conflicts (list asm-pred-lang-v7/conflicts? equal? ptr/v-equal?)
+   interp-asm-pred-lang-v7/pre-framed (list asm-pred-lang-v7/pre-framed? equal? ptr/v-equal?)
+   interp-asm-pred-lang-v7/framed (list asm-pred-lang-v7/framed? equal? ptr/v-equal?)
+   interp-asm-pred-lang-v7/spilled (list asm-pred-lang-v7/spilled? equal? ptr/v-equal?)
+   interp-asm-pred-lang-v7/assignments (list asm-pred-lang-v7/assignments? equal? ptr/v-equal?)
+   interp-nested-asm-lang-fvars-v7 (list nested-asm-lang-fvars-v7? equal? ptr/v-equal?)
+   interp-nested-asm-lang-v7 (list nested-asm-lang-v7? equal? ptr/v-equal?)
+   interp-block-pred-lang-v7 (list block-pred-lang-v7? equal? ptr/v-equal?)
+   interp-block-asm-lang-v7 (list block-asm-lang-v7? equal? ptr/v-equal?)
+   interp-para-asm-lang-v7 (list para-asm-lang-v7? equal? ptr/v-equal?)
    interp-paren-x64-v7 (list paren-x64-v7?
-                             (lambda (sv tv)
-                               (equal? (ptr->v sv) tv)))
+                             ptr/v-equal?
+                             ptr/v-equal?)
 
    interp-exprs-lang-v8 exprs-lang-v8?
    interp-exprs-unique-lang-v8 exprs-unique-lang-v8?
    interp-exprs-unsafe-data-lang-v8 (list exprs-unsafe-data-lang-v8?
-                                          (lambda (sv tv)
-                                            (cond
-                                              [(vector? sv)
-                                               (vector? (ptr->v tv))]
-                                              [(cons? sv)
-                                               (cons? (ptr->v tv))]
-                                              [else
-                                               (equal? sv (ptr->v tv))])))
-   interp-exprs-bits-lang-v8 exprs-bits-lang-v8?
-   interp-values-bits-lang-v8 values-bits-lang-v8?
-   interp-imp-mf-lang-v8 imp-mf-lang-v8?
-   interp-proc-imp-cmf-lang-v8 proc-imp-cmf-lang-v8?
-   interp-imp-cmf-lang-v8 imp-cmf-lang-v8?
+                                          mem-v/ptr-equal?)
+   interp-exprs-bits-lang-v8 (list exprs-bits-lang-v8? equal? mem-ptr/v-equal?)
+   interp-values-bits-lang-v8 (list values-bits-lang-v8? equal? mem-ptr/v-equal?)
+   interp-imp-mf-lang-v8 (list imp-mf-lang-v8? equal? mem-ptr/v-equal?)
+   interp-proc-imp-cmf-lang-v8 (list proc-imp-cmf-lang-v8? equal? mem-ptr/v-equal?)
+   interp-imp-cmf-lang-v8 (list imp-cmf-lang-v8? equal? mem-ptr/v-equal?)
    interp-asm-alloc-lang-v8
    (list asm-alloc-lang-v8?
          (lambda (sv tv)
@@ -273,30 +302,25 @@
              [(cons? (ptr->v sv))
               (cons? (ptr->v tv))]
              [else
-              (equal? sv tv)])))
-   interp-asm-pred-lang-v8 asm-pred-lang-v8?
-   interp-asm-pred-lang-v8/locals asm-pred-lang-v8/locals?
-   interp-asm-pred-lang-v8/undead asm-pred-lang-v8/undead?
-   interp-asm-pred-lang-v8/conflicts asm-pred-lang-v8/conflicts?
-   interp-asm-pred-lang-v8/pre-framed asm-pred-lang-v8/pre-framed?
-   interp-asm-pred-lang-v8/framed asm-pred-lang-v8/framed?
-   interp-asm-pred-lang-v8/spilled asm-pred-lang-v8/spilled?
-   interp-asm-pred-lang-v8/assignments asm-pred-lang-v8/assignments?
-   interp-nested-asm-lang-fvars-v8 nested-asm-lang-fvars-v8?
-   interp-nested-asm-lang-v8 nested-asm-lang-v8?
-   interp-block-pred-lang-v8 block-pred-lang-v8?
-   interp-block-asm-lang-v8 block-asm-lang-v8?
-   interp-para-asm-lang-v8 para-asm-lang-v8?
-   interp-paren-x64-mops-v8 paren-x64-mops-v8?
+              (equal? sv tv)]))
+         mem-ptr/v-equal?)
+   interp-asm-pred-lang-v8 (list asm-pred-lang-v8? equal? mem-ptr/v-equal?)
+   interp-asm-pred-lang-v8/locals (list asm-pred-lang-v8/locals? equal? mem-ptr/v-equal?)
+   interp-asm-pred-lang-v8/undead (list asm-pred-lang-v8/undead? equal? mem-ptr/v-equal?)
+   interp-asm-pred-lang-v8/conflicts (list asm-pred-lang-v8/conflicts? equal? mem-ptr/v-equal?)
+   interp-asm-pred-lang-v8/pre-framed (list asm-pred-lang-v8/pre-framed? equal? mem-ptr/v-equal?)
+   interp-asm-pred-lang-v8/framed (list asm-pred-lang-v8/framed? equal? mem-ptr/v-equal?)
+   interp-asm-pred-lang-v8/spilled (list asm-pred-lang-v8/spilled? equal? mem-ptr/v-equal?)
+   interp-asm-pred-lang-v8/assignments (list asm-pred-lang-v8/assignments? equal? mem-ptr/v-equal?)
+   interp-nested-asm-lang-fvars-v8 (list nested-asm-lang-fvars-v8? equal? mem-ptr/v-equal?)
+   interp-nested-asm-lang-v8 (list nested-asm-lang-v8? equal? mem-ptr/v-equal?)
+   interp-block-pred-lang-v8 (list block-pred-lang-v8? equal? mem-ptr/v-equal?)
+   interp-block-asm-lang-v8 (list block-asm-lang-v8? equal? mem-ptr/v-equal?)
+   interp-para-asm-lang-v8 (list para-asm-lang-v8? equal? mem-ptr/v-equal?)
+   interp-paren-x64-mops-v8 (list paren-x64-mops-v8? equal? mem-ptr/v-equal?)
    interp-paren-x64-v8 (list paren-x64-v8?
-                             (lambda (sv tv)
-                               (cond
-                                 [(vector? (ptr->v sv))
-                                  (vector? tv)]
-                                 [(cons? (ptr->v sv))
-                                  (cons? tv)]
-                                 [else
-                                  (equal? (ptr->v sv) tv)])))
+                             mem-ptr/v-equal?
+                             mem-ptr/v-equal?)
 
    interp-exprs-lang-v9 exprs-lang-v9?
    interp-exprs-unique-lang-v9 exprs-unique-lang-v9?
@@ -308,14 +332,7 @@
    interp-closure-lang-v9 closure-lang-v9?
    interp-hoisted-lang-v9 hoisted-lang-v9?
    interp-proc-exposed-lang-v9 (list proc-exposed-lang-v9?
-                                     (lambda (sv tv)
-                                       (cond
-                                         [(vector? sv)
-                                          (vector? (ptr->v tv))]
-                                         [(cons? sv)
-                                          (cons? (ptr->v tv))]
-                                         [else
-                                          (equal? sv (ptr->v tv))])))
+                                     mem-v/ptr-equal?)
 
    interp-racketish-surface racketish-surface?
    interp-racketish-unique racketish-unique?))
