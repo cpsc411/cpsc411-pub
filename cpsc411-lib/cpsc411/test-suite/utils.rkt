@@ -260,8 +260,8 @@
    interp-exprs-unsafe-data-lang-v7 (list exprs-unsafe-data-lang-v7?
                                           v/ptr-equal?
                                           equal?)
-   interp-exprs-bits-lang-v7 (list exprs-bits-lang-v7? 
-                                   equal? 
+   interp-exprs-bits-lang-v7 (list exprs-bits-lang-v7?
+                                   equal?
                                    ptr/v-equal?)
    interp-values-bits-lang-v7 (list values-bits-lang-v7? equal? ptr/v-equal?)
    interp-imp-mf-lang-v7 (list imp-mf-lang-v7? equal? ptr/v-equal?)
@@ -406,7 +406,7 @@
   (define target-interp-progs (hash-ref! test-prog-dict trg-interp (mutable-set)))
   (make-test-suite (format "~a suite" (or (object-name pass) 'anonymous))
     (for/list ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
-	       [i (in-naturals)])
+               [i (in-naturals)])
       (define name (first test-prog-entry))
       (define test-prog (second test-prog-entry))
       (define expected (third test-prog-entry))
@@ -415,8 +415,8 @@
                         ['src-interp (object-name src-interp)]
                         ['trg-interp (object-name trg-interp)])
         (test-suite (format "Suite for entry ~a" i)
-	  (test-begin
-	    (define _output (box (void)))
+          (test-begin
+            (define _output (box (void)))
             (with-check-info (['test-type "Checking test-program compiles without error"])
               (check-not-exn
                (thunk
@@ -479,13 +479,15 @@
         (define trg-interp (second interp-ls))
         (define src-extras (hash-ref validator-dict src-interp #f))
         ;; src programs are assumed to be valid, so ignore src validator
-        (define-values (_1 src-equiv)
+        (define-values (_1 src-equiv trg-equiv)
           (match src-extras
-            [`(,src-validator ,src-equiv)
+            [`(,src-validator ,src-equiv ,trg-equiv)
              (apply values src-extras)]
+            [`(,src-validator ,src-equiv)
+             (values src-validator src-equiv equal?)]
             [(? procedure?)
-             (values src-extras equal?)]
-            [_ (values #f equal?)]))
+             (values src-extras equal? equal?)]
+            [_ (values #f equal? equal?)]))
         (define trg-extras (hash-ref validator-dict trg-interp #f))
         ;; src directs the equivalence, so ignore trg equiv
         (define-values (trg-validator _2)
@@ -495,22 +497,26 @@
             [(? procedure?)
              (values trg-extras equal?)]
             [_ (values #f equal?)]))
-	; in grading mode, just execute each test-prog-entry with the passls to the end.
+        ; in grading mode, just execute each test-prog-entry with the passls to the end.
         ; otherwise, certain simple passes have false negatives
-	(cons
-	  (if grading?
-	    (make-test-suite
-	      (format "~a suite" (or (object-name pass) 'anonymous))
-	      (begin
-		(for/list ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
-			   [i (in-naturals)])
-		  (test-suite (format "Entry ~a" test-prog-entry)
-		    (check-equal?
-		      (parameterize ([current-pass-list pass-ls])
-			(execute test-prog-entry run/read))
-		      (src-interp test-prog-entry))))))
-	    (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv))
-	  (loop (rest pass-ls) (rest interp-ls)))]))))
+        (cons
+          (if grading?
+            (make-test-suite
+              (format "Pass \"~a\" suite" (or (object-name pass) 'anonymous))
+              (begin
+                (for/list ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
+                           [i (in-naturals)])
+                  (define name (first test-prog-entry))
+                  (define test-prog (second test-prog-entry))
+                  (define expected (third test-prog-entry))
+                  (test-suite (format "Entry \"~a\"" name)
+                    (check
+                      trg-equiv
+                      expected
+                      (parameterize ([current-pass-list pass-ls])
+                        (execute test-prog run/read)))))))
+            (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv))
+          (loop (rest pass-ls) (rest interp-ls)))]))))
 
 
 ;; OLD INFRASTRUCTURE
