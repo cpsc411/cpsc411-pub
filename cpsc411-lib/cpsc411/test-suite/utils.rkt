@@ -387,38 +387,40 @@
   (when (eq? trg-interp interp-base)
     (error "interp-base used as target interpreter"))
   (define target-interp-progs (hash-ref! test-prog-dict trg-interp (mutable-set)))
-  (for ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
-        [i (in-naturals)])
-    (define name (first test-prog-entry))
-    (define test-prog (second test-prog-entry))
-    (define expected (third test-prog-entry))
-    (with-check-info (['test-program test-prog]
-                      ['expected expected]
-                      ['src-interp (object-name src-interp)]
-                      ['trg-interp (object-name trg-interp)])
-      (test-case (format "~a suite" (or (object-name pass) 'anonymous))
-        (define _output (box (void)))
-        (with-check-info (['test-type "Checking test-program compiles without error"])
-          (check-not-exn
-           (thunk
-            (with-timeout
-              (set-box! _output (pass test-prog))))))
-        (define output (unbox _output))
-        (with-check-info (['output-program output])
-          (with-check-info (['test-type "Checking that output is syntactically correct"])
-            (when trg-validator
-              (check-true (trg-validator output))))
-          (define actual (box (void)))
-          (with-check-info (['test-type "Checking output is interpretable"])
-            (check-not-exn
-             (thunk (with-timeout
-                      (set-box! actual (trg-interp output))))))
-          (with-check-info (['test-type "Checking that output produces correct value"])
-            (check src-equiv expected (unbox actual)))
-          ; if grading, disable dynamic generation.
-          ; these are useful for debugging, since they isolate bugs, but screw up test count for assessment.
-          (unless grading?
-            (set-add! target-interp-progs `(,name ,output ,(unbox actual)))))))))
+  (make-test-suite (format "~a suite" (or (object-name pass) 'anonymous))
+    (for/list ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
+	       [i (in-naturals)])
+      (define name (first test-prog-entry))
+      (define test-prog (second test-prog-entry))
+      (define expected (third test-prog-entry))
+      (with-check-info (['test-program test-prog]
+                        ['expected expected]
+                        ['src-interp (object-name src-interp)]
+                        ['trg-interp (object-name trg-interp)])
+        (test-suite (format "Suite for entry ~a" i)
+	  (test-begin
+	    (define _output (box (void)))
+            (with-check-info (['test-type "Checking test-program compiles without error"])
+              (check-not-exn
+               (thunk
+                (with-timeout
+                  (set-box! _output (pass test-prog))))))
+            (define output (unbox _output))
+            (with-check-info (['output-program output])
+              (with-check-info (['test-type "Checking that output is syntactically correct"])
+                (when trg-validator
+                  (check-true (trg-validator output))))
+              (define actual (box (void)))
+              (with-check-info (['test-type "Checking output is interpretable"])
+                (check-not-exn
+                 (thunk (with-timeout
+                          (set-box! actual (trg-interp output))))))
+              (with-check-info (['test-type "Checking that output produces correct value"])
+                (check src-equiv expected (unbox actual)))
+              ; if grading, disable dynamic generation.
+              ; these are useful for debugging, since they isolate bugs, but screw up test count for assessment.
+              (unless grading?
+                (set-add! target-interp-progs `(,name ,output ,(unbox actual)))))))))))
 
 ; Disables fragile/feedback-only tests, typically for grading but also if you
 ; just want to.
@@ -447,13 +449,13 @@
                   interp-ls
                   (static-compose pass-so-far pass)))))
 
-  (test-suite
-   ""
+  (make-test-suite
+    "compiler testomatic test suite"
    (let loop ([pass-ls pass-ls]
               [interp-ls interp-ls])
      (cond
        [(empty? pass-ls)
-        (void)]
+        '()]
        [else
         (define pass (first pass-ls))
         (define src-interp (first interp-ls))
@@ -476,9 +478,22 @@
             [(? procedure?)
              (values trg-extras equal?)]
             [_ (values #f equal?)]))
-        (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv
-                            #:grading grading?)
-        (loop (rest pass-ls) (rest interp-ls))]))))
+	; in grading mode, just execute each test-prog-entry with the passls to the end.
+        ; otherwise, certain simple passes have false negatives
+	(cons
+	  (if grading?
+	    (make-test-suite
+	      (format "~a suite" (or (object-name pass) 'anonymous))
+	      (begin
+		(for/list ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
+			   [i (in-naturals)])
+		  (test-suite (format "Entry ~a" test-prog-entry)
+		    (check-equal?
+		      (parameterize ([current-pass-list pass-ls])
+			(execute test-prog-entry run/read))
+		      (src-interp test-prog-entry))))))
+	    (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv))
+	  (loop (rest pass-ls) (rest interp-ls)))]))))
 
 
 ;; OLD INFRASTRUCTURE
