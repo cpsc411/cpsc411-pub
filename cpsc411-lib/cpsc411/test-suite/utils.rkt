@@ -410,11 +410,11 @@
       (define name (first test-prog-entry))
       (define test-prog (second test-prog-entry))
       (define expected (third test-prog-entry))
-      (with-check-info (['test-program test-prog]
-                        ['expected expected]
-                        ['src-interp (object-name src-interp)]
-                        ['trg-interp (object-name trg-interp)])
-        (test-suite (format "Suite for entry ~a" i)
+      (test-suite (format "Suite for entry ~a" i)
+        (with-check-info (['test-program test-prog]
+                          ['expected expected]
+                          ['src-interp (object-name src-interp)]
+                          ['trg-interp (object-name trg-interp)])
           (test-begin
             (define _output (box (void)))
             (with-check-info (['test-type "Checking test-program compiles without error"])
