@@ -400,35 +400,46 @@
 (fprintf subp-in @~a{@|LD_PATH| @(ld-flags) -o @|exe| @|o| || echo $?} with-output-to-port )
 |#
 
+(define-logger cpsc411-execute)
+(provide cpsc411-execute-logger)
+
 ;; TODO: memoize library doesn't work as expected with internal defines
 (define (nasm-run/internal runner block? str)
   (define p (path->string (make-temporary-file "rkt~a.s")))
   (define o (string-replace p ".s" ".o"))
   (define exe (string-replace p ".s" ".exe"))
 
+  (define (cleanup-files!)
+    (for ([f (list* p o (if block? (list exe) '()))])
+      (and (file-exists? f) (delete-file f))))
+
   (with-output-to-file p (thunk (display str)) #:exists 'replace)
 
-  ;; TODO: Should probably clean up temporary files on error.
-  ;; but I use them for debugging.
-  (unless (zero? (system*/exit-code NASM_PATH "-f" (bin-format) p "-o" o))
-    (with-input-from-file p (thunk (displayln (port->string))))
-    (error 'execute "Failed to compile"))
+  (define nasm-code (system*/exit-code NASM_PATH "-f" (bin-format) p "-o" o))
+  (unless (zero? nasm-code)
+    (log-cpsc411-execute-error "`nasm` failed with exit code ~a" nasm-code)
+    (log-cpsc411-execute-debug
+      (with-input-from-file p port->string))
+    (cleanup-files!)
+    (error 'execute "Failed to assemble"))
 
-  (unless (zero? (apply
-                  system*/exit-code
-                  LD_PATH
-                  (append
-                   (ld-flags)
-                   (list "-o" exe o))))
+  (define ld-code
+    (apply
+      system*/exit-code
+      LD_PATH
+      (append
+        (ld-flags)
+        (list "-o" exe o))))
+  (unless (zero? ld-code)
+    (log-cpsc411-execute-error "`ld` failed with exit code ~a" ld-code)
+    (cleanup-files!)
     (error 'execute "Failed to link"))
 
   (define res
     (parameterize ([current-subprocess-custodian-mode 'kill])
       (runner exe)))
 
-  ; delete temporary files
-  (for ([f (list* p o (if block? (list exe) '()))])
-    (and (file-exists? f) (delete-file f)))
+  (cleanup-files!)
 
   res)
 

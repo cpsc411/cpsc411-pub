@@ -324,6 +324,10 @@ See also @racket[nasm-run/exit-code], @racket[nasm-run/print-string],
 @racket[nasm-run/error-string+code], and @racket[nasm-run/observe].
 }
 
+@defthing[cpsc411-execute-logger logger?]{
+A logger to which error and debug information is written if a low-level error happens during @racket[execute], such as a failure to assemble and link.
+You might view this debug information by adding @tt{PLTSTDERR="debug@cpsc411-execute"} to your environment when executing the test suite, as in @tt{env PLTSTDERR="debug@cpsc411-execute" raco test compiler.rkt}.
+}
 
 @defproc[(execute (v any/c) [run/read (-> string? any/c) (current-run/read)]) any/c]{
 Compiles @racket[v] using the @racket[current-pass-list] and then runs the
