@@ -65,8 +65,6 @@
     (current-pass-list passes)
     (current-run/read run/read))
 
-   (test-suite
-    "compiler testomatic test suite"
-    (compiler-testomatic pass-ls interp-ls))
+   (compiler-testomatic pass-ls interp-ls)
 
    (when check-values-lang (v4-check-values-lang check-values-lang))))

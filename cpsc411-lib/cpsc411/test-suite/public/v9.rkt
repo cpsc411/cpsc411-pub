@@ -72,9 +72,7 @@
     (current-pass-list passes)
     (current-run/read run/read))
 
-   (test-suite
-    "compiler testomatic test suite"
-    (compiler-testomatic pass-ls interp-ls nasm-run/read))
+   (compiler-testomatic pass-ls interp-ls nasm-run/read)
 
    (test-equal?
     ""

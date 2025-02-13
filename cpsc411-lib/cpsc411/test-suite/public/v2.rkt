@@ -206,6 +206,4 @@
     (current-run/read run/read)
     (current-pass-list old-pass-ls))
 
-   (test-suite
-    "compiler testomatic test suite"
-    (compiler-testomatic pass-ls interp-ls))))
+   (compiler-testomatic pass-ls interp-ls)))
