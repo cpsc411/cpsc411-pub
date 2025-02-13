@@ -2,6 +2,7 @@
 
 (require
  racket/match
+ racket/contract
  rackunit
  cpsc411/test-suite/utils
  cpsc411/compiler-lib
@@ -80,14 +81,17 @@
     (execute '(module (lambda (x) x)) nasm-run/print-string)
     "#<procedure>")
 
-   (test-begin
-     (check-match
-      (execute '(module (call 5 (lambda (x) x))) nasm-run/exit-code)
-      e
-      (uint8? e)))
+   (test-equal?
+    ""
+    (execute '(module (void)) nasm-run/print-string)
+    "")
 
-   (test-begin
-     (check-match
-      (execute '(module (call (lambda (x) x) 5 6)) nasm-run/exit-code)
-      e
-      (uint8? e)))))
+   (test-pred
+     ""
+     (and/c uint8? (not/c zero?))
+     (execute '(module (call 5 (lambda (x) x))) nasm-run/exit-code))
+
+   (test-pred
+     ""
+     (and/c uint8? (not/c zero?))
+     (execute '(module (call (lambda (x) x) 5 6)) nasm-run/exit-code))))

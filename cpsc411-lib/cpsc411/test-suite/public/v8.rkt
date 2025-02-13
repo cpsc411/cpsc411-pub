@@ -2,6 +2,7 @@
 
 (require
  racket/match
+ racket/contract
  rackunit
  cpsc411/test-suite/utils
  cpsc411/compiler-lib
@@ -162,17 +163,15 @@
 
    (test-pred
     ""
-    (and/c integer? (not/c zero?))
+    (and/c uint8? (not/c zero?))
     (execute
      `(module (call car 7))
      nasm-run/exit-code))
 
    (test-pred
     ""
-    (and/c integer? (not/c zero?))
-    (execute `(module (call make-vector #\x)) nasm-run/exit-code))
-
-   ))
+    (and/c uint8? (not/c zero?))
+    (execute `(module (call make-vector #\x)) nasm-run/exit-code))))
 
 (define (v8-public-test-suite pass-ls interp-ls)
   (define run/read (current-run/read))

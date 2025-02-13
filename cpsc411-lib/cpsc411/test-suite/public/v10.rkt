@@ -2,6 +2,7 @@
 
 (require
  racket/match
+ racket/contract
  rackunit
  cpsc411/test-suite/utils
  cpsc411/compiler-lib
@@ -206,11 +207,36 @@
     (current-pass-list passes)
     (current-run/read run/read))
 
-   (test-suite
-    "compiler testomatic test suite"
-    (compiler-testomatic pass-ls interp-ls nasm-run/read))
+   (compiler-testomatic pass-ls interp-ls nasm-run/read)
 
    (test-suite
+     "string tests"
+     (check-equal?
+       (execute '(module (lambda (x) x)) nasm-run/print-string)
+       "#<procedure>")
+
+     (check-equal?
+       (execute '(module (void)) nasm-run/print-string)
+       ""))
+
+   (test-suite
+     "exit code tests"
+     (check-pred
+       (and/c uint8? (not/c zero?))
+       (execute '(module (5 (lambda (x) x))) nasm-run/exit-code))
+
+     (check-pred
+       (and/c uint8? (not/c zero?))
+       (execute '(module ((lambda (x) x) 5 6)) nasm-run/exit-code))
+
+     (check-pred
+       (and/c uint8? (not/c zero?))
+       (execute `(module (call car 7)) nasm-run/exit-code))
+
+     (check-pred
+       (and/c uint8? (not/c zero?))
+       (execute `(module (call make-vector #\x)) nasm-run/exit-code)))
+
+   (test-case
     "quicksort"
-    (test-begin
-      (check-equal? (execute (411-quicksort) nasm-run/read) #t)))))
+    (check-equal? (execute (411-quicksort) nasm-run/read) #t))))
