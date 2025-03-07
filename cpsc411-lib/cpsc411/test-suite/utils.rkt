@@ -444,6 +444,8 @@
 ; just want to.
 (define current-enable-grading (make-parameter #f))
 
+(define current-pass-name (make-parameter 'unknown))
+
 (define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)]
                              #:grading [grading? (current-enable-grading)])
   (unless (eq? (length _pass-ls) (length _interp-ls))
@@ -503,19 +505,26 @@
         (cons
           (if grading?
             (make-test-suite
-              (format "Pass \"~a\" suite" (or (object-name pass) 'anonymous))
+              (format "Starting compiler \"~a\" to nasm" (or (object-name pass) 'anonymous))
               (begin
                 (for/list ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
                            [i (in-naturals)])
                   (define name (first test-prog-entry))
                   (define test-prog (second test-prog-entry))
                   (define expected (third test-prog-entry))
-                  (test-suite (format "Entry \"~a\"" name)
-                    (check
-                      trg-equiv
-                      expected
-                      (parameterize ([current-pass-list pass-ls])
-                        (execute test-prog run/read)))))))
+                  (test-suite
+                    (format "Entry \"~a\"" name)
+                    (with-check-info (['last-pass-executed (dynamic-info current-pass-name)])
+                      (check
+                        trg-equiv
+                        expected
+                        (parameterize ([current-pass-list
+                                         (for/list ([pass pass-ls])
+                                           (lambda args
+                                             ; don't use parameterize to ensure state maintained on error
+                                             (current-pass-name (or (object-name pass) 'unknown))
+                                             (apply pass args)))])
+                          (execute test-prog run/read))))))))
             (test-suite ""
               (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv)))
           (loop (rest pass-ls) (rest interp-ls)))]))))
