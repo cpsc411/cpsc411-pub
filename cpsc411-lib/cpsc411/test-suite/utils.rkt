@@ -461,13 +461,20 @@
                 [pass-so-far values])
         ([pass _pass-ls]
          [interp _interp-ls])
+
+      (define debug-pass
+        (lambda args
+          ; don't use parameterize to ensure state maintained on error
+          (current-pass-name (or (object-name pass) 'unknown))
+          (apply pass args)))
+
       (if interp
-          (values (cons (static-compose pass-so-far pass) pass-ls)
+          (values (cons (static-compose pass-so-far debug-pass) pass-ls)
                   (cons interp interp-ls)
                   values)
           (values pass-ls
                   interp-ls
-                  (static-compose pass-so-far pass)))))
+                  (static-compose pass-so-far debug-pass)))))
 
   (make-test-suite
     "compiler testomatic test suite"
@@ -518,12 +525,7 @@
                       (check
                         trg-equiv
                         expected
-                        (parameterize ([current-pass-list
-                                         (for/list ([pass pass-ls])
-                                           (lambda args
-                                             ; don't use parameterize to ensure state maintained on error
-                                             (current-pass-name (or (object-name pass) 'unknown))
-                                             (apply pass args)))])
+                        (parameterize ([current-pass-list pass-ls ])
                           (execute test-prog run/read))))))))
             (test-suite ""
               (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv)))
