@@ -444,8 +444,6 @@
 ; just want to.
 (define current-enable-grading (make-parameter #f))
 
-(define current-pass-name (make-parameter 'unknown))
-
 (define (compiler-testomatic _pass-ls _interp-ls [run/read (current-run/read)]
                              #:grading [grading? (current-enable-grading)])
   (unless (eq? (length _pass-ls) (length _interp-ls))
@@ -453,33 +451,37 @@
            _pass-ls
            _interp-ls))
 
-  (define-values (pass-ls interp-ls _)
+  (define-values (pass-ls interp-ls names _)
     (for/foldr ([pass-ls '()]
                 [interp-ls (list (lambda (x)
                                    (parameterize ([current-pass-list (list values)])
                                      (execute x run/read))))]
+                [names '()]
                 [pass-so-far values])
         ([pass _pass-ls]
          [interp _interp-ls])
 
+      (define pass-name (or (object-name pass) 'unknown))
+
       (define debug-pass
         (lambda args
-          ; don't use parameterize to ensure state maintained on error
-          (current-pass-name (or (object-name pass) 'unknown))
-          (apply pass args)))
+          (with-continuation-mark 'pass-name pass-name (apply pass args))))
 
       (if interp
           (values (cons (static-compose pass-so-far debug-pass) pass-ls)
                   (cons interp interp-ls)
+                  (cons pass-name names)
                   values)
           (values pass-ls
                   interp-ls
+                  (cons pass-name names)
                   (static-compose pass-so-far debug-pass)))))
 
   (make-test-suite
     "compiler testomatic test suite"
    (let loop ([pass-ls pass-ls]
-              [interp-ls interp-ls])
+              [interp-ls interp-ls]
+              [names names])
      (cond
        [(empty? pass-ls)
         '()]
@@ -512,7 +514,7 @@
         (cons
           (if grading?
             (make-test-suite
-              (format "Starting compiler \"~a\" to nasm" (or (object-name pass) 'anonymous))
+              (format "Starting compiler \"~a\" to nasm" (car names))
               (begin
                 (for/list ([test-prog-entry (hash-ref! test-prog-dict src-interp (mutable-set))]
                            [i (in-naturals)])
@@ -521,15 +523,14 @@
                   (define expected (third test-prog-entry))
                   (test-suite
                     (format "Entry \"~a\"" name)
-                    (with-check-info (['last-pass-executed (dynamic-info current-pass-name)])
-                      (check
-                        trg-equiv
-                        expected
-                        (parameterize ([current-pass-list pass-ls ])
-                          (execute test-prog run/read))))))))
+                    (check
+                      trg-equiv
+                      expected
+                      (parameterize ([current-pass-list pass-ls])
+                        (execute test-prog run/read)))))))
             (test-suite ""
               (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv)))
-          (loop (rest pass-ls) (rest interp-ls)))]))))
+          (loop (rest pass-ls) (rest interp-ls) (rest names)))]))))
 
 
 ;; OLD INFRASTRUCTURE
