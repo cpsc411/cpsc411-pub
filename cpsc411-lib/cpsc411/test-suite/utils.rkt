@@ -526,8 +526,9 @@
                     (check
                       trg-equiv
                       expected
-                      (parameterize ([current-pass-list pass-ls])
-                        (execute test-prog run/read)))))))
+                      (with-timeout
+                        (parameterize ([current-pass-list pass-ls])
+                          (execute test-prog run/read))))))))
             (test-suite ""
               (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv)))
           (loop (rest pass-ls) (rest interp-ls) (rest names)))]))))
