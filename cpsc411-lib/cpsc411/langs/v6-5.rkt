@@ -49,7 +49,7 @@
        (true)
        (false)
        (not pred)
-       (let ([aloc e] ...) pred)
+       (let ([aloc value] ...) pred)
        (if pred pred pred)]
 [value triv
        (binop value value)
