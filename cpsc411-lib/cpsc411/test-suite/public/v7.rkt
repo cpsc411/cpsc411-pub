@@ -36,7 +36,9 @@
           (,interp-exprs-bits-lang-v7 . ,interp-values-unique-lang-v6)
           (,interp-values-bits-lang-v7 . ,interp-values-unique-lang-v6)
           (,interp-imp-mf-lang-v7 . ,interp-imp-mf-lang-v6)
-          (,interp-proc-imp-cmf-lang-v7 . ,interp-proc-imp-cmf-lang-v6)))])
+          (,interp-proc-imp-cmf-lang-v7 . ,interp-proc-imp-cmf-lang-v6)
+          (,interp-imp-cmf-lang-v7 . ,interp-imp-cmf-lang-v6)
+          ))])
   (register-test-programs!
    new-v
    (for/list ([test-entry
