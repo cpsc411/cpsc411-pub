@@ -44,6 +44,9 @@
     (module (vector 1 2 3)))
 
    (""
+    (module (call vector-ref (vector 1 2 3) 0)))
+
+   (""
     (module (vector (+ 1 2) 3 2 3)))
 
    (""
