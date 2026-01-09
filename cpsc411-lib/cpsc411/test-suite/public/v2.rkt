@@ -160,8 +160,8 @@
    `(
      (""
       (begin
-        (set! (rbp - 0) 1)
-        (set! rax (rbp - 0))))
+        (set! (rbp - 8) 1)
+        (set! rax (rbp - 8))))
 
      (""
       (begin

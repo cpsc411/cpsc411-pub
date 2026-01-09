@@ -238,15 +238,15 @@
      (test-match
       (link-paren-x64
        '(begin
-          (with-label L.test.1 (set! (rbp - 0) 8))
-          (set! (rbp - 8) 0)
-          (set! rax (rbp - 0))
-          (set! rax (* rax (rbp - 0)))))
+          (with-label L.test.1 (set! (rbp - 8) 8))
+          (set! (rbp - 16) 0)
+          (set! rax (rbp - 8))
+          (set! rax (* rax (rbp - 8)))))
       '(begin
-         (set! (rbp - 0) 8)
-         (set! (rbp - 8) 0)
-         (set! rax (rbp - 0))
-         (set! rax (* rax (rbp - 0))))))
+         (set! (rbp - 8) 8)
+         (set! (rbp - 16) 0)
+         (set! rax (rbp - 8))
+         (set! rax (* rax (rbp - 8))))))
 
    (test-case "Single label case with jump"
      (test-match
