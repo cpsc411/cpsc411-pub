@@ -130,6 +130,7 @@
 
 (define (dispoffset? n)
   (and (int32? n)
+       (> n 0)
        (zero? (remainder n 8))))
 
 (define (aloc? s)
