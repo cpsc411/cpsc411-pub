@@ -96,6 +96,7 @@ global @|start-label|
 section .text
 
 @|start-label|:
+  sub rsp, 8 ; preserve argc
   mov @(current-frame-base-pointer-register), rsp
   mov @(current-return-address-register), done
 @|e|

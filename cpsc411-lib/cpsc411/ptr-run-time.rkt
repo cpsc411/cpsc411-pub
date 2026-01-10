@@ -22,6 +22,7 @@ done:
   mov rax, @(current-return-value-register)
   ; exit after printing.
   mov rsp, @(current-frame-base-pointer-register)
+  add rsp, 8 ; restore argc
   mov r13, exit
 printer:
   mov r10, rax
@@ -338,6 +339,7 @@ section .text
   mov r8, -1   ; -1 file descriptor for no file
   mov r9, 0    ; no offset
   syscall
+  sub rsp, 8   ; preserve argc
   mov @(current-heap-base-pointer-register), rax
   mov @(current-frame-base-pointer-register), rsp
   mov @(current-return-address-register), done
