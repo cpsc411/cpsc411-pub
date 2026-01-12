@@ -159,7 +159,15 @@
 
 (register-test-programs!
  interp-para-asm-lang-v4
- '((""
+ '(
+   ("bug #3; cannot cmp reg x int64"
+    (begin
+      (set! fv0 0)
+      (compare fv0 2148000000)
+      (jump-if > L.foo.1)
+      (halt 0)
+      (with-label L.foo.1 (halt 1))))
+   (""
     (begin
       (set! fv1 7)
       (set! r8 5)
