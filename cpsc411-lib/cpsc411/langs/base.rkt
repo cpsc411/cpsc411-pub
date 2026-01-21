@@ -120,12 +120,17 @@
 (define stack (make-vector 1000 'unalloc))
 (define fbp (box (sub1 (vector-length stack))))
 
-(define-syntax (rbp stx)
-  (syntax-parse stx
-    [:id
-     #'(unbox fbp)]
-    [(base (~datum -) offset)
-     #`(vector-ref stack (- (unbox fbp) offset))]))
+(define-syntax rbp
+  (make-set!-transformer
+    (lambda (stx)
+      (syntax-parse stx
+        #:literals (r:set!)
+        [:id
+          #'(unbox fbp)]
+        [(base (~datum -) offset)
+         #`(vector-ref stack (- (unbox fbp) offset))]
+        [(r:set! _:id v)
+         #`(set-box! fbp v)]))))
 
 (define current-fvar-offset (box 0))
 
