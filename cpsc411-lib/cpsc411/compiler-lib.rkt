@@ -211,7 +211,7 @@
   (make-parameter
    (remove*
     (list*
-     (current-return-value-register)
+     ;(current-return-value-register)
      (current-frame-base-pointer-register)
      (current-heap-base-pointer-register)
      (current-auxiliary-registers))
