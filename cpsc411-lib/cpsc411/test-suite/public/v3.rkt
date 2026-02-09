@@ -124,7 +124,7 @@
  interp-imp-cmf-lang-v3
  (list->mutable-set imp-cmf-lang-v3-progs))
 
-(define (v3-public-test-sutie pass-ls interp-ls)
+(define (v3-public-test-suite pass-ls interp-ls)
   (define run/read (current-run/read))
 
   (test-suite
@@ -137,3 +137,6 @@
     (current-run/read run/read))
 
    (compiler-testomatic pass-ls interp-ls)))
+
+; backwards compat
+(define v3-public-test-sutie v3-public-test-suite)

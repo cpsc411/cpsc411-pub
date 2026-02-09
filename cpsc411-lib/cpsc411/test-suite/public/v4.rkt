@@ -310,7 +310,7 @@
 
 (define (v4-interp-values-lang-test-suite interp-values-lang)
   (test-suite
-   "v4 interp-values-lang public test sutie"
+   "v4 interp-values-lang public test suite"
    (for ([test (dict-ref test-prog-dict interp-values-lang-v4)])
      (with-check-info (['test-program (cadr test)])
        (check-equal?
@@ -319,7 +319,7 @@
 
 (define (v4-interp-paren-x64-test-suite interp-paren-x64)
   (test-suite
-   "v4 interp-paren-x64 public test sutie"
+   "v4 interp-paren-x64 public test suite"
    (for ([test (dict-ref test-prog-dict interp-paren-x64-v4)])
      (with-check-info (['test-program (cadr test)])
        (check-equal?
@@ -328,7 +328,7 @@
 
 (define (v4-check-values-lang check-values-lang)
   (test-suite
-   "v4 check-values-lang public test sutie"
+   "v4 check-values-lang public test suite"
    (for ([test (dict-ref test-prog-dict interp-values-lang-v4)])
      (with-check-info (['test-program (cadr test)])
        (check-equal?

@@ -191,7 +191,7 @@
  interp-paren-x64-v2
  (list->mutable-set paren-x64-v2-progs))
 
-(define (v2-public-test-sutie pass-ls interp-ls)
+(define (v2-public-test-suite pass-ls interp-ls)
   (define run/read (current-run/read))
   (define old-pass-ls (current-pass-list))
 
@@ -207,3 +207,6 @@
     (current-pass-list old-pass-ls))
 
    (compiler-testomatic pass-ls interp-ls)))
+
+;; backwards compat
+(define v2-public-test-sutie v2-public-test-suite)
