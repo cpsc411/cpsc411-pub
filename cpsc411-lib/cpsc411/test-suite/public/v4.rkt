@@ -365,6 +365,9 @@
     exn:fail?
     (thunk (check-values-lang '(module (not 5)))))))
 
+(define (not-incomplete id)
+  (and id (not (eq? values id))))
+
 (define (v4-public-test-suite pass-ls interp-ls
                               link-paren-x64
                               interp-paren-x64
@@ -388,8 +391,6 @@
     "compiler testomatic test suite"
     (compiler-testomatic pass-ls interp-ls))
 
-   (define (not-incomplete id)
-     (and id (not (eq? values id))))
    (when (not-incomplete link-paren-x64) (v4-link-paren-x64-test-suite link-paren-x64))
    (when (not-incomplete interp-values-lang) (v4-interp-values-lang-test-suite interp-values-lang))
    (when (not-incomplete interp-paren-x64) (v4-interp-paren-x64-test-suite interp-paren-x64))
