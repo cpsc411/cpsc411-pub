@@ -12,7 +12,11 @@
   scribble/manual
   scribble/example
   scribble/bettergrammar
-  redex/reduction-semantics)
+  redex/reduction-semantics
+  ;; BEGIN AI-generated
+  "haskell-gen.rkt"
+  ;; END AI-generated
+  )
 
 (provide
  (all-defined-out)
@@ -84,8 +88,19 @@
         (~optional (~seq #:literals lls))
         (~optional (~seq #:datum-literals dls))
         [id def ...] ...)
+     ;; BEGIN AI-generated
+     ;; Generates:
+     ;; - A Redex grammar definition
+     ;; - A Redex language
+     ;; - A predicate to validate syntax
+     ;; - Grammar data structure (as name-grammar-data)
+     ;; END AI-generated
+
      #:with nameL (format-id stx "~aL" #'name)
      #:with pred (format-id stx "~a?" #'name)
+     ;; BEGIN AI-generated
+     #:with grammar-var (format-id stx "~a-grammar-data" #'name)
+     ;; END AI-generated
      #:with ((defs* ...) ...)
      (for/list ([defs (attribute def)])
        (let loop ([defs defs])
@@ -97,10 +112,27 @@
                   (cons (datum->syntax stx (syntax->datum #`(#:from-contract #,(car (cdr defs)))))
                         (loop (cdr (cdr (cdr defs)))))]
                  [_ (cons d (loop (cdr defs)))])))))
+     ;; BEGIN AI-generated
+     #:with grammar-data
+     (datum->syntax stx
+                    `(list 'name ',(syntax->datum #'name)
+                           'literals ',(syntax->datum #'(~? lls ()))
+                           'datum-literals ',(syntax->datum #'(~? dls ()))
+                           'clauses
+                           ',(map (lambda (id defs)
+                                    (cons (syntax->datum id)
+                                          (map syntax->datum defs)))
+                                  (attribute id)
+                                  (attribute def))))
+     ;; END AI-generated
      #`(begin
          (define-grammar name #:literals (~? lls ()) #:datum-literals (~? dls ()) [id defs* ...] ...)
          (define-language-from-grammar nameL name (~? lls ()) ((id def ...) ...))
-         (define pred (redex-match? nameL #,(car (attribute id)))))]))
+         (define pred (redex-match? nameL #,(car (attribute id))))
+         ;; BEGIN AI-generated
+         (define grammar-var grammar-data)
+         ;; END AI-generated
+         )]))
 
 #;(define-language-from-grammar Values-lang-v4L values-lang-v4)
 #;(define check-values-lang (redex-match? Values-lang-v4L p))

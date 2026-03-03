@@ -1,0 +1,11 @@
+services:
+  copilot-sandbox:
+    build: .
+    container_name: copilot-sandbox
+    stdin_open: true
+    tty: true
+    volumes:
+      - ~/.config/copilot:/root/.config/copilot:ro
+      - .:/workspace
+    working_dir: /workspace
+    command: /bin/bash
