@@ -87,7 +87,8 @@ msg:   times len db '0'})
   @~a{})
 
 ; TODO should separate boilerplate and run-time
-(define wrap-x64-run-time values)
+;; NB: eta-expand to get debugging name correct
+(define (wrap-x64-run-time e) e)
 
 (define (wrap-x64-boilerplate e)
   @~a{
