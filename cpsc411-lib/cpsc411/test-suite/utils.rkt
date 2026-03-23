@@ -33,6 +33,7 @@
 (define empty-ptr? (curry eq? (current-empty-ptr)))
 (define error-ptr? (ptr? (current-error-tag) (current-error-mask)))
 (define ascii-ptr? (ptr? (current-ascii-char-tag) (current-ascii-char-mask)))
+(define void-ptr? (ptr? (current-void-tag) (current-void-mask)))
 
 (define cons-ptr? (ptr? (current-pair-tag) (current-pair-mask)))
 (define vector-ptr? (ptr? (current-vector-tag) (current-vector-mask)))
@@ -46,6 +47,8 @@
      #f]
     [(? fixnum-ptr?)
      (arithmetic-shift v -3)]
+    [(? void-ptr?)
+     (void)]
     [(? empty-ptr?)
      '()]
     [(? error-ptr?)
