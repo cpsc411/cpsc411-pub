@@ -437,7 +437,7 @@
 (define unsafe-fx> >)
 (define/memo (error n)
   `(error ,n))
-(define (error? n) (and (list? n) (eq? (car n) 'error) (int64? (second n))))
+(define (error? n) (and (pair? n) (eq? (car n) 'error) (int64? (second n))))
 (define (arithmetic-shift-right x y) (arithmetic-shift x (- 0 y)))
 (define (ascii-char? x)
   (and (char? x) (<= 40 (char->integer x) 176)))
