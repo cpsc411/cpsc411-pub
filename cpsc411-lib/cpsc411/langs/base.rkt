@@ -27,7 +27,7 @@
              new-*)
  #;(rename-out [new-module-begin #%module-begin])
  #;#%top-interaction
- #;#%datum
+ (rename-out [new-datum #%datum])
  #;#%app
  (rename-out
   [new-+ +]
@@ -455,6 +455,15 @@
 
 ; eta expand to get arity right
 (define (new-make-vector x) (make-vector x))
+
+;; make vector literals mutable
+(define-syntax (new-datum stx)
+  (syntax-parse stx
+    [(_ . e)
+     #`(let ([x (#%datum . e)])
+         (if (and (vector? x) (immutable? x))
+             (build-vector (vector-length x) (lambda (i) (vector-ref x i)))
+             x))]))
 
 (define ALIGN 8)
 (define memory (make-vector 10000 'un-aloced))
