@@ -22,6 +22,16 @@ Set the size of the heap for the interpreter.
 @examples[
 (require (only-in cpsc411/langs/base current-heap-size))
 (require cpsc411/langs/v8)
+(eval:error
+ (interp-asm-pred-lang-v8
+  '(module
+     ((new-frames (() ())))
+     (begin
+      (set! x.1 r12)
+      (set! r12 (+ r12 10008))
+      (mset! x.1 10000 5)
+      (mref x.1 10000)))))
+
 (current-heap-size 20000)
 (interp-asm-pred-lang-v8
  '(module
