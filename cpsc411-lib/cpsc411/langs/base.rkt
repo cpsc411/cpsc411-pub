@@ -90,12 +90,19 @@
   (_rax _rsp _rbx _rcx _rdx _rsi _rdi _r8 _r9 _r10 _r11 _r12
   _r13 _r14 _r15))
 
+(define current-stack-size (make-parameter 1000))
+(define current-heap-size (make-parameter 10000))
+(define UNINIT-STACK-SYM 'uninitialized-stack-slot)
+(define UNALOC-HEAP-SYM 'unallocated-heap-value)
+(define UNINIT-HEAP-SYM 'allocated-uninitialized-heap-value)
+
+
 (define (init-reg-file)
   (for ([reg (list _rax _rsp _rbx _rcx _rdx _rsi _rdi _r8 _r9 _r10 _r11 _r12
                          _r13 _r14 _r15)])
     (set-box! reg (void)))
   (set-box! _r15 done)
-  (set-box! _r12 (alloc 1000)))
+  (set-box! _r12 (alloc (current-heap-size))))
 
 ;; ------------------------------------------------------------------------
 ;; Initial return point
@@ -117,7 +124,7 @@
 ;; Stack
 ;; ------------------------------------------------------------------------
 
-(define stack (make-vector 1000 'unalloc))
+(define stack (make-vector (current-stack-size) UNINIT-STACK-SYM))
 (define fbp (box (sub1 (vector-length stack))))
 
 (define-syntax (rbp stx)
@@ -135,7 +142,7 @@
 (define (init-stack)
   (begin
     (set-box! fbp (sub1 (vector-length stack)))
-    (r:set! stack (make-vector 1000 'unalloc))))
+    (r:set! stack (make-vector (current-stack-size) UNINIT-STACK-SYM))))
 
 (begin-for-syntax
   (define current-fvars (make-parameter 1000))
@@ -466,7 +473,7 @@
              x))]))
 
 (define ALIGN 8)
-(define memory (make-vector 10000 'un-aloced))
+(define memory (make-vector (current-heap-size) UNALOC-HEAP-SYM))
 (define hbp (* ALIGN 2))
 
 (define (unsafe-mset! base offset value)
@@ -476,7 +483,7 @@
   (let ([loc (/ (+ base offset) ALIGN)])
     (unless (integer? loc)
       (r:error 'mset! "attempting to write to unaligned memory (base: ~a, offset: ~a)" base offset))
-    (when (equal? 'un-aloced (vector-ref memory loc))
+    (when (eq? UNALOC-HEAP-SYM (vector-ref memory loc))
       (r:error 'mset! "attempting to write to unallocated memory (base: ~a, offset: ~a)" base offset))
     (vector-set! memory loc value)))
 
@@ -484,9 +491,9 @@
   (let ([loc (/ (+ base offset) ALIGN)])
     (unless (integer? loc)
       (r:error 'mref "attempting to read from unaligned memory (base: ~a, offset: ~a)" base offset))
-    (when (equal? 'un-aloced (vector-ref memory loc))
+    (when (eq? UNALOC-HEAP-SYM (vector-ref memory loc))
       (r:error 'mref "attempting to read from unallocated memory (base: ~a, offset: ~a)" base offset))
-    (when (equal? 'aloced (vector-ref memory loc))
+    (when (eq? UNINIT-HEAP-SYM (vector-ref memory loc))
       (r:error 'mref "attempting to read from uninitialized memory (base: ~a, offset: ~a)" base offset))
     (vector-ref memory loc)))
 
@@ -496,7 +503,7 @@
     (unless (integer? len)
       (r:error 'alloc "attemptying to allocate unaligned memory (len: ~a)" len8))
     (for ([i (in-range len)])
-      (vector-set! memory (+ (/ oldhbp ALIGN) i) 'alloced))
+      (vector-set! memory (+ (/ oldhbp ALIGN) i) UNINIT-HEAP-SYM))
     ;; leave buffer space to check over/underflows
     (r:set! hbp (+ (+ hbp len8) (* ALIGN 3)))
     oldhbp))
@@ -504,7 +511,7 @@
 (define (init-heap)
   (begin
     (r:set! hbp (* ALIGN 2))
-    (r:set! memory (make-vector 10000 'un-aloced))))
+    (r:set! memory (make-vector (current-heap-size) UNALOC-HEAP-SYM))))
 
 (define-syntax (new-lambda stx)
   (syntax-case stx ()
