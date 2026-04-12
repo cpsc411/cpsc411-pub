@@ -531,12 +531,13 @@
                        ['expected expected]
                        ['src-interp (object-name src-interp)]
                        ['trg-interp (object-name trg-interp)])
-                      (check
-                        trg-equiv
-                        expected
-                        (with-timeout
-                          (parameterize ([current-pass-list pass-ls])
-                            (execute test-prog run/read)))))))))
+                      (test-begin
+                        (check
+                          trg-equiv
+                          expected
+                          (with-timeout
+                            (parameterize ([current-pass-list pass-ls])
+                              (execute test-prog run/read))))))))))
             (test-suite ""
               (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv)))
           (loop (rest pass-ls) (rest interp-ls) (rest names)))]))))
