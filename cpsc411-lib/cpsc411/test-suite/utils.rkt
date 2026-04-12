@@ -526,12 +526,17 @@
                   (define expected (third test-prog-entry))
                   (test-suite
                     (format "Entry \"~a\"" name)
-                    (check
-                      trg-equiv
-                      expected
-                      (with-timeout
-                        (parameterize ([current-pass-list pass-ls])
-                          (execute test-prog run/read))))))))
+                    (with-check-info
+                      (['test-program test-prog]
+                       ['expected expected]
+                       ['src-interp (object-name src-interp)]
+                       ['trg-interp (object-name trg-interp)])
+                      (check
+                        trg-equiv
+                        expected
+                        (with-timeout
+                          (parameterize ([current-pass-list pass-ls])
+                            (execute test-prog run/read)))))))))
             (test-suite ""
               (test-compiler-pass pass src-interp trg-interp trg-validator src-equiv)))
           (loop (rest pass-ls) (rest interp-ls) (rest names)))]))))
