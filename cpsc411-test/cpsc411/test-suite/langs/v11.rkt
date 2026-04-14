@@ -13,3 +13,8 @@
 
 (check-false
   (interp-racketish-surface '(module (call not (call #t)))))
+
+(check-equal? (interp-racketish-surface '(module (error 67)))
+              (interp-racketish-surface '(module (begin
+                                                   (error 67)
+                                                   (error 69)))))

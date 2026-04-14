@@ -64,8 +64,42 @@
 [vec-literal host:vector?]
 ]
 
+(module safe-langs racket/base
+  (require
+   (submod "v9.rkt" safe-langs)
+   cpsc411/machine-ints
+   (only-in racket/base
+            [begin r:begin]
+            [module+ r:module+]
+            [define r:define]
+            [lambda r:lambda]
+            [let r:let]))
+
+  (define-syntax begin
+    (syntax-rules ()
+      [(_) (void)]
+      [(_ e) e]
+      [(_ e es ...)
+       (let ([x e])
+         (if (error? x)
+             x
+             (begin es ...)))]))
+
+  (provide
+   (all-from-out (submod "v9.rkt" safe-langs))
+   (all-defined-out))
+
+  (r:module+ interp
+             (provide _interp-exprs-lang-v11)
+             (define-namespace-anchor a)
+             (r:define _interp-exprs-lang-v11
+                       (r:let ([ns (namespace-anchor->namespace a)])
+                         (r:lambda (x)
+                           (eval x ns))))))
+
+(require (submod 'safe-langs interp))
 (define (interp-racketish-surface x)
-  (interp-exprs-lang-v9 x))
+  (_interp-exprs-lang-v11 x))
 
 @define-grammar/pred[racketish-unique
 #:literals (aloc? int61? uint8? ascii-char-literal? quote)
@@ -115,4 +149,4 @@
 ]
 
 (define (interp-racketish-unique x)
-  (interp-exprs-lang-v9 x))
+  (interp-racketish-surface x))
