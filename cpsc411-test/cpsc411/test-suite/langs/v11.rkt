@@ -1,5 +1,6 @@
 #lang racket/base
 (require cpsc411/langs/v11
+         (only-in cpsc411/langs/base error?)
          rackunit)
 
 (check-false
@@ -18,3 +19,6 @@
               (interp-racketish-surface '(module (begin
                                                    (error 67)
                                                    (error 69)))))
+
+(check-true
+  (error? (interp-racketish-surface '(module (make-vector -1)))))
