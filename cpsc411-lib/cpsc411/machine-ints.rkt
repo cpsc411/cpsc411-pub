@@ -7,7 +7,7 @@
 (define (min-int word-size) (* -1 (expt 2 (sub1 word-size))))
 
 (define (int-size? word-size i)
-  (and (number? i)
+  (and (fixnum? i)
        (exact? i)
        (<= (min-int word-size) i (max-int word-size))))
 
