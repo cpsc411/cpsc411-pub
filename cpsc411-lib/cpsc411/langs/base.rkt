@@ -50,13 +50,14 @@
  vector?
  pair?
 
- cons
- car
- cdr
- (rename-out [new-make-vector make-vector])
- vector-length
- vector-set!
- vector-ref)
+ ; these are only added in v8 and have slightly different semantics, so they're added in that submodule
+ ;cons
+ ;car
+ ;cdr
+ #;(rename-out [new-make-vector make-vector])
+ ;vector-length
+ ;vector-set!
+ #;vector-ref)
 
 ;; ------------------------------------------------------------------------
 ;; Register file
@@ -462,7 +463,7 @@
     val))
 
 ; eta expand to get arity right
-(define (new-make-vector x) (make-vector x))
+#;(define (new-make-vector x) (make-vector x))
 
 ;; make vector literals mutable
 (define-syntax (new-datum stx)

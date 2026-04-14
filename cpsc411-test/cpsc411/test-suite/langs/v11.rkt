@@ -10,3 +10,6 @@
 
 (check-false
  (interp-racketish-surface '(module (error? (cons 0 1)))))
+
+(check-false
+  (interp-racketish-surface '(module (call not (call #t)))))

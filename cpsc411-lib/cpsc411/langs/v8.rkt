@@ -35,8 +35,42 @@
 [fixnum int61?]
 ]
 
+(module safe-langs racket/base
+  (require
+   (submod "v7.rkt" safe-langs)
+   cpsc411/machine-ints
+   (only-in racket/base
+            [module+ r:module+]
+            [define r:define]
+            [lambda r:lambda]
+            [let r:let]
+            [make-vector r:make-vector]))
+
+  (provide
+   (all-from-out (submod "v7.rkt" safe-langs))
+   cons
+   (all-defined-out))
+
+  (r:define (car x) ((wrap-error-ret 'car unsafe-car) x))
+  (r:define (cdr x) ((wrap-error-ret 'cdr unsafe-cdr) x))
+
+  (r:define (make-vector x) ((wrap-error-ret 'make-vector r:make-vector) x))
+  (r:define (vector-ref v x) ((wrap-error-ret 'vector-ref unsafe-vector-ref) v x))
+  (r:define (vector-set! v i x) ((wrap-error-ret 'vector-set! unsafe-vector-set!) v i x))
+  (r:define (vector-length v) ((wrap-error-ret 'vector-length unsafe-vector-length) v))
+
+  (r:module+ interp
+             (provide _interp-exprs-lang-v8)
+             (define-namespace-anchor a)
+             (r:define _interp-exprs-lang-v8
+                       (r:let ([ns (namespace-anchor->namespace a)])
+                         (r:lambda (x)
+                           (eval x ns))))))
+
+(require (submod 'safe-langs interp))
+
 (define (interp-exprs-lang-v8 x)
-  (interp-exprs-lang-v7 x))
+  (_interp-exprs-lang-v8 x))
 
 @define-grammar/pred[exprs-unique-lang-v8
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
@@ -62,7 +96,7 @@
 ]
 
 (define (interp-exprs-unique-lang-v8 x)
-  (interp-exprs-lang-v7 x))
+  (interp-exprs-lang-v8 x))
 
 @define-grammar/pred[exprs-unsafe-data-lang-v8
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)

@@ -49,8 +49,39 @@
 [ascii-char-literal ascii-char-literal?]
 ]
 
+(module safe-langs racket/base
+  (require
+   (submod "v8.rkt" safe-langs)
+   cpsc411/machine-ints
+   (only-in racket/base
+            [module+ r:module+]
+            [define r:define]
+            [lambda r:lambda]
+            [let r:let]))
+
+  (provide
+   (all-from-out (submod "v8.rkt" safe-langs))
+   (all-defined-out))
+
+  (r:define (call rator . rands)
+    (with-handlers ([exn:fail:contract?
+                      (r:lambda (e)
+                                (eprintf "Dynamic type error in call~n  ~a~n"
+                                         (exn-message e))
+                                (error 255))])
+      (apply rator rands)))
+
+  (r:module+ interp
+             (provide _interp-exprs-lang-v9)
+             (define-namespace-anchor a)
+             (r:define _interp-exprs-lang-v9
+                       (r:let ([ns (namespace-anchor->namespace a)])
+                         (r:lambda (x)
+                           (eval x ns))))))
+
+(require (submod 'safe-langs interp))
 (define (interp-exprs-lang-v9 x)
-  (interp-exprs-lang-v8 x))
+  (_interp-exprs-lang-v9 x))
 
 @define-grammar/pred[exprs-unique-lang-v9
 #:literals (aloc? label? int64? int61? uint8? ascii-char-literal?)
