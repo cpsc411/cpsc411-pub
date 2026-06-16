@@ -7,7 +7,7 @@
 (define (min-int word-size) (* -1 (expt 2 (sub1 word-size))))
 
 (define (int-size? word-size i)
-  (and (fixnum? i)
+  (and (integer? i) ; not a fixnum, since a large (or small) tagged int might be a Racket big num.
        (exact? i)
        (<= (min-int word-size) i (max-int word-size))))
 
