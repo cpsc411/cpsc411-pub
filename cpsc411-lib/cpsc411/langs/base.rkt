@@ -443,7 +443,7 @@
 (define unsafe-fx>= >=)
 (define unsafe-fx< <)
 (define unsafe-fx> >)
-(struct _error (n) #:transparent)
+(struct _error (n) #:prefab)
 (define/memo (error n)
   (_error n))
 (define (error? n) (and (_error? n) (<= 0 (_error-n n) 255)))
